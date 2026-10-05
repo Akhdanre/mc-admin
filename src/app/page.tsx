@@ -5,9 +5,11 @@ import { Sidebar, type AdminTab } from "@/components/Sidebar";
 import { DashboardOverview } from "@/components/DashboardOverview";
 import { UserManagement } from "@/components/UserManagement";
 import { WorldControls } from "@/components/WorldControls";
+import { LiveMap } from "@/components/LiveMap";
 import { ConsoleView } from "@/components/ConsoleView";
 import type {
   PlayerStatus,
+  PlayerLocation,
   WhitelistStatus,
   WhitelistAction,
   ServerInfoResponse,
@@ -24,6 +26,8 @@ export default function Home() {
     raw: "",
     updatedAt: "-",
   });
+
+  const [playerLocations, setPlayerLocations] = useState<Record<string, PlayerLocation>>({});
 
   const [whitelistStatus, setWhitelistStatus] = useState<WhitelistStatus>({
     players: [],
@@ -50,16 +54,26 @@ export default function Home() {
   const fetchStatus = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const [statusRes, whitelistRes] = await Promise.all([
+      const [statusRes, whitelistRes, locationsRes] = await Promise.all([
         fetch("/api/status"),
         fetch("/api/whitelist"),
+        fetch("/api/players/locations"),
       ]);
 
       const statusData = (await statusRes.json()) as PlayerStatus;
       const whitelistData = (await whitelistRes.json()) as WhitelistStatus;
+      const locationsData = (await locationsRes.json()) as { locations?: PlayerLocation[] };
 
       setPlayerStatus(statusData);
       setWhitelistStatus(whitelistData);
+
+      if (locationsData.locations) {
+        const locMap: Record<string, PlayerLocation> = {};
+        for (const loc of locationsData.locations) {
+          locMap[loc.username] = loc;
+        }
+        setPlayerLocations(locMap);
+      }
     } catch (err: unknown) {
       console.error("Failed to sync server status:", err);
     } finally {
@@ -111,6 +125,28 @@ export default function Home() {
       }
     } catch (err: unknown) {
       showFeedback(`Error: ${err instanceof Error ? err.message : String(err)}`, true);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleTeleport = async (player: string, target?: string, x?: number, y?: number, z?: number) => {
+    setIsBusy(true);
+    try {
+      const res = await fetch("/api/players/teleport", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ player, target, x, y, z }),
+      });
+      const data = (await res.json()) as { result?: string; error?: string };
+      if (data.error) {
+        showFeedback(`Teleport Error: ${data.error}`, true);
+      } else {
+        showFeedback(data.result || `Teleported ${player}`);
+        await fetchStatus();
+      }
+    } catch (err: unknown) {
+      showFeedback(`Teleport failed: ${err instanceof Error ? err.message : String(err)}`, true);
     } finally {
       setIsBusy(false);
     }
@@ -177,7 +213,13 @@ export default function Home() {
                 Active View:
               </span>
               <span className="text-sm font-bold text-white capitalize">
-                {currentTab === "commands" ? "RCON Console" : currentTab === "world" ? "World Controls" : currentTab}
+                {currentTab === "commands"
+                  ? "RCON Console"
+                  : currentTab === "world"
+                  ? "World Controls"
+                  : currentTab === "map"
+                  ? "Live Web Map"
+                  : currentTab}
               </span>
             </div>
           </div>
@@ -252,16 +294,22 @@ export default function Home() {
           {currentTab === "users" && (
             <UserManagement
               onlinePlayers={playerStatus.players}
+              playerLocations={playerLocations}
               whitelistedPlayers={whitelistStatus.players}
               whitelistError={whitelistStatus.error}
               onWhitelistAction={handleWhitelistAction}
               onExecuteCommand={handleExecuteCommand}
+              onTeleport={handleTeleport}
               isBusy={isBusy}
             />
           )}
 
           {currentTab === "world" && (
             <WorldControls onExecuteCommand={handleExecuteCommand} isBusy={isBusy} />
+          )}
+
+          {currentTab === "map" && (
+            <LiveMap mapUrl={process.env.NEXT_PUBLIC_MAP_URL || "http://192.168.137.158:8123"} />
           )}
 
           {currentTab === "commands" && (

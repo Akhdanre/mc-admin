@@ -1,23 +1,27 @@
 "use client";
 
 import { useState, type SubmitEvent } from "react";
-import type { WhitelistAction } from "@/types";
+import type { WhitelistAction, PlayerLocation } from "@/types";
 
 interface UserManagementProps {
   onlinePlayers: string[];
+  playerLocations: Record<string, PlayerLocation>;
   whitelistedPlayers: string[];
   whitelistError?: string;
   onWhitelistAction: (action: WhitelistAction, username?: string) => Promise<void>;
   onExecuteCommand: (command: string) => Promise<string>;
+  onTeleport: (player: string, target?: string, x?: number, y?: number, z?: number) => Promise<void>;
   isBusy: boolean;
 }
 
 export function UserManagement({
   onlinePlayers,
+  playerLocations,
   whitelistedPlayers,
   whitelistError,
   onWhitelistAction,
   onExecuteCommand,
+  onTeleport,
   isBusy,
 }: UserManagementProps) {
   const [activeTab, setActiveTab] = useState<"online" | "whitelist">("online");
@@ -42,15 +46,23 @@ export function UserManagement({
     await onExecuteCommand(`gamemode ${mode} ${name}`);
   };
 
-  const handleOpToggle = async (name: string, isOp: boolean) => {
-    if (isOp) {
-      if (window.confirm(`Remove OP permissions from ${name}?`)) {
-        await onExecuteCommand(`deop ${name}`);
-      }
+  const handleTeleportPrompt = async (name: string) => {
+    const target = window.prompt(
+      `Teleport ${name} to:\n• Enter another player username (e.g. Steve)\n• Enter coordinates "X Y Z" (e.g. "100 64 -200")\n• Leave blank for World Spawn (0, 0)`
+    );
+    if (target === null) return;
+
+    const trimmed = target.trim();
+    if (!trimmed) {
+      await onTeleport(name, undefined, 0, 70, 0);
+      return;
+    }
+
+    const coords = trimmed.split(/\s+/).map(Number);
+    if (coords.length === 3 && !coords.some(isNaN)) {
+      await onTeleport(name, undefined, coords[0], coords[1], coords[2]);
     } else {
-      if (window.confirm(`Grant operator (OP) privileges to ${name}?`)) {
-        await onExecuteCommand(`op ${name}`);
-      }
+      await onTeleport(name, trimmed);
     }
   };
 
@@ -67,11 +79,11 @@ export function UserManagement({
       <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-2">
-            <span>Player Administration</span>
+            <span>Player Administration & Teleportation</span>
           </div>
           <h2 className="text-xl font-bold text-white tracking-tight">User Management</h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Manage active in-game players, permissions, and server whitelist access.
+            Monitor real-time player locations, teleport users, toggle gamemodes, and manage whitelist access.
           </p>
         </div>
 
@@ -168,92 +180,118 @@ export function UserManagement({
                 {searchQuery ? "No matching online players found" : "No players currently online"}
               </p>
               <p className="text-xs text-slate-500 mt-1">
-                When players connect to your server, they will appear here with instant moderation controls.
+                When players connect to your server, they will appear here with live coordinates and teleport controls.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredOnline.map((name) => (
-                <div
-                  key={name}
-                  className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`https://mc-heads.net/avatar/${name}/44`}
-                        alt={name}
-                        className="w-11 h-11 rounded-xl bg-slate-800"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src =
-                            "https://mc-heads.net/avatar/Steve/44";
-                        }}
-                      />
-                      <div>
-                        <h4 className="font-bold text-white text-sm">{name}</h4>
-                        <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium mt-0.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          Online
-                        </span>
+              {filteredOnline.map((name) => {
+                const loc = playerLocations[name];
+                return (
+                  <div
+                    key={name}
+                    className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={`https://mc-heads.net/avatar/${name}/44`}
+                            alt={name}
+                            className="w-11 h-11 rounded-xl bg-slate-800"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src =
+                                "https://mc-heads.net/avatar/Steve/44";
+                            }}
+                          />
+                          <div>
+                            <h4 className="font-bold text-white text-sm">{name}</h4>
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium mt-0.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              Online
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleTeleportPrompt(name)}
+                            disabled={isBusy}
+                            title="Teleport player"
+                            className="px-2.5 py-1 text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg transition cursor-pointer flex items-center gap-1"
+                          >
+                            <span>🌀</span>
+                            <span>TP</span>
+                          </button>
+                          <button
+                            onClick={() => handleKickPlayer(name)}
+                            disabled={isBusy}
+                            title="Kick player"
+                            className="px-2.5 py-1 text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg transition cursor-pointer"
+                          >
+                            Kick
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Live Coordinates Pill */}
+                      {loc && (
+                        <div className="mt-3 p-2 bg-slate-950/80 border border-slate-800/60 rounded-xl flex items-center justify-between text-xs font-mono">
+                          <span className="text-slate-400 flex items-center gap-1">
+                            <span>📍</span>
+                            <span className="capitalize">{loc.dimension}</span>
+                          </span>
+                          <span className="text-indigo-300 font-semibold">
+                            X: {loc.x} Y: {loc.y} Z: {loc.z}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quick Player Actions */}
+                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] text-slate-400 font-medium">Mode:</span>
+                        <button
+                          onClick={() => handleSetGamemode(name, "survival")}
+                          className="text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer"
+                        >
+                          Surv
+                        </button>
+                        <button
+                          onClick={() => handleSetGamemode(name, "creative")}
+                          className="text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer"
+                        >
+                          Crea
+                        </button>
+                        <button
+                          onClick={() => handleSetGamemode(name, "spectator")}
+                          className="text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer"
+                        >
+                          Spec
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => onExecuteCommand(`tp ${name} 0 ~ 0`)}
+                          className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer"
+                        >
+                          To Spawn
+                        </button>
+                        <span className="text-slate-700">•</span>
+                        <button
+                          onClick={() => onExecuteCommand(`kill ${name}`)}
+                          className="text-[11px] text-slate-400 hover:text-rose-400 transition cursor-pointer"
+                        >
+                          Kill
+                        </button>
                       </div>
                     </div>
-
-                    <button
-                      onClick={() => handleKickPlayer(name)}
-                      disabled={isBusy}
-                      title="Kick player"
-                      className="px-2.5 py-1 text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg transition cursor-pointer"
-                    >
-                      Kick
-                    </button>
                   </div>
-
-                  {/* Quick Player Actions */}
-                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] text-slate-400 font-medium">Mode:</span>
-                      <button
-                        onClick={() => handleSetGamemode(name, "survival")}
-                        className="text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer"
-                        title="Set Survival"
-                      >
-                        Surv
-                      </button>
-                      <button
-                        onClick={() => handleSetGamemode(name, "creative")}
-                        className="text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer"
-                        title="Set Creative"
-                      >
-                        Crea
-                      </button>
-                      <button
-                        onClick={() => handleSetGamemode(name, "spectator")}
-                        className="text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer"
-                        title="Set Spectator"
-                      >
-                        Spec
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpToggle(name, false)}
-                        className="text-[11px] text-amber-400 hover:text-amber-300 font-medium cursor-pointer"
-                      >
-                        Grant OP
-                      </button>
-                      <span className="text-slate-700">•</span>
-                      <button
-                        onClick={() => onExecuteCommand(`kill ${name}`)}
-                        className="text-[11px] text-slate-400 hover:text-rose-400 transition cursor-pointer"
-                      >
-                        Kill
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -262,7 +300,6 @@ export function UserManagement({
       {/* Whitelist Tab */}
       {activeTab === "whitelist" && (
         <div className="space-y-6">
-          {/* Add Player to Whitelist Form */}
           <form
             onSubmit={handleAddWhitelist}
             className="flex gap-2 p-4 bg-slate-900/60 border border-slate-800 rounded-2xl"

@@ -29,3 +29,19 @@ export interface ServerInfoResponse {
   host: string;
   port: number;
 }
+
+export interface PlayerLocation {
+  username: string;
+  x: number;
+  y: number;
+  z: number;
+  dimension: string;
+}
+
+export interface TeleportRequestBody {
+  player: string;
+  target?: string;
+  x?: number;
+  y?: number;
+  z?: number;
+}

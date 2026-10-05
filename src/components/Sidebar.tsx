@@ -1,6 +1,6 @@
 "use client";
 
-export type AdminTab = "dashboard" | "users" | "world" | "commands";
+export type AdminTab = "dashboard" | "users" | "world" | "map" | "commands";
 
 interface SidebarProps {
   currentTab: AdminTab;
@@ -66,6 +66,21 @@ export function Sidebar({
         </svg>
       ),
       badge: null,
+    },
+    {
+      id: "map" as AdminTab,
+      label: "Live Web Map",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+          />
+        </svg>
+      ),
+      badge: "8123",
     },
     {
       id: "commands" as AdminTab,
@@ -168,9 +183,9 @@ export function Sidebar({
       <div className="p-4 border-t border-slate-800 bg-slate-950/50">
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <span className="w-2 h-2 rounded-full bg-slate-600" />
-          <span>RCON Minecraft v1.21+</span>
+          <span>Dynmap & RCON Enabled</span>
         </div>
-        <p className="text-[11px] text-slate-500 mt-1">Ready for Paper, Spigot & Fabric</p>
+        <p className="text-[11px] text-slate-500 mt-1">Live Map on port 8123</p>
       </div>
     </aside>
   );
@@ -181,6 +196,7 @@ export function Sidebar({
       <div className="hidden md:block w-64 shrink-0">
         <div className="sticky top-0 h-screen">{content}</div>
       </div>
+
       {/* Mobile Backdrop & Drawer */}
       {isOpenMobile && (
         <div className="fixed inset-0 z-50 md:hidden flex">
