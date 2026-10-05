@@ -1,17 +1,19 @@
+"use client";
+
 import { useEffect, useState, useCallback } from "react";
-import { Header } from "./components/Header.tsx";
-import { StatCards } from "./components/StatCards.tsx";
-import { PlayerList } from "./components/PlayerList.tsx";
-import { WhitelistManager } from "./components/WhitelistManager.tsx";
-import { ConsoleCommand } from "./components/ConsoleCommand.tsx";
+import { Header } from "@/components/Header";
+import { StatCards } from "@/components/StatCards";
+import { PlayerList } from "@/components/PlayerList";
+import { WhitelistManager } from "@/components/WhitelistManager";
+import { ConsoleCommand } from "@/components/ConsoleCommand";
 import type {
   PlayerStatus,
   WhitelistStatus,
   WhitelistAction,
   ServerInfoResponse,
-} from "../types.ts";
+} from "@/types";
 
-export function App() {
+export default function Home() {
   const [playerStatus, setPlayerStatus] = useState<PlayerStatus>({
     onlineCount: 0,
     maxCount: 0,
@@ -129,7 +131,7 @@ export function App() {
   const isConnected = !playerStatus.error;
 
   return (
-    <div className="bg-slate-950 text-slate-100 min-h-screen">
+    <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="max-w-4xl mx-auto px-4 py-10">
         <Header isConnected={isConnected} />
 
@@ -170,6 +172,6 @@ export function App() {
 
         <ConsoleCommand onExecute={handleExecuteCommand} />
       </div>
-    </div>
+    </main>
   );
 }

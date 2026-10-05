@@ -1,7 +1,7 @@
 import { Rcon } from "rcon-client";
-import { config } from "../config.ts";
-import { parsePlayerList, parseWhitelist } from "./parser.ts";
-import type { PlayerStatus, WhitelistStatus } from "../types.ts";
+import { config } from "@/config";
+import { parsePlayerList, parseWhitelist } from "@/services/parser";
+import type { PlayerStatus, WhitelistStatus } from "@/types";
 
 export async function executeRconCommand(command: string): Promise<string> {
   const rcon = await Rcon.connect({

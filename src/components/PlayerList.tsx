@@ -1,3 +1,5 @@
+"use client";
+
 interface PlayerListProps {
   players: string[];
   errorMessage?: string;
@@ -41,6 +43,7 @@ export function PlayerList({
               key={name}
               className="flex items-center gap-3 p-3 bg-slate-950/80 border border-slate-800 rounded-lg hover:border-slate-700 transition"
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`https://mc-heads.net/avatar/${name}/36`}
                 alt={name}

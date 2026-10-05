@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, type SubmitEvent } from "react";
-import type { WhitelistAction } from "../../types.ts";
+import type { WhitelistAction } from "@/types";
 
 interface WhitelistManagerProps {
   players: string[];
@@ -98,6 +100,7 @@ export function WhitelistManager({
               className="flex items-center justify-between p-3 bg-slate-950/80 border border-slate-800 rounded-lg hover:border-slate-700 transition"
             >
               <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`https://mc-heads.net/avatar/${name}/36`}
                   alt={name}

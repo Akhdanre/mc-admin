@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, type SubmitEvent } from "react";
 
 interface ConsoleCommandProps {

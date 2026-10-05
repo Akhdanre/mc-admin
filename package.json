@@ -1,36 +1,37 @@
 {
-  "name": "mc-dashboard",
-  "module": "index.ts",
-  "type": "module",
+  "name": "temp-next",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n \"api,web\" -c \"blue,green\" \"bun run dev:server\" \"bun run dev:web\"",
-    "dev:server": "bun --watch index.ts",
-    "dev:web": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "start": "bun run index.ts"
-  },
-  "devDependencies": {
-    "@tailwindcss/cli": "^4.3.3",
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/bun": "latest",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.1",
-    "autoprefixer": "^10.6.1",
-    "concurrently": "^10.0.5",
-    "postcss": "^8.5.28",
-    "tailwindcss": "^4.3.3",
-    "vite": "^8.3.2"
-  },
-  "peerDependencies": {
-    "typescript": "^7"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
   },
   "dependencies": {
     "dotenv": "^18.0.5",
+    "next": "16.3.8",
     "rcon-client": "^4.2.5",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
-  }
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.8",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "packageManager": "bun@1.4.2",
+  "ignoreScripts": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ]
 }
