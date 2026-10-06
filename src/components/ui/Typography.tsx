@@ -12,7 +12,7 @@ import { cn } from "@/lib/cn";
  */
 export function PageTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h2 className={cn("text-xl font-bold text-white tracking-tight", className)} {...props}>
+    <h2 className={cn("text-xl font-bold text-heading tracking-tight", className)} {...props}>
       {children}
     </h2>
   );
@@ -20,7 +20,7 @@ export function PageTitle({ className, children, ...props }: HTMLAttributes<HTML
 
 export function SectionTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn("text-lg font-semibold text-white", className)} {...props}>
+    <h3 className={cn("text-lg font-semibold text-heading", className)} {...props}>
       {children}
     </h3>
   );
@@ -28,7 +28,7 @@ export function SectionTitle({ className, children, ...props }: HTMLAttributes<H
 
 export function Body({ className, children, ...props }: HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-sm text-slate-300", className)} {...props}>
+    <p className={cn("text-sm text-foreground", className)} {...props}>
       {children}
     </p>
   );

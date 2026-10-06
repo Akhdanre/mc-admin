@@ -31,7 +31,7 @@ export function LiveMap({ mapUrl = "http://192.168.137.194:8123" }: LiveMapProps
         <div className="flex items-center gap-3">
           <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-lg">🗺️</div>
           <div>
-            <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-base font-bold text-heading tracking-tight flex items-center gap-2">
               <span>Dynmap Live Web Map</span>
               <Badge tone="success" className="text-[10px] font-mono">
                 Port 8123

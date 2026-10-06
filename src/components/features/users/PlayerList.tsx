@@ -18,7 +18,7 @@ export function PlayerList({
   return (
     <Card className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <h2 className="text-lg font-bold text-heading flex items-center gap-2">
           <span>Active Players</span>
         </h2>
         <Button
@@ -58,7 +58,7 @@ export function PlayerList({
                 }}
               />
               <div>
-                <p className="text-sm font-semibold text-white">{name}</p>
+                <p className="text-sm font-semibold text-heading">{name}</p>
                 <Badge tone="success" className="mt-0.5">In Game</Badge>
               </div>
             </Card>

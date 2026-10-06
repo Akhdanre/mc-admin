@@ -100,7 +100,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
           <Badge tone="success" className="mb-2">
             <span>Direct Console Terminal</span>
           </Badge>
-          <h2 className="text-xl font-bold text-white tracking-tight">RCON Command Center</h2>
+          <h2 className="text-xl font-bold text-heading tracking-tight">RCON Command Center</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Execute raw server commands with instant operator privileges.
           </p>
@@ -109,7 +109,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
         <Button
           variant="secondary"
           onClick={clearLogs}
-          className="self-start sm:self-auto text-muted-foreground hover:text-white"
+          className="self-start sm:self-auto text-muted-foreground hover:text-foreground"
         >
           Clear Screen
         </Button>
@@ -180,7 +180,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
             onChange={(e) => setCommand(e.target.value)}
             placeholder="Type a Minecraft command (e.g. say hello, time set day, gamemode creative)..."
             disabled={isBusy}
-            className="flex-1 border-0 bg-transparent px-0 py-0 text-xs text-white placeholder:text-faint-foreground"
+            className="flex-1 border-0 bg-transparent px-0 py-0 text-xs text-heading placeholder:text-faint-foreground"
             autoFocus
           />
           <Button type="submit" variant="primary" disabled={isBusy || !command.trim()}>

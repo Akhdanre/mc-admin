@@ -32,7 +32,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
         <Badge tone="warning" className="mb-2">
           <span>Environment &amp; Server State</span>
         </Badge>
-        <h2 className="text-xl font-bold text-white tracking-tight">World &amp; Environment Controls</h2>
+        <h2 className="text-xl font-bold text-heading tracking-tight">World &amp; Environment Controls</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
           Control day/night cycles, weather patterns, gamerules, and perform server maintenance.
         </p>
@@ -43,7 +43,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-white text-base">Time of Day</h3>
+              <h3 className="font-bold text-heading text-base">Time of Day</h3>
               <p className="text-xs text-muted-foreground">Set the in-game world clock</p>
             </div>
             <span className="text-2xl">☀️</span>
@@ -57,7 +57,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
               className="flex-col gap-0 p-3 hover:border-amber-500/40"
             >
               <div className="text-lg">🌅</div>
-              <div className="text-xs font-semibold text-white mt-1">Day</div>
+              <div className="text-xs font-semibold text-heading mt-1">Day</div>
               <div className="text-[10px] text-subtle-foreground font-mono">1000 ticks</div>
             </Button>
             <Button
@@ -67,7 +67,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
               className="flex-col gap-0 p-3 hover:border-amber-500/40"
             >
               <div className="text-lg">☀️</div>
-              <div className="text-xs font-semibold text-white mt-1">Noon</div>
+              <div className="text-xs font-semibold text-heading mt-1">Noon</div>
               <div className="text-[10px] text-subtle-foreground font-mono">6000 ticks</div>
             </Button>
             <Button
@@ -77,7 +77,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
               className="flex-col gap-0 p-3 hover:border-indigo-500/40"
             >
               <div className="text-lg">🌙</div>
-              <div className="text-xs font-semibold text-white mt-1">Night</div>
+              <div className="text-xs font-semibold text-heading mt-1">Night</div>
               <div className="text-[10px] text-subtle-foreground font-mono">13000 ticks</div>
             </Button>
             <Button
@@ -87,7 +87,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
               className="flex-col gap-0 p-3 hover:border-indigo-500/40"
             >
               <div className="text-lg">🌌</div>
-              <div className="text-xs font-semibold text-white mt-1">Midnight</div>
+              <div className="text-xs font-semibold text-heading mt-1">Midnight</div>
               <div className="text-[10px] text-subtle-foreground font-mono">18000 ticks</div>
             </Button>
           </div>
@@ -97,7 +97,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-white text-base">Weather Machine</h3>
+              <h3 className="font-bold text-heading text-base">Weather Machine</h3>
               <p className="text-xs text-muted-foreground">Control rain, clouds, and storms</p>
             </div>
             <span className="text-2xl">🌦️</span>
@@ -111,7 +111,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
               className="flex-col gap-0 p-3 hover:border-sky-500/40"
             >
               <div className="text-lg">☀️</div>
-              <div className="text-xs font-semibold text-white mt-1">Clear</div>
+              <div className="text-xs font-semibold text-heading mt-1">Clear</div>
               <div className="text-[10px] text-subtle-foreground">Sunny sky</div>
             </Button>
             <Button
@@ -121,7 +121,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
               className="flex-col gap-0 p-3 hover:border-sky-500/40"
             >
               <div className="text-lg">🌧️</div>
-              <div className="text-xs font-semibold text-white mt-1">Rain</div>
+              <div className="text-xs font-semibold text-heading mt-1">Rain</div>
               <div className="text-[10px] text-subtle-foreground">Precipitation</div>
             </Button>
             <Button
@@ -131,7 +131,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
               className="flex-col gap-0 p-3 hover:border-sky-500/40"
             >
               <div className="text-lg">⚡</div>
-              <div className="text-xs font-semibold text-white mt-1">Thunder</div>
+              <div className="text-xs font-semibold text-heading mt-1">Thunder</div>
               <div className="text-[10px] text-subtle-foreground">Stormy night</div>
             </Button>
           </div>
@@ -141,7 +141,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-white text-base">Broadcast Announcement</h3>
+              <h3 className="font-bold text-heading text-base">Broadcast Announcement</h3>
               <p className="text-xs text-muted-foreground">Send server-wide chat message to all players</p>
             </div>
             <span className="text-2xl">📢</span>
@@ -172,7 +172,7 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-white text-base">Server Maintenance</h3>
+              <h3 className="font-bold text-heading text-base">Server Maintenance</h3>
               <p className="text-xs text-muted-foreground">World saves and difficulty adjustments</p>
             </div>
             <span className="text-2xl">⚙️</span>

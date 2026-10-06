@@ -175,15 +175,15 @@ export function Sidebar({
                 onSelectTab(item.id);
                 onCloseMobile();
               }}
-              className={`w-full justify-between px-3 py-2.5 font-medium ${
+              className={`w-full justify-between text-left px-3 py-2.5 font-medium ${
                 isActive ? "shadow-lg shadow-primary/20" : "shadow-none"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <span className={isActive ? "text-foreground" : "text-muted-foreground"}>
+              <span className="flex items-center gap-3 text-left min-w-0">
+                <span className={`shrink-0 ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
                   {item.icon}
                 </span>
-                <span>{item.label}</span>
+                <span className="truncate text-left">{item.label}</span>
               </span>
               {item.badge && (
                 <Badge

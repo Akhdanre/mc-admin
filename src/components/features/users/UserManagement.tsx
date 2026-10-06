@@ -123,7 +123,7 @@ export function UserManagement({
           <Badge tone="primary" className="mb-2">
             <span>Player Administration & Teleportation</span>
           </Badge>
-          <h2 className="text-xl font-bold text-white tracking-tight">User Management</h2>
+          <h2 className="text-xl font-bold text-heading tracking-tight">User Management</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Monitor real-time player locations, teleport users, toggle gamemodes, and manage whitelist access.
           </p>
@@ -232,7 +232,7 @@ export function UserManagement({
                 onClick={() => setHistoryFilter("all")}
                 className={cn(
                   "px-2.5 py-1 rounded-lg font-medium",
-                  historyFilter === "all" && "bg-surface-raised text-white"
+                  historyFilter === "all" && "bg-surface-raised text-heading"
                 )}
               >
                 All
@@ -313,7 +313,7 @@ export function UserManagement({
                             }}
                           />
                           <div>
-                            <h4 className="font-bold text-white text-sm">{name}</h4>
+                            <h4 className="font-bold text-heading text-sm">{name}</h4>
                             <span className="inline-flex items-center gap-1 text-[11px] text-success-muted font-medium mt-0.5">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                               Online
@@ -472,7 +472,7 @@ export function UserManagement({
                       }}
                     />
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{name}</p>
+                      <p className="text-sm font-semibold text-heading truncate">{name}</p>
                       <p className="text-xs text-primary-muted font-medium">Whitelisted</p>
                     </div>
                   </div>
@@ -538,7 +538,7 @@ export function UserManagement({
                         }}
                       />
                       <div>
-                        <h4 className="font-bold text-white text-sm">{player.username}</h4>
+                        <h4 className="font-bold text-heading text-sm">{player.username}</h4>
                         {player.online ? (
                           <span className="inline-flex items-center gap-1 text-[11px] text-success-muted font-medium mt-0.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />

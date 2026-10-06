@@ -9,12 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Light mode support** with theme toggle and system preference default:
+  - Configured `@custom-variant dark` in Tailwind CSS and dynamic CSS custom properties on `:root` and `.dark`.
+  - Integrated `next-themes` with hydration-safe `ThemeToggle` in the dashboard header.
+  - Introduced `--color-heading` token to flip text between light and dark modes cleanly.
+  - Integrated `tailwind-merge` in `cn()` to resolve utility conflicts across custom component overrides.
 - **Data layer hooks** (`src/hooks/`): `useServerStatus` (aggregates the polled
   server state), `useServerActions` (whitelist / teleport / RCON / backup
   mutations), `usePolling`, and `useFeedback` — extracted from the page component.
 - Typed fetch helpers `apiGet` / `apiPost` in `src/lib/api.ts`.
 - `server-only` package and a `server-only` guard import in every `src/server/`
   module, so server code (RCON credentials) can never be bundled to the client.
+
+### Fixed
+
+- Fixed sidebar navigation buttons alignment issue caused by `justify-center` base style conflict.
 
 ### Changed
 
@@ -25,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `features/{dashboard,users,world,console,backup}/`, and the existing `ui/`.
 - **Moved server code** from `src/services/` + `src/config.ts` to
   `src/server/services/` + `src/server/config.ts`, updating all import paths.
-
 ## [0.1.0] - 2026-10-06
 
 ### Added

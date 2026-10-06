@@ -36,7 +36,7 @@ export function WhitelistManager({
     <Card className="mb-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <h2 className="text-lg font-bold text-heading flex items-center gap-2">
             <span>Whitelist Access Management</span>
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">Control player access and grant entry to whitelisted users.</p>
@@ -116,7 +116,7 @@ export function WhitelistManager({
                   }}
                 />
                 <div>
-                  <p className="text-sm font-semibold text-white">{name}</p>
+                  <p className="text-sm font-semibold text-heading">{name}</p>
                   <Badge tone="primary" className="mt-0.5">Whitelisted</Badge>
                 </div>
               </div>

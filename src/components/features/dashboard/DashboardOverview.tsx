@@ -27,13 +27,13 @@ export function DashboardOverview({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-indigo-900/40 via-surface/60 to-surface/40 border border-primary/20 rounded-2xl p-6 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-primary/10 via-surface/80 to-surface border border-primary/20 rounded-2xl p-6 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <Badge tone="primary" className="mb-3">
               <span>Server Overview</span>
             </Badge>
-            <h2 className="text-2xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl font-bold text-heading tracking-tight">
               Minecraft Server Management Hub
             </h2>
             <Body className="mt-1">
@@ -90,7 +90,7 @@ export function DashboardOverview({
             </Badge>
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-3xl font-extrabold text-white">{playerStatus.onlineCount}</span>
+            <span className="text-3xl font-extrabold text-heading">{playerStatus.onlineCount}</span>
             <span className="text-sm text-subtle-foreground font-medium">
               / {playerStatus.maxCount} max
             </span>
@@ -174,7 +174,7 @@ export function DashboardOverview({
               <span>🌐</span>
             </Badge>
           </div>
-          <p className="text-base font-semibold text-white mt-3 font-mono truncate">
+          <p className="text-base font-semibold text-heading mt-3 font-mono truncate">
             {serverInfo.host || "-"}
           </p>
           <Caption className="mt-1">RCON Port: {serverInfo.port || 25575}</Caption>
@@ -187,7 +187,7 @@ export function DashboardOverview({
               <span>⏱️</span>
             </Badge>
           </div>
-          <p className="text-base font-semibold text-white mt-3">{playerStatus.updatedAt || "-"}</p>
+          <p className="text-base font-semibold text-heading mt-3">{playerStatus.updatedAt || "-"}</p>
           <Caption className="mt-1">Auto-polls every 4 seconds</Caption>
         </Card>
       </div>
@@ -198,7 +198,7 @@ export function DashboardOverview({
         <Card className="lg:col-span-2" padding="lg">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold text-white text-base">Active In-Game Players</h3>
+              <h3 className="font-bold text-heading text-base">Active In-Game Players</h3>
               <Caption>Currently logged into the server right now</Caption>
             </div>
             <Button
@@ -241,7 +241,7 @@ export function DashboardOverview({
                     }}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-white truncate">{name}</p>
+                    <p className="text-sm font-semibold text-heading truncate">{name}</p>
                     <p className="text-xs text-success-muted font-medium">In Game</p>
                   </div>
                 </div>
@@ -253,17 +253,17 @@ export function DashboardOverview({
         {/* Server Quick Info Card */}
         <Card padding="lg" className="flex flex-col justify-between">
           <div>
-            <h3 className="font-bold text-white text-base mb-1">Server Information</h3>
+            <h3 className="font-bold text-heading text-base mb-1">Server Information</h3>
             <Caption className="mb-4">Configuration details</Caption>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs p-3 bg-overlay/80 rounded-xl border border-border/60">
                 <span className="text-muted-foreground">RCON Host</span>
-                <Mono className="text-white font-medium">{serverInfo.host}</Mono>
+                <Mono className="text-heading font-medium">{serverInfo.host}</Mono>
               </div>
               <div className="flex items-center justify-between text-xs p-3 bg-overlay/80 rounded-xl border border-border/60">
                 <span className="text-muted-foreground">RCON Port</span>
-                <Mono className="text-white font-medium">{serverInfo.port}</Mono>
+                <Mono className="text-heading font-medium">{serverInfo.port}</Mono>
               </div>
               <div className="flex items-center justify-between text-xs p-3 bg-overlay/80 rounded-xl border border-border/60">
                 <span className="text-muted-foreground">Status</span>

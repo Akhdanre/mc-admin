@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sidebar, type AdminTab } from "@/components/layout/Sidebar";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { DashboardOverview } from "@/components/features/dashboard/DashboardOverview";
 import { UserManagement } from "@/components/features/users/UserManagement";
 import { WorldControls } from "@/components/features/world/WorldControls";
@@ -51,7 +52,7 @@ export default function Home() {
   const isConnected = !playerStatus.error;
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100">
+    <div className="flex min-h-screen bg-background text-foreground">
       {/* Sidebar Navigation */}
       <Sidebar
         currentTab={currentTab}
@@ -67,11 +68,11 @@ export default function Home() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
-        <header className="h-16 px-6 border-b border-slate-800 bg-slate-900/60 backdrop-blur-md flex items-center justify-between sticky top-0 z-20">
+        <header className="h-16 px-6 border-b border-border bg-surface/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
+              className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-surface-raised cursor-pointer"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -81,12 +82,12 @@ export default function Home() {
               <span className="text-xs uppercase font-mono font-semibold tracking-wider text-slate-500">
                 Active View:
               </span>
-              <span className="text-sm font-bold text-white capitalize">{TAB_LABELS[currentTab]}</span>
+              <span className="text-sm font-bold text-heading capitalize">{TAB_LABELS[currentTab]}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-xs font-mono px-3 py-1 bg-slate-950/80 border border-slate-800 rounded-lg text-slate-300">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-mono px-3 py-1 bg-overlay/80 border border-border rounded-lg text-foreground">
               <span className="text-slate-500">Host:</span>
               <span>{serverInfo.host || "Connecting..."}</span>
               <span className="text-slate-600">:</span>
@@ -96,7 +97,7 @@ export default function Home() {
             <button
               onClick={refresh}
               disabled={isRefreshing}
-              className="p-2 text-slate-400 hover:text-white bg-slate-950/80 border border-slate-800 rounded-lg hover:border-slate-700 transition cursor-pointer"
+              className="p-2 text-muted-foreground hover:text-foreground bg-overlay/80 border border-border rounded-lg hover:border-border-strong transition cursor-pointer"
               title="Refresh status"
             >
               <svg
@@ -113,6 +114,8 @@ export default function Home() {
                 />
               </svg>
             </button>
+
+            <ThemeToggle />
           </div>
         </header>
 
@@ -133,7 +136,7 @@ export default function Home() {
               </div>
               <button
                 onClick={clearFeedback}
-                className="text-slate-400 hover:text-white text-sm px-1 cursor-pointer"
+                className="text-slate-400 hover:text-foreground text-sm px-1 cursor-pointer"
               >
                 ✕
               </button>

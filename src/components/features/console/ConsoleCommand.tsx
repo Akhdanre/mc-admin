@@ -32,7 +32,7 @@ export function ConsoleCommand({ onExecute }: ConsoleCommandProps) {
 
   return (
     <Card padding="lg">
-      <h2 className="text-lg font-bold text-white mb-2">Execute RCON Command</h2>
+      <h2 className="text-lg font-bold text-heading mb-2">Execute RCON Command</h2>
       <p className="text-xs text-muted-foreground mb-4">
         Send Minecraft commands directly to the server (e.g. <code>list</code>, <code>say hello</code>, <code>time query day</code>).
       </p>

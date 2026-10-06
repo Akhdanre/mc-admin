@@ -78,7 +78,7 @@ export function BackupPage({
           <Badge tone="success" className="mb-2">
             <span>World Snapshot &amp; Retention Control</span>
           </Badge>
-          <h2 className="text-xl font-bold text-white tracking-tight">Backup Management</h2>
+          <h2 className="text-xl font-bold text-heading tracking-tight">Backup Management</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Trigger archives, prune old snapshots, and configure the automatic retention policy.
           </p>
@@ -123,7 +123,7 @@ export function BackupPage({
             <CardLabel>Total Backups</CardLabel>
             <span className="p-2 bg-indigo-500/10 text-primary-muted rounded-lg text-sm">🗃️</span>
           </div>
-          <p className="text-3xl font-extrabold text-white mt-3">{backupStatus?.totalCount ?? 0}</p>
+          <p className="text-3xl font-extrabold text-heading mt-3">{backupStatus?.totalCount ?? 0}</p>
           <p className="text-xs text-subtle-foreground mt-1">Archived snapshots on disk</p>
         </Card>
 
@@ -163,7 +163,7 @@ export function BackupPage({
 
       {/* Retention Policy Editor */}
       <Card padding="lg">
-        <h3 className="font-bold text-white text-base mb-1">Retention Policy</h3>
+        <h3 className="font-bold text-heading text-base mb-1">Retention Policy</h3>
         <p className="text-xs text-muted-foreground mb-4">
           Snapshots older than this window are pruned automatically by the backup service.
         </p>
@@ -214,7 +214,7 @@ export function BackupPage({
       <Card padding="lg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h3 className="font-bold text-white text-base">Backup Archives</h3>
+            <h3 className="font-bold text-heading text-base">Backup Archives</h3>
             <p className="text-xs text-muted-foreground">{filtered.length} of {backups.length} snapshots</p>
           </div>
 
@@ -266,7 +266,7 @@ export function BackupPage({
                     <span className="text-lg">💾</span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-xs font-semibold text-white font-mono truncate">{b.filename}</p>
+                        <p className="text-xs font-semibold text-heading font-mono truncate">{b.filename}</p>
                         {b.isLatest && (
                           <Badge tone="success" className="px-1.5 py-0.5 text-[9px] uppercase tracking-wider rounded">
                             Latest

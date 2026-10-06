@@ -1,55 +1,154 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
- * Design tokens — single source of truth.
- * The app is a permanent dark dashboard; tokens are mapped 1:1 from the
- * previous hardcoded slate/indigo/emerald/rose/amber palette so visuals
- * stay identical while becoming semantic.
+ * Design tokens — single source of truth, theme-aware.
  *
- * Usage: bg-surface, text-muted-foreground, border-border, bg-primary …
+ * Semantic colors are defined as CSS custom properties that FLIP between
+ * light (:root) and dark (.dark) schemes. The @theme block uses `inline` so
+ * utilities resolve the variable at runtime instead of baking in a value.
+ *
+ * `next-themes` toggles the `.dark` class on <html>; system preference is the
+ * default. Usage stays the same everywhere: bg-surface, text-muted-foreground…
+ *
+ * The RCON console/terminal intentionally stays dark in both themes — it uses
+ * the fixed `--color-terminal-*` tokens, which do not flip.
  */
-@theme {
-  /* ---------- Surfaces (layered backgrounds, deepest → highest) ---------- */
-  --color-background: var(--color-slate-950); /* app root background        */
-  --color-surface: var(--color-slate-900);    /* cards, panels              */
-  --color-surface-raised: var(--color-slate-800); /* hover, inset, wells    */
-  --color-overlay: var(--color-slate-950);    /* inputs, tab bars, consoles */
 
-  /* ---------- Borders ---------- */
-  --color-border: var(--color-slate-800);         /* default card border   */
-  --color-border-strong: var(--color-slate-700);  /* hover / emphasized    */
+:root {
+  /* ---------- Surfaces (light) ---------- */
+  --background: var(--color-slate-50);
+  --surface: var(--color-white);
+  --surface-raised: var(--color-slate-100);
+  --overlay: var(--color-white);
 
-  /* ---------- Text ---------- */
-  --color-foreground: var(--color-slate-100);          /* headings          */
-  --color-muted-foreground: var(--color-slate-400);    /* body / secondary  */
-  --color-subtle-foreground: var(--color-slate-500);   /* captions, hints   */
-  --color-faint-foreground: var(--color-slate-600);    /* placeholders      */
+  /* ---------- Borders (light) ---------- */
+  --border: var(--color-slate-200);
+  --border-strong: var(--color-slate-300);
+
+  /* ---------- Text (light) ---------- */
+  --heading: var(--color-slate-900);
+  --foreground: var(--color-slate-800);
+  --muted-foreground: var(--color-slate-600);
+  --subtle-foreground: var(--color-slate-500);
+  --faint-foreground: var(--color-slate-400);
 
   /* ---------- Brand / primary (indigo) ---------- */
-  --color-primary: var(--color-indigo-600);
-  --color-primary-hover: var(--color-indigo-500);
-  --color-primary-foreground: var(--color-white);
-  --color-primary-muted: var(--color-indigo-400); /* text on dark surfaces */
+  --primary: var(--color-indigo-600);
+  --primary-hover: var(--color-indigo-500);
+  --primary-foreground: var(--color-white);
+  --primary-muted: var(--color-indigo-600);
 
-  /* ---------- Semantic statuses ---------- */
-  --color-success: var(--color-emerald-500);
-  --color-success-muted: var(--color-emerald-400);
-  --color-success-foreground: var(--color-emerald-300);
+  /* ---------- Statuses (light — darker for contrast) ---------- */
+  --success: var(--color-emerald-600);
+  --success-muted: var(--color-emerald-700);
+  --success-foreground: var(--color-emerald-700);
 
-  --color-danger: var(--color-rose-500);
-  --color-danger-muted: var(--color-rose-400);
-  --color-danger-foreground: var(--color-rose-300);
+  --danger: var(--color-rose-600);
+  --danger-muted: var(--color-rose-700);
+  --danger-foreground: var(--color-rose-700);
 
-  --color-warning: var(--color-amber-500);
-  --color-warning-muted: var(--color-amber-400);
-  --color-warning-foreground: var(--color-amber-300);
+  --warning: var(--color-amber-600);
+  --warning-muted: var(--color-amber-700);
+  --warning-foreground: var(--color-amber-700);
 
-  --color-info: var(--color-sky-500);
-  --color-info-muted: var(--color-sky-400);
-  --color-info-foreground: var(--color-sky-300);
+  --info: var(--color-sky-600);
+  --info-muted: var(--color-sky-700);
+  --info-foreground: var(--color-sky-700);
 
   /* ---------- Focus ring ---------- */
-  --color-ring: var(--color-indigo-500);
+  --ring: var(--color-indigo-500);
+}
+
+.dark {
+  /* ---------- Surfaces (dark) ---------- */
+  --background: var(--color-slate-950);
+  --surface: var(--color-slate-900);
+  --surface-raised: var(--color-slate-800);
+  --overlay: var(--color-slate-950);
+
+  /* ---------- Borders (dark) ---------- */
+  --border: var(--color-slate-800);
+  --border-strong: var(--color-slate-700);
+
+  /* ---------- Text (dark) ---------- */
+  --heading: var(--color-white);
+  --foreground: var(--color-slate-100);
+  --muted-foreground: var(--color-slate-400);
+  --subtle-foreground: var(--color-slate-500);
+  --faint-foreground: var(--color-slate-600);
+
+  /* ---------- Brand / primary (indigo) ---------- */
+  --primary: var(--color-indigo-600);
+  --primary-hover: var(--color-indigo-500);
+  --primary-foreground: var(--color-white);
+  --primary-muted: var(--color-indigo-400);
+
+  /* ---------- Statuses (dark — lighter for contrast) ---------- */
+  --success: var(--color-emerald-500);
+  --success-muted: var(--color-emerald-400);
+  --success-foreground: var(--color-emerald-300);
+
+  --danger: var(--color-rose-500);
+  --danger-muted: var(--color-rose-400);
+  --danger-foreground: var(--color-rose-300);
+
+  --warning: var(--color-amber-500);
+  --warning-muted: var(--color-amber-400);
+  --warning-foreground: var(--color-amber-300);
+
+  --info: var(--color-sky-500);
+  --info-muted: var(--color-sky-400);
+  --info-foreground: var(--color-sky-300);
+
+  /* ---------- Focus ring ---------- */
+  --ring: var(--color-indigo-500);
+}
+
+@theme inline {
+  /* Semantic tokens -> resolve the flipping vars above at runtime. */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-overlay: var(--overlay);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-heading: var(--heading);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-faint-foreground: var(--faint-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-muted: var(--primary-muted);
+
+  --color-success: var(--success);
+  --color-success-muted: var(--success-muted);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-danger: var(--danger);
+  --color-danger-muted: var(--danger-muted);
+  --color-danger-foreground: var(--danger-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-muted: var(--warning-muted);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-info: var(--info);
+  --color-info-muted: var(--info-muted);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-ring: var(--ring);
+
+  /* Terminal/RCON console: fixed dark in BOTH themes (does not flip). */
+  --color-terminal: var(--color-slate-950);
+  --color-terminal-foreground: var(--color-slate-200);
+  --color-terminal-border: var(--color-slate-800);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
