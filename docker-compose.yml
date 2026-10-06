@@ -12,6 +12,13 @@ services:
       - RCON_PASSWORD=${RCON_PASSWORD}
       - RCON_TIMEOUT_MS=${RCON_TIMEOUT_MS:-5000}
       - NEXT_PUBLIC_MAP_URL=${NEXT_PUBLIC_MAP_URL:-http://localhost:8123}
+      - MC_DATA_PATH=/data
+      - MC_BACKUPS_PATH=/backups
+    volumes:
+      # Minecraft world data & logs (read-only for security)
+      - ./data:/data:ro
+      # Backup target directory (read-write for backup creation & pruning)
+      - ./backups:/backups:rw
     networks:
       - default
 
@@ -19,7 +26,3 @@ networks:
   default:
     name: minecraft_default
     external: true
-
-# networks:
-#   mc-network:
-#     external: true
