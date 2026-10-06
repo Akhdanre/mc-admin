@@ -7,12 +7,20 @@ import { Badge, Button, Card, Input } from "@/components/ui";
 interface WorldControlsProps {
   onExecuteCommand: (command: string) => Promise<string>;
   isBusy: boolean;
+  currentDifficulty?: string;
+  onRefreshStatus?: () => void;
 }
 
-export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) {
+export function WorldControls({
+  onExecuteCommand,
+  isBusy,
+  currentDifficulty,
+  onRefreshStatus,
+}: WorldControlsProps) {
   const [broadcastMessage, setBroadcastMessage] = useState("");
-  const [difficulty, setDifficulty] = useState<string>("normal");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
 
+  const activeDifficulty = selectedDifficulty ?? currentDifficulty ?? "normal";
   const runCommand = async (cmd: string) => {
     await onExecuteCommand(cmd);
   };
@@ -186,11 +194,12 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
                   <Button
                     key={diff}
                     variant="tab"
-                    active={difficulty === diff}
+                    active={activeDifficulty.toLowerCase() === diff}
                     size="sm"
                     onClick={async () => {
-                      setDifficulty(diff);
+                      setSelectedDifficulty(diff);
                       await runCommand(`difficulty ${diff}`);
+                      onRefreshStatus?.();
                     }}
                     disabled={isBusy}
                     className="px-2.5 py-1 text-[11px] capitalize font-mono"

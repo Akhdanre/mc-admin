@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Prevented sidebar badge text wrapping (e.g. user count splitting across lines) with `shrink-0 whitespace-nowrap`.
+- Persisted and synced server maintenance difficulty state across page/tab navigation by querying live Minecraft server difficulty via RCON.
+- Prevented sidebar badge text wrapping.
 
 - Auto-start chat tailer and Discord bot on container boot via Next.js `src/instrumentation.ts` (`fa03a97`).
 - Upgraded bind-mount log tailer to active `fs.promises.stat` polling (500ms) with console diagnostics to prevent Docker volume inotify sync deadlocks across containers (`fa03a97`).

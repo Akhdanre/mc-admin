@@ -175,7 +175,12 @@ export default function Home() {
           )}
 
           {currentTab === "world" && (
-            <WorldControls onExecuteCommand={handleExecuteCommand} isBusy={isBusy} />
+            <WorldControls
+              onExecuteCommand={handleExecuteCommand}
+              isBusy={isBusy}
+              currentDifficulty={playerStatus.difficulty}
+              onRefreshStatus={refresh}
+            />
           )}
 
           {currentTab === "backups" && (

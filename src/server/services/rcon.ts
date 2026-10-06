@@ -1,7 +1,7 @@
 import "server-only";
 import { Rcon } from "rcon-client";
 import { config } from "@/server/config";
-import { parsePlayerList, parseWhitelist } from "@/server/services/parser";
+import { parseDifficulty, parsePlayerList, parseWhitelist } from "@/server/services/parser";
 import type { PlayerStatus, WhitelistStatus } from "@/types";
 
 export async function executeRconCommand(command: string): Promise<string> {
@@ -22,12 +22,17 @@ export async function executeRconCommand(command: string): Promise<string> {
 export async function getPlayerStatus(): Promise<PlayerStatus> {
   const updatedAt = new Date().toLocaleTimeString();
   try {
-    const raw = await executeRconCommand("list");
-    const parsed = parsePlayerList(raw);
+    const [listRaw, diffRaw] = await Promise.all([
+      executeRconCommand("list"),
+      executeRconCommand("difficulty").catch(() => ""),
+    ]);
+    const parsed = parsePlayerList(listRaw);
+    const difficulty = parseDifficulty(diffRaw) ?? undefined;
     return {
       onlineCount: parsed.onlineCount,
       maxCount: parsed.maxCount,
       players: parsed.players,
+      difficulty,
       raw: parsed.raw,
       updatedAt,
     };

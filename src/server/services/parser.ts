@@ -37,3 +37,8 @@ export function parseWhitelist(raw: string): string[] {
     .map((name) => name.trim())
     .filter(Boolean);
 }
+
+export function parseDifficulty(raw: string): string | null {
+  const match = raw.match(/difficulty is\s+([a-zA-Z]+)/i);
+  return match ? match[1].toLowerCase() : null;
+}

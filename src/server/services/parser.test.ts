@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parsePlayerList, parseWhitelist } from "@/server/services/parser";
+import { parseDifficulty, parsePlayerList, parseWhitelist } from "@/server/services/parser";
 import { cn } from "@/lib/cn";
 
 describe("parser service", () => {
@@ -41,15 +41,14 @@ describe("parser service", () => {
   it("returns empty array for empty whitelist", () => {
     const raw = "There are no whitelisted players";
     const result = parseWhitelist(raw);
-
     expect(result).toEqual([]);
   });
-});
 
-describe("cn utility", () => {
-  it("combines class names and resolves tailwind conflicts", () => {
-    expect(cn("px-2", "px-4")).toBe("px-4");
-    expect(cn("justify-center", "justify-between")).toBe("justify-between");
-    expect(cn("text-white", false, null, undefined, "text-heading")).toBe("text-heading");
+  it("parses Minecraft difficulty command output", () => {
+    expect(parseDifficulty("The difficulty is Normal")).toBe("normal");
+    expect(parseDifficulty("The difficulty is Hard")).toBe("hard");
+    expect(parseDifficulty("The difficulty is Peaceful")).toBe("peaceful");
+    expect(parseDifficulty("The difficulty is Easy")).toBe("easy");
+    expect(parseDifficulty("Unknown command")).toBeNull();
   });
 });

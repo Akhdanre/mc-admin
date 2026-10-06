@@ -11,5 +11,5 @@ Every **add** and every **fix** must be recorded in `CHANGELOG.md`.
   no user-facing add or fix ships undocumented.
 - Append the commit short-hash to each entry for traceability, e.g.
   `- Describe the change (\`abc1234\`).`
-- Keep entries concise and user-facing; move `[Unreleased]` items into a
-  versioned section when cutting a release.
+- Keep entries concise, user-facing, and outcome-focused. Describe behavior change, not code or implementation details (e.g. write "Prevented sidebar badge text wrapping", not "with `shrink-0 whitespace-nowrap`").
+- Move `[Unreleased]` items into a versioned section when cutting a release.

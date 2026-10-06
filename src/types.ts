@@ -2,6 +2,7 @@ export interface PlayerStatus {
   onlineCount: number;
   maxCount: number;
   players: string[];
+  difficulty?: string;
   raw: string;
   error?: string;
   updatedAt: string;
