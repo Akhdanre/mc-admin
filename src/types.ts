@@ -24,6 +24,33 @@ export interface PlayerHistoryResponse {
   updatedAt: string;
 }
 
+export interface BackupItem {
+  filename: string;
+  sizeBytes: number;
+  sizeFormatted: string;
+  mtime: number;
+  createdAt: string;
+  isLatest: boolean;
+}
+
+export interface BackupStatusResponse {
+  backups: BackupItem[];
+  totalCount: number;
+  totalSizeBytes: number;
+  totalSizeFormatted: string;
+  retentionDays: number;
+  latestBackup: BackupItem | null;
+  error?: string;
+  updatedAt: string;
+}
+
+export interface BackupTriggerResponse {
+  success: boolean;
+  output?: string;
+  error?: string;
+  triggeredAt: string;
+}
+
 export interface WhitelistStatus {
   players: string[];
   raw: string;

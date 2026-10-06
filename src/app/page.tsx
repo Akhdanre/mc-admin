@@ -14,6 +14,7 @@ import type {
   WhitelistAction,
   ServerInfoResponse,
   PlayerHistoryResponse,
+  BackupStatusResponse,
 } from "@/types";
 
 export default function Home() {
@@ -30,6 +31,8 @@ export default function Home() {
 
   const [playerLocations, setPlayerLocations] = useState<Record<string, PlayerLocation>>({});
   const [playerHistory, setPlayerHistory] = useState<PlayerHistoryResponse | null>(null);
+  const [backupStatus, setBackupStatus] = useState<BackupStatusResponse | null>(null);
+  const [isBackingUp, setIsBackingUp] = useState(false);
 
   const [whitelistStatus, setWhitelistStatus] = useState<WhitelistStatus>({
     players: [],
@@ -56,20 +59,23 @@ export default function Home() {
   const fetchStatus = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const [statusRes, whitelistRes, locationsRes, historyRes] = await Promise.all([
+      const [statusRes, whitelistRes, locationsRes, historyRes, backupRes] = await Promise.all([
         fetch("/api/status"),
         fetch("/api/whitelist"),
         fetch("/api/players/locations"),
         fetch("/api/players/history"),
+        fetch("/api/backup"),
       ]);
 
       const statusData = (await statusRes.json()) as PlayerStatus;
       const whitelistData = (await whitelistRes.json()) as WhitelistStatus;
       const locationsData = (await locationsRes.json()) as { locations?: PlayerLocation[] };
       const historyData = (await historyRes.json()) as PlayerHistoryResponse;
+      const backupData = (await backupRes.json()) as BackupStatusResponse;
 
       setPlayerStatus(statusData);
       setWhitelistStatus(whitelistData);
+      setBackupStatus(backupData);
 
       if (locationsData.locations) {
         const locMap: Record<string, PlayerLocation> = {};
@@ -185,6 +191,26 @@ export default function Home() {
     }
   };
 
+  const handleTriggerBackup = async () => {
+    setIsBackingUp(true);
+    showFeedback("Backup started. This may take a moment...");
+    try {
+      const res = await fetch("/api/backup", { method: "POST" });
+      const data = (await res.json()) as { success?: boolean; output?: string; error?: string };
+
+      if (data.success) {
+        showFeedback("Backup completed successfully.");
+      } else {
+        showFeedback(`Backup failed: ${data.error || data.output || "Unknown error"}`, true);
+      }
+      await fetchStatus();
+    } catch (err: unknown) {
+      showFeedback(`Backup failed: ${err instanceof Error ? err.message : String(err)}`, true);
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
   const isConnected = !playerStatus.error;
 
   return (
@@ -291,9 +317,12 @@ export default function Home() {
               whitelistStatus={whitelistStatus}
               serverInfo={serverInfo}
               playerHistory={playerHistory}
+              backupStatus={backupStatus}
               onRefresh={fetchStatus}
               isRefreshing={isRefreshing}
               onNavigateTab={(tab) => setCurrentTab(tab)}
+              onTriggerBackup={handleTriggerBackup}
+              isBackingUp={isBackingUp}
             />
           )}
 
