@@ -101,3 +101,29 @@ export interface TeleportRequestBody {
   y?: number;
   z?: number;
 }
+
+export interface AuthSessionResponse {
+  authenticated: boolean;
+  username?: string;
+}
+
+export interface LoginRequestBody {
+  password: string;
+}
+
+export interface ChangePasswordRequestBody {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  error?: string;
+}
+
+export interface ServerSettingsResponse {
+  mapUrl: string;
+  rconHost: string;
+  rconPort: number;
+  retentionDays: number;
+}
