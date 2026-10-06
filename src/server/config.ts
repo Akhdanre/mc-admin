@@ -10,7 +10,4 @@ export const config = {
     host: process.env.SSH_HOST || "mc-server",
     user: process.env.SSH_USER || "oukendev",
   },
-  http: {
-    port: Number(process.env.PORT) || 3000,
-  },
 };
