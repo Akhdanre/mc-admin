@@ -2,6 +2,7 @@ import "server-only";
 import fs from "fs/promises";
 import path from "path";
 import { config } from "@/server/config";
+import { restartDiscordBot } from "@/server/services/discordBot";
 import type { DiscordConfig } from "@/types";
 
 const CONFIG_FILE = "discord_config.json";
@@ -30,6 +31,10 @@ export async function getDiscordConfig(): Promise<DiscordConfig> {
       enabled: typeof parsed.enabled === "boolean" ? parsed.enabled : Boolean(parsed.webhookUrl),
       relayChat: typeof parsed.relayChat === "boolean" ? parsed.relayChat : true,
       relayEvents: typeof parsed.relayEvents === "boolean" ? parsed.relayEvents : true,
+      botToken: parsed.botToken || process.env.DISCORD_BOT_TOKEN || "",
+      botChannelId: parsed.botChannelId || process.env.DISCORD_BOT_CHANNEL_ID || "",
+      relayDiscordToMinecraft:
+        typeof parsed.relayDiscordToMinecraft === "boolean" ? parsed.relayDiscordToMinecraft : false,
     };
     return memoryConfig;
   } catch {
@@ -45,6 +50,10 @@ export async function saveDiscordConfig(updates: Partial<DiscordConfig>): Promis
     enabled: updates.enabled !== undefined ? updates.enabled : current.enabled,
     relayChat: updates.relayChat !== undefined ? updates.relayChat : current.relayChat,
     relayEvents: updates.relayEvents !== undefined ? updates.relayEvents : current.relayEvents,
+    botToken: updates.botToken !== undefined ? updates.botToken.trim() : current.botToken,
+    botChannelId: updates.botChannelId !== undefined ? updates.botChannelId.trim() : current.botChannelId,
+    relayDiscordToMinecraft:
+      updates.relayDiscordToMinecraft !== undefined ? updates.relayDiscordToMinecraft : current.relayDiscordToMinecraft,
   };
 
   memoryConfig = updated;
@@ -56,6 +65,8 @@ export async function saveDiscordConfig(updates: Partial<DiscordConfig>): Promis
   } catch (err) {
     console.warn("Failed persisting discord_config.json to disk:", err);
   }
+
+  restartDiscordBot();
 
   return updated;
 }
