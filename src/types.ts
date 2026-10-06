@@ -51,6 +51,18 @@ export interface BackupTriggerResponse {
   triggeredAt: string;
 }
 
+export interface BackupDeleteResponse {
+  success: boolean;
+  deleted?: string;
+  error?: string;
+}
+
+export interface BackupRetentionResponse {
+  success: boolean;
+  retentionDays?: number;
+  error?: string;
+}
+
 export interface WhitelistStatus {
   players: string[];
   raw: string;

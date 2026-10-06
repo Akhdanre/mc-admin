@@ -7,6 +7,7 @@ import { UserManagement } from "@/components/UserManagement";
 import { WorldControls } from "@/components/WorldControls";
 import { LiveMap } from "@/components/LiveMap";
 import { ConsoleView } from "@/components/ConsoleView";
+import { BackupPage } from "@/components/BackupPage";
 import type {
   PlayerStatus,
   PlayerLocation,
@@ -211,6 +212,56 @@ export default function Home() {
     }
   };
 
+  const handleDeleteBackup = async (filename: string) => {
+    setIsBackingUp(true);
+    try {
+      const res = await fetch("/api/backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", filename }),
+      });
+      const data = (await res.json()) as { success?: boolean; error?: string };
+
+      if (data.success) {
+        showFeedback(`Deleted backup ${filename}`);
+      } else {
+        showFeedback(`Delete failed: ${data.error || "Unknown error"}`, true);
+      }
+      await fetchStatus();
+    } catch (err: unknown) {
+      showFeedback(`Delete failed: ${err instanceof Error ? err.message : String(err)}`, true);
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
+  const handleSetRetention = async (days: number) => {
+    if (!Number.isFinite(days) || days < 1 || days > 365) {
+      showFeedback("Retention must be between 1 and 365 days", true);
+      return;
+    }
+    setIsBusy(true);
+    try {
+      const res = await fetch("/api/backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "retention", retentionDays: days }),
+      });
+      const data = (await res.json()) as { success?: boolean; retentionDays?: number; error?: string };
+
+      if (data.success) {
+        showFeedback(`Retention policy set to ${data.retentionDays} days`);
+      } else {
+        showFeedback(`Failed to update retention: ${data.error || "Unknown error"}`, true);
+      }
+      await fetchStatus();
+    } catch (err: unknown) {
+      showFeedback(`Failed to update retention: ${err instanceof Error ? err.message : String(err)}`, true);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
   const isConnected = !playerStatus.error;
 
   return (
@@ -221,6 +272,7 @@ export default function Home() {
         onSelectTab={setCurrentTab}
         onlineCount={playerStatus.onlineCount}
         whitelistCount={whitelistStatus.players.length}
+        backupCount={backupStatus?.totalCount ?? 0}
         isConnected={isConnected}
         isOpenMobile={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
@@ -248,6 +300,8 @@ export default function Home() {
                   ? "RCON Console"
                   : currentTab === "world"
                   ? "World Controls"
+                  : currentTab === "backups"
+                  ? "Backup Management"
                   : currentTab === "map"
                   ? "Live Web Map"
                   : currentTab}
@@ -317,12 +371,9 @@ export default function Home() {
               whitelistStatus={whitelistStatus}
               serverInfo={serverInfo}
               playerHistory={playerHistory}
-              backupStatus={backupStatus}
               onRefresh={fetchStatus}
               isRefreshing={isRefreshing}
               onNavigateTab={(tab) => setCurrentTab(tab)}
-              onTriggerBackup={handleTriggerBackup}
-              isBackingUp={isBackingUp}
             />
           )}
 
@@ -342,6 +393,18 @@ export default function Home() {
 
           {currentTab === "world" && (
             <WorldControls onExecuteCommand={handleExecuteCommand} isBusy={isBusy} />
+          )}
+
+          {currentTab === "backups" && (
+            <BackupPage
+              backupStatus={backupStatus}
+              onRefresh={fetchStatus}
+              onTriggerBackup={handleTriggerBackup}
+              onDeleteBackup={handleDeleteBackup}
+              onSetRetention={handleSetRetention}
+              isBackingUp={isBackingUp}
+              isBusy={isBusy}
+            />
           )}
 
           {currentTab === "map" && (

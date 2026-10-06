@@ -1,12 +1,13 @@
 "use client";
 
-export type AdminTab = "dashboard" | "users" | "world" | "map" | "commands";
+export type AdminTab = "dashboard" | "users" | "world" | "backups" | "map" | "commands";
 
 interface SidebarProps {
   currentTab: AdminTab;
   onSelectTab: (tab: AdminTab) => void;
   onlineCount: number;
   whitelistCount: number;
+  backupCount: number;
   isConnected: boolean;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
@@ -17,6 +18,7 @@ export function Sidebar({
   onSelectTab,
   onlineCount,
   whitelistCount,
+  backupCount,
   isConnected,
   isOpenMobile,
   onCloseMobile,
@@ -66,6 +68,21 @@ export function Sidebar({
         </svg>
       ),
       badge: null,
+    },
+    {
+      id: "backups" as AdminTab,
+      label: "Backup Management",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+          />
+        </svg>
+      ),
+      badge: backupCount > 0 ? String(backupCount) : null,
     },
     {
       id: "map" as AdminTab,

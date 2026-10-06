@@ -1,19 +1,15 @@
 "use client";
 
-import type { PlayerStatus, WhitelistStatus, ServerInfoResponse, PlayerHistoryResponse, BackupStatusResponse } from "@/types";
-import { BackupManager } from "@/components/BackupManager";
+import type { PlayerStatus, WhitelistStatus, ServerInfoResponse, PlayerHistoryResponse } from "@/types";
 
 interface DashboardOverviewProps {
   playerStatus: PlayerStatus;
   whitelistStatus: WhitelistStatus;
   serverInfo: ServerInfoResponse;
   playerHistory?: PlayerHistoryResponse | null;
-  backupStatus?: BackupStatusResponse | null;
   onRefresh: () => void;
   isRefreshing: boolean;
   onNavigateTab: (tab: "users" | "commands") => void;
-  onTriggerBackup: () => Promise<void>;
-  isBackingUp: boolean;
 }
 
 export function DashboardOverview({
@@ -21,12 +17,9 @@ export function DashboardOverview({
   whitelistStatus,
   serverInfo,
   playerHistory,
-  backupStatus,
   onRefresh,
   isRefreshing,
   onNavigateTab,
-  onTriggerBackup,
-  isBackingUp,
 }: DashboardOverviewProps) {
   const isOnline = !playerStatus.error;
 
@@ -277,14 +270,6 @@ export function DashboardOverview({
           </div>
         </div>
       </div>
-
-      {/* Backup Management */}
-      <BackupManager
-        backupStatus={backupStatus ?? null}
-        onRefresh={onRefresh}
-        onTriggerBackup={onTriggerBackup}
-        isBackingUp={isBackingUp}
-      />
     </div>
   );
 }
