@@ -13,3 +13,4 @@ export { Input, Select, Textarea } from "./Input";
 export type { InputProps, SelectProps, TextareaProps } from "./Input";
 
 export { PageTitle, SectionTitle, Body, Muted, Caption, Mono } from "./Typography";
+export * as Typography from "./Typography";

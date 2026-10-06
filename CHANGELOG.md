@@ -23,6 +23,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Discord Webhook relay integration**:
+  - Real-time relay of Minecraft in-game player chat directly to Discord via webhooks.
+  - Automatically fetches player skin heads from public avatar API (`mc-heads.net`) for avatar icons.
+  - Relays player join and leave events as colored Discord embeds (green for joined, red for left).
+  - Configuration card in Settings page with webhook URL management, toggles, and live "Send Test Ping" button.
+  - Configuration persisted to `/data/discord_config.json` with fallback to `DISCORD_WEBHOOK_URL` environment variable.
+- **Live in-game chat tracking & broadcasting**:
+  - Native log stream parsing from `/data/logs/latest.log` supporting Vanilla and Forge/modded chat formats.
+  - Real-time Server-Sent Events (SSE) streaming via `/api/chat/stream` with zero-latency push and keep-alive pings.
+  - Live scrolling chat feed with player badges, server broadcast highlights, and auto-scroll control.
+  - Real-time in-app broadcasting via Minecraft RCON `say` command with input sanitization.
+  - Dedicated `/api/chat` route and "In-Game Chat" navigation tab.
+- **Authentication and session system**:
+  - Native Node crypto password hashing using `scrypt` and timing-safe comparisons.
+  - Signed HMAC-SHA256 session tokens stored in secure HTTP-only cookies (`mc_admin_session`).
+  - Migrated deprecated Next.js `middleware.ts` to standard `proxy.ts`.
+  - Edge middleware protecting dashboard and API routes with automatic redirects to `/login`.
+  - Dedicated `/login` page with theme toggle and responsive layout.
+  - Auth API endpoints: `/api/auth/login`, `/api/auth/logout`, `/api/auth/session`, and `/api/auth/change-password`.
+- **Settings page & management**:
+  - In-app password updates with verification of current password.
+  - Backup retention policy configuration.
+  - One-click session sign-out from settings or sidebar footer.
+  - Navigation sidebar integration with dedicated Settings tab and Sign Out action.
 - **Light mode support** with theme toggle and system preference default:
   - Configured `@custom-variant dark` in Tailwind CSS and dynamic CSS custom properties on `:root` and `.dark`.
   - Integrated `next-themes` with hydration-safe `ThemeToggle` in the dashboard header.

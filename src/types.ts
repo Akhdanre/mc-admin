@@ -101,3 +101,64 @@ export interface TeleportRequestBody {
   y?: number;
   z?: number;
 }
+
+export interface AuthSessionResponse {
+  authenticated: boolean;
+  username?: string;
+}
+
+export interface LoginRequestBody {
+  password: string;
+}
+
+export interface ChangePasswordRequestBody {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  error?: string;
+}
+
+export interface ServerSettingsResponse {
+  mapUrl: string;
+  rconHost: string;
+  rconPort: number;
+  retentionDays: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: string;
+  message: string;
+  timestamp: string;
+  isServer: boolean;
+}
+
+export interface ChatResponse {
+  messages: ChatMessage[];
+  error?: string;
+  updatedAt: string;
+}
+
+export interface SendChatRequestBody {
+  message: string;
+}
+
+export interface DiscordConfig {
+  webhookUrl: string;
+  enabled: boolean;
+  relayChat: boolean;
+  relayEvents: boolean;
+}
+
+export interface DiscordSettingsResponse {
+  config: DiscordConfig;
+  error?: string;
+}
+
+export interface TestDiscordWebhookResponse {
+  success: boolean;
+  error?: string;
+}
