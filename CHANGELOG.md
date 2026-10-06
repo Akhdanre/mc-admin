@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Relays player join and leave events as colored Discord embeds (green for joined, red for left).
   - Configuration card in Settings page with webhook URL management, toggles, and live "Send Test Ping" button.
   - Configuration persisted to `/data/discord_config.json` with fallback to `DISCORD_WEBHOOK_URL` environment variable.
+- **Discord to Minecraft Bot sync**:
+  - Real-time relay of Discord channel messages into Minecraft in-game chat using Discord Gateway WebSocket.
+  - Formatted broadcast via Minecraft RCON `tellraw` (`[Discord] <Username> Message`).
+  - Automated filtering to ignore bot messages and webhook echoes.
+  - Configurable in Settings page with Discord Bot Token and Channel ID.
 - **Live in-game chat tracking & broadcasting**:
   - Native log stream parsing from `/data/logs/latest.log` supporting Vanilla and Forge/modded chat formats.
   - Real-time Server-Sent Events (SSE) streaming via `/api/chat/stream` with zero-latency push and keep-alive pings.
@@ -60,8 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Builds and pushes multi-arch Docker image to GitHub Container Registry (`ghcr.io`).
 ### Fixed
 
+- Fixed login loop on plain HTTP / local network setups by removing HTTPS-only `secure` flag requirement from auth session cookies.
 - Fixed sidebar navigation buttons alignment issue caused by `justify-center` base style conflict.
-
 ### Changed
 
 - **Broke up the `page.tsx` god-component** (430 lines, 7 handlers, 12 `useState`)
