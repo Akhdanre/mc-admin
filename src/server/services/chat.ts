@@ -130,41 +130,63 @@ class ChatLogTailer extends EventEmitter {
   private logPath: string;
   private currentOffset = 0;
   private isWatching = false;
-  private lineCount = 0;
+  private timer: NodeJS.Timeout | null = null;
+  private isChecking = false;
 
   constructor(logPath: string) {
     super();
     this.logPath = logPath;
   }
 
-  public start() {
+  public async start(): Promise<void> {
     if (this.isWatching) return;
     this.isWatching = true;
 
     try {
-      if (fs.existsSync(this.logPath)) {
-        const stat = fs.statSync(this.logPath);
-        this.currentOffset = stat.size;
-      }
+      const stat = await fs.promises.stat(this.logPath);
+      this.currentOffset = stat.size;
     } catch {
       this.currentOffset = 0;
     }
 
-    // Watch for log additions with 300ms polling for reliable Docker volume events
-    fs.watchFile(this.logPath, { interval: 300 }, (curr) => {
-      if (curr.size > this.currentOffset) {
-        this.readNewLines(this.currentOffset, curr.size);
-        this.currentOffset = curr.size;
-      } else if (curr.size < this.currentOffset) {
-        // Log rotation
-        this.currentOffset = 0;
-        this.readNewLines(0, curr.size);
-        this.currentOffset = curr.size;
-      }
-    });
+    console.log(`[ChatTailer] Started monitoring ${this.logPath} (offset: ${this.currentOffset})`);
+
+    // Active stat polling every 500ms for reliable bind-mount updates across containers
+    this.timer = setInterval(() => {
+      this.checkNewBytes().catch(() => {});
+    }, 500);
   }
 
-  private readNewLines(start: number, end: number) {
+  public stop(): void {
+    clearInterval(this.timer!);
+    this.timer = null;
+    this.isWatching = false;
+  }
+
+  private async checkNewBytes(): Promise<void> {
+    if (this.isChecking) return;
+    this.isChecking = true;
+
+    try {
+      const stat = await fs.promises.stat(this.logPath);
+      if (stat.size > this.currentOffset) {
+        const start = this.currentOffset;
+        this.currentOffset = stat.size;
+        await this.readNewLines(start, stat.size);
+      } else if (stat.size < this.currentOffset) {
+        // Log rotated
+        this.currentOffset = stat.size;
+        await this.readNewLines(0, stat.size);
+      }
+    } catch {
+      // File might not exist yet
+    } finally {
+      this.isChecking = false;
+    }
+  }
+
+  private async readNewLines(start: number, end: number): Promise<void> {
+    const { promise, resolve } = Promise.withResolvers<void>();
     try {
       const stream = fs.createReadStream(this.logPath, {
         start,
@@ -178,26 +200,34 @@ class ChatLogTailer extends EventEmitter {
       });
 
       rl.on("line", (line) => {
-        this.lineCount++;
-        const chat = parseChatLine(line, this.lineCount);
+        const chat = parseChatLine(line, 0);
         if (chat) {
+          console.log(`[ChatTailer] Detected in-game chat: <${chat.sender}> ${chat.message}`);
           this.emit("chat", chat);
-          sendDiscordChatMessage(chat.sender, chat.message, chat.isServer).catch(() => {});
+          sendDiscordChatMessage(chat.sender, chat.message, chat.isServer).catch((err) => {
+            console.error(`[ChatTailer] Failed sending to Discord webhook:`, err);
+          });
         } else {
           const joinMatch = line.match(JOIN_REGEX);
           if (joinMatch) {
+            console.log(`[ChatTailer] Detected player joined: ${joinMatch[1]}`);
             sendDiscordEvent("Player Joined", `**${joinMatch[1]}** joined the game`, 0x57f287).catch(() => {});
           } else {
             const leaveMatch = line.match(LEAVE_REGEX);
             if (leaveMatch) {
+              console.log(`[ChatTailer] Detected player left: ${leaveMatch[1]}`);
               sendDiscordEvent("Player Left", `**${leaveMatch[1]}** left the game`, 0xed4245).catch(() => {});
             }
           }
         }
       });
-    } catch (err) {
-      console.warn("Failed reading new lines from log stream:", err);
+
+      rl.on("close", () => resolve());
+      rl.on("error", () => resolve());
+    } catch {
+      resolve();
     }
+    return promise;
   }
 }
 
