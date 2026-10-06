@@ -65,8 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Builds and pushes multi-arch Docker image to GitHub Container Registry (`ghcr.io`).
 ### Fixed
 
+- Fixed login loop on plain HTTP / local network setups by removing HTTPS-only `secure` flag requirement from auth session cookies.
 - Fixed sidebar navigation buttons alignment issue caused by `justify-center` base style conflict.
-
 ### Changed
 
 - **Broke up the `page.tsx` god-component** (430 lines, 7 handlers, 12 `useState`)
