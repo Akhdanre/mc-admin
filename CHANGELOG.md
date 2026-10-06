@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Auto-start chat tailer and Discord bot on container boot via Next.js `instrumentation.ts`.
+- Upgraded bind-mount log tailer to active `fs.promises.stat` polling (500ms) with console diagnostics to prevent Docker volume inotify sync deadlocks across containers.
+
 ## [0.1.5] - 2026-10-06
 
 ### Fixed
