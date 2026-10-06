@@ -226,7 +226,7 @@ export function Sidebar({
               {item.badge && (
                 <Badge
                   tone={isActive ? "primary" : "neutral"}
-                  className={`text-[11px] py-0.5 font-mono font-medium ${
+                  className={`shrink-0 whitespace-nowrap text-[11px] py-0.5 font-mono font-medium ${
                     isActive
                       ? "bg-white/20 text-white border-transparent"
                       : "bg-surface-raised border-transparent"
