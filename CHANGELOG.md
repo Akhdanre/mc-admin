@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Authentication and session system**:
   - Native Node crypto password hashing using `scrypt` and timing-safe comparisons.
   - Signed HMAC-SHA256 session tokens stored in secure HTTP-only cookies (`mc_admin_session`).
+  - Migrated deprecated Next.js `middleware.ts` to standard `proxy.ts`.
   - Edge middleware protecting dashboard and API routes with automatic redirects to `/login`.
   - Dedicated `/login` page with theme toggle and responsive layout.
   - Auth API endpoints: `/api/auth/login`, `/api/auth/logout`, `/api/auth/session`, and `/api/auth/change-password`.
