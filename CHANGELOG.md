@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added mod and package management interface to track installed mods, toggle state, upload `.jar` files, and search and install packages from Modrinth.
+
 ### Fixed
 
 - Persisted and synced server maintenance difficulty state across page/tab navigation by querying live Minecraft server difficulty via RCON.

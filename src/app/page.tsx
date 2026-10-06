@@ -11,6 +11,7 @@ import { ConsoleView } from "@/components/features/console/ConsoleView";
 import { BackupPage } from "@/components/features/backup/BackupPage";
 import { SettingsPage } from "@/components/features/settings/SettingsPage";
 import { ChatPage } from "@/components/features/chat/ChatPage";
+import { ModManager } from "@/components/features/mods/ModManager";
 import { useServerStatus } from "@/hooks/useServerStatus";
 import { useServerActions } from "@/hooks/useServerActions";
 import { useFeedback } from "@/hooks/useFeedback";
@@ -19,6 +20,7 @@ const TAB_LABELS: Record<AdminTab, string> = {
   dashboard: "dashboard",
   users: "users",
   world: "World Controls",
+  mods: "Mods & Packages",
   backups: "Backup Management",
   map: "Live Web Map",
   commands: "RCON Console",
@@ -182,6 +184,10 @@ export default function Home() {
               onRefreshStatus={refresh}
             />
           )}
+          {currentTab === "mods" && (
+            <ModManager onShowFeedback={showFeedback} />
+          )}
+
 
           {currentTab === "backups" && (
             <BackupPage
