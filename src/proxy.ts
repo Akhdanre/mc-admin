@@ -9,7 +9,7 @@ const PUBLIC_PATHS = [
   "/api/auth/session",
 ];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Allow static assets and Next internals
