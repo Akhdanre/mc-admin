@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-06
+
 ### Added
 
 - **Light mode support** with theme toggle and system preference default:
@@ -44,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `src/server/services/` + `src/server/config.ts`, updating all import paths.
 - Removed redundant `PORT` config parsing to use default platform behavior.
 - Removed SSH host/user configuration in favor of local/containerized execution for backup and player tracker scripts.
+
 ## [0.1.0] - 2026-10-06
 
 ### Added
