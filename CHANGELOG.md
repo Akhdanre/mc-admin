@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Persisted and synced server maintenance difficulty state across page/tab navigation by querying live Minecraft server difficulty via RCON.
 - Prevented sidebar badge text wrapping.
 
+## [0.1.6] - 2026-10-06
+### Fixed
+
+
 - Auto-start chat tailer and Discord bot on container boot via Next.js `src/instrumentation.ts` (`fa03a97`).
 - Upgraded bind-mount log tailer to active `fs.promises.stat` polling (500ms) with console diagnostics to prevent Docker volume inotify sync deadlocks across containers (`fa03a97`).
 - Configured container `user: "${UID:-1000}:${GID:-1000}"` and read-write data volume in `docker-compose.yml` to ensure persistent file permissions (`admin_auth.json`, `discord_config.json`) match volume owner (`e6843d1`).
