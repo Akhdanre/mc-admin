@@ -9,8 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Auto-start chat tailer and Discord bot on container boot via Next.js `instrumentation.ts`.
-- Upgraded bind-mount log tailer to active `fs.promises.stat` polling (500ms) with console diagnostics to prevent Docker volume inotify sync deadlocks across containers.
+- Auto-start chat tailer and Discord bot on container boot via Next.js `src/instrumentation.ts` (`fa03a97`).
+- Upgraded bind-mount log tailer to active `fs.promises.stat` polling (500ms) with console diagnostics to prevent Docker volume inotify sync deadlocks across containers (`fa03a97`).
+- Configured container `user: "${UID:-1000}:${GID:-1000}"` and read-write data volume in `docker-compose.yml` to ensure persistent file permissions (`admin_auth.json`, `discord_config.json`) match volume owner (`e6843d1`).
+- Added public DNS resolvers (`1.1.1.1`, `8.8.8.8`) to `docker-compose.yml` to prevent local search domain lookup failures (`ENOTFOUND discord.com`) on bridge networks (`e6843d1`).
+
+### Changed
+
+- Migrated deprecated Next.js `middleware.ts` to standard `proxy.ts` convention (`ac26d8f`).
 
 ## [0.1.5] - 2026-10-06
 
