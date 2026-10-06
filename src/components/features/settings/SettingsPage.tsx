@@ -384,6 +384,68 @@ export function SettingsPage({
             </label>
           </div>
 
+          {/* 2-Way Discord to Minecraft Bot Configuration */}
+          <div className="pt-4 border-t border-border/80 space-y-3">
+            <div>
+              <span className="text-xs font-semibold text-foreground">
+                Discord to Minecraft Bot (Optional)
+              </span>
+              <Muted className="text-[11px] mt-0.5">
+                Allows messages typed in a Discord channel to appear in Minecraft chat
+              </Muted>
+            </div>
+
+            <div>
+              <label
+                htmlFor="bot-token"
+                className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1"
+              >
+                Discord Bot Token
+              </label>
+              <Input
+                id="bot-token"
+                type="password"
+                placeholder="Bot Token from Discord Developer Portal"
+                value={discordConfig.botToken || ""}
+                onChange={(e) =>
+                  setDiscordConfig((prev) => ({ ...prev, botToken: e.target.value }))
+                }
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="bot-channel"
+                className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1"
+              >
+                Discord Channel ID
+              </label>
+              <Input
+                id="bot-channel"
+                type="text"
+                placeholder="e.g. 123456789012345678"
+                value={discordConfig.botChannelId || ""}
+                onChange={(e) =>
+                  setDiscordConfig((prev) => ({ ...prev, botChannelId: e.target.value }))
+                }
+              />
+            </div>
+
+            <label className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={Boolean(discordConfig.relayDiscordToMinecraft)}
+                onChange={(e) =>
+                  setDiscordConfig((prev) => ({
+                    ...prev,
+                    relayDiscordToMinecraft: e.target.checked,
+                  }))
+                }
+                className="rounded border-border text-primary focus:ring-primary/40"
+              />
+              <span>Relay Discord channel messages into Minecraft in-game</span>
+            </label>
+          </div>
           {discordStatus && (
             <div
               className={`p-3 rounded-lg text-xs border ${

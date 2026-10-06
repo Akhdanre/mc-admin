@@ -151,6 +151,9 @@ export interface DiscordConfig {
   enabled: boolean;
   relayChat: boolean;
   relayEvents: boolean;
+  botToken?: string;
+  botChannelId?: string;
+  relayDiscordToMinecraft?: boolean;
 }
 
 export interface DiscordSettingsResponse {
