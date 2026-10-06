@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Data layer hooks** (`src/hooks/`): `useServerStatus` (aggregates the polled
+  server state), `useServerActions` (whitelist / teleport / RCON / backup
+  mutations), `usePolling`, and `useFeedback` — extracted from the page component.
+- Typed fetch helpers `apiGet` / `apiPost` in `src/lib/api.ts`.
+- `server-only` package and a `server-only` guard import in every `src/server/`
+  module, so server code (RCON credentials) can never be bundled to the client.
+
+### Changed
+
+- **Broke up the `page.tsx` god-component** (430 lines, 7 handlers, 12 `useState`)
+  into a thin shell that composes the new hooks; behavior and polling cadence
+  are unchanged.
+- **Reorganized `src/components/`** into layers: `layout/` (Sidebar, Header),
+  `features/{dashboard,users,world,console,backup}/`, and the existing `ui/`.
+- **Moved server code** from `src/services/` + `src/config.ts` to
+  `src/server/services/` + `src/server/config.ts`, updating all import paths.
+
 ## [0.1.0] - 2026-10-06
 
 ### Added

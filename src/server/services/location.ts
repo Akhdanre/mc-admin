@@ -1,3 +1,4 @@
+import "server-only";
 import { executeRconCommand } from "./rcon";
 import type { PlayerLocation } from "@/types";
 

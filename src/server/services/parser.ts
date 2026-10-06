@@ -1,3 +1,4 @@
+import "server-only";
 import type { PlayerStatus } from "@/types";
 
 export function parsePlayerList(raw: string): Omit<PlayerStatus, "updatedAt"> {

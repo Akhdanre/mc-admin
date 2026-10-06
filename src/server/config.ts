@@ -1,3 +1,4 @@
+import "server-only";
 export const config = {
   rcon: {
     host: process.env.RCON_HOST || "192.168.137.194",

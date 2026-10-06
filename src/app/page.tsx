@@ -1,275 +1,52 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Sidebar, type AdminTab } from "@/components/Sidebar";
-import { DashboardOverview } from "@/components/DashboardOverview";
-import { UserManagement } from "@/components/UserManagement";
-import { WorldControls } from "@/components/WorldControls";
-import { LiveMap } from "@/components/LiveMap";
-import { ConsoleView } from "@/components/ConsoleView";
-import { BackupPage } from "@/components/BackupPage";
-import type {
-  PlayerStatus,
-  PlayerLocation,
-  WhitelistStatus,
-  WhitelistAction,
-  ServerInfoResponse,
-  PlayerHistoryResponse,
-  BackupStatusResponse,
-} from "@/types";
+import { useState } from "react";
+import { Sidebar, type AdminTab } from "@/components/layout/Sidebar";
+import { DashboardOverview } from "@/components/features/dashboard/DashboardOverview";
+import { UserManagement } from "@/components/features/users/UserManagement";
+import { WorldControls } from "@/components/features/world/WorldControls";
+import { LiveMap } from "@/components/features/world/LiveMap";
+import { ConsoleView } from "@/components/features/console/ConsoleView";
+import { BackupPage } from "@/components/features/backup/BackupPage";
+import { useServerStatus } from "@/hooks/useServerStatus";
+import { useServerActions } from "@/hooks/useServerActions";
+import { useFeedback } from "@/hooks/useFeedback";
+
+const TAB_LABELS: Record<AdminTab, string> = {
+  dashboard: "dashboard",
+  users: "users",
+  world: "World Controls",
+  backups: "Backup Management",
+  map: "Live Web Map",
+  commands: "RCON Console",
+};
 
 export default function Home() {
   const [currentTab, setCurrentTab] = useState<AdminTab>("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const [playerStatus, setPlayerStatus] = useState<PlayerStatus>({
-    onlineCount: 0,
-    maxCount: 0,
-    players: [],
-    raw: "",
-    updatedAt: "-",
-  });
-
-  const [playerLocations, setPlayerLocations] = useState<Record<string, PlayerLocation>>({});
-  const [playerHistory, setPlayerHistory] = useState<PlayerHistoryResponse | null>(null);
-  const [backupStatus, setBackupStatus] = useState<BackupStatusResponse | null>(null);
-  const [isBackingUp, setIsBackingUp] = useState(false);
-
-  const [whitelistStatus, setWhitelistStatus] = useState<WhitelistStatus>({
-    players: [],
-    raw: "",
-    updatedAt: "-",
-  });
-
-  const [serverInfo, setServerInfo] = useState<ServerInfoResponse>({
-    host: "-",
-    port: 0,
-  });
-
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isBusy, setIsBusy] = useState(false);
-  const [feedback, setFeedback] = useState<{ message: string; isError?: boolean } | null>(null);
-
-  const showFeedback = (message: string, isError = false) => {
-    setFeedback({ message, isError });
-    setTimeout(() => {
-      setFeedback((current) => (current?.message === message ? null : current));
-    }, 5000);
-  };
-
-  const fetchStatus = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      const [statusRes, whitelistRes, locationsRes, historyRes, backupRes] = await Promise.all([
-        fetch("/api/status"),
-        fetch("/api/whitelist"),
-        fetch("/api/players/locations"),
-        fetch("/api/players/history"),
-        fetch("/api/backup"),
-      ]);
-
-      const statusData = (await statusRes.json()) as PlayerStatus;
-      const whitelistData = (await whitelistRes.json()) as WhitelistStatus;
-      const locationsData = (await locationsRes.json()) as { locations?: PlayerLocation[] };
-      const historyData = (await historyRes.json()) as PlayerHistoryResponse;
-      const backupData = (await backupRes.json()) as BackupStatusResponse;
-
-      setPlayerStatus(statusData);
-      setWhitelistStatus(whitelistData);
-      setBackupStatus(backupData);
-
-      if (locationsData.locations) {
-        const locMap: Record<string, PlayerLocation> = {};
-        for (const loc of locationsData.locations) {
-          locMap[loc.username] = loc;
-        }
-        setPlayerLocations(locMap);
-      }
-      setPlayerHistory(historyData);
-    } catch (err: unknown) {
-      console.error("Failed to sync server status:", err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/info")
-      .then((res) => res.json())
-      .then((data: ServerInfoResponse) => setServerInfo(data))
-      .catch((err) => console.error(err));
-
-    const timer = setInterval(fetchStatus, 4000);
-    // Defer the first run to a microtask so the effect body only schedules
-    // work instead of synchronously calling setState (isRefreshing) — avoids
-    // a cascading render. cleanup marks it stale via `cancelled`.
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (!cancelled) void fetchStatus();
-    });
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
-  }, [fetchStatus]);
-
-  const handleWhitelistAction = async (action: WhitelistAction, username?: string) => {
-    setIsBusy(true);
-    try {
-      const res = await fetch("/api/whitelist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, username }),
-      });
-      const data = (await res.json()) as {
-        result?: string;
-        error?: string;
-        status?: WhitelistStatus;
-      };
-
-      if (data.error) {
-        showFeedback(`Error: ${data.error}`, true);
-      } else {
-        const defaultMsg =
-          action === "add"
-            ? `Added ${username} to whitelist`
-            : action === "remove"
-              ? `Removed ${username} from whitelist`
-              : `Whitelist ${action} executed`;
-        showFeedback(data.result || defaultMsg);
-
-        if (data.status) {
-          setWhitelistStatus(data.status);
-        } else {
-          await fetchStatus();
-        }
-      }
-    } catch (err: unknown) {
-      showFeedback(`Error: ${err instanceof Error ? err.message : String(err)}`, true);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleTeleport = async (player: string, target?: string, x?: number, y?: number, z?: number) => {
-    setIsBusy(true);
-    try {
-      const res = await fetch("/api/players/teleport", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ player, target, x, y, z }),
-      });
-      const data = (await res.json()) as { result?: string; error?: string };
-      if (data.error) {
-        showFeedback(`Teleport Error: ${data.error}`, true);
-      } else {
-        showFeedback(data.result || `Teleported ${player}`);
-        await fetchStatus();
-      }
-    } catch (err: unknown) {
-      showFeedback(`Teleport failed: ${err instanceof Error ? err.message : String(err)}`, true);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleExecuteCommand = async (command: string): Promise<string> => {
-    setIsBusy(true);
-    try {
-      const res = await fetch("/api/command", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ command }),
-      });
-      const data = (await res.json()) as { result?: string; error?: string };
-      await fetchStatus();
-
-      if (data.error) {
-        showFeedback(`Command Error: ${data.error}`, true);
-        throw new Error(data.error);
-      }
-
-      const output = data.result || "Command executed.";
-      showFeedback(output);
-      return output;
-    } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      showFeedback(`Command failed: ${errorMsg}`, true);
-      throw err;
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleTriggerBackup = async () => {
-    setIsBackingUp(true);
-    showFeedback("Backup started. This may take a moment...");
-    try {
-      const res = await fetch("/api/backup", { method: "POST" });
-      const data = (await res.json()) as { success?: boolean; output?: string; error?: string };
-
-      if (data.success) {
-        showFeedback("Backup completed successfully.");
-      } else {
-        showFeedback(`Backup failed: ${data.error || data.output || "Unknown error"}`, true);
-      }
-      await fetchStatus();
-    } catch (err: unknown) {
-      showFeedback(`Backup failed: ${err instanceof Error ? err.message : String(err)}`, true);
-    } finally {
-      setIsBackingUp(false);
-    }
-  };
-
-  const handleDeleteBackup = async (filename: string) => {
-    setIsBackingUp(true);
-    try {
-      const res = await fetch("/api/backup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", filename }),
-      });
-      const data = (await res.json()) as { success?: boolean; error?: string };
-
-      if (data.success) {
-        showFeedback(`Deleted backup ${filename}`);
-      } else {
-        showFeedback(`Delete failed: ${data.error || "Unknown error"}`, true);
-      }
-      await fetchStatus();
-    } catch (err: unknown) {
-      showFeedback(`Delete failed: ${err instanceof Error ? err.message : String(err)}`, true);
-    } finally {
-      setIsBackingUp(false);
-    }
-  };
-
-  const handleSetRetention = async (days: number) => {
-    if (!Number.isFinite(days) || days < 1 || days > 365) {
-      showFeedback("Retention must be between 1 and 365 days", true);
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const res = await fetch("/api/backup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "retention", retentionDays: days }),
-      });
-      const data = (await res.json()) as { success?: boolean; retentionDays?: number; error?: string };
-
-      if (data.success) {
-        showFeedback(`Retention policy set to ${data.retentionDays} days`);
-      } else {
-        showFeedback(`Failed to update retention: ${data.error || "Unknown error"}`, true);
-      }
-      await fetchStatus();
-    } catch (err: unknown) {
-      showFeedback(`Failed to update retention: ${err instanceof Error ? err.message : String(err)}`, true);
-    } finally {
-      setIsBusy(false);
-    }
-  };
+  const { feedback, showFeedback, clearFeedback } = useFeedback();
+  const {
+    playerStatus,
+    playerLocations,
+    playerHistory,
+    backupStatus,
+    whitelistStatus,
+    serverInfo,
+    isRefreshing,
+    refresh,
+    setWhitelistStatus,
+  } = useServerStatus();
+  const {
+    isBusy,
+    isBackingUp,
+    handleWhitelistAction,
+    handleTeleport,
+    handleExecuteCommand,
+    handleTriggerBackup,
+    handleDeleteBackup,
+    handleSetRetention,
+  } = useServerActions({ showFeedback, refresh, setWhitelistStatus });
 
   const isConnected = !playerStatus.error;
 
@@ -304,17 +81,7 @@ export default function Home() {
               <span className="text-xs uppercase font-mono font-semibold tracking-wider text-slate-500">
                 Active View:
               </span>
-              <span className="text-sm font-bold text-white capitalize">
-                {currentTab === "commands"
-                  ? "RCON Console"
-                  : currentTab === "world"
-                  ? "World Controls"
-                  : currentTab === "backups"
-                  ? "Backup Management"
-                  : currentTab === "map"
-                  ? "Live Web Map"
-                  : currentTab}
-              </span>
+              <span className="text-sm font-bold text-white capitalize">{TAB_LABELS[currentTab]}</span>
             </div>
           </div>
 
@@ -327,7 +94,7 @@ export default function Home() {
             </div>
 
             <button
-              onClick={fetchStatus}
+              onClick={refresh}
               disabled={isRefreshing}
               className="p-2 text-slate-400 hover:text-white bg-slate-950/80 border border-slate-800 rounded-lg hover:border-slate-700 transition cursor-pointer"
               title="Refresh status"
@@ -365,7 +132,7 @@ export default function Home() {
                 <span>{feedback.message}</span>
               </div>
               <button
-                onClick={() => setFeedback(null)}
+                onClick={clearFeedback}
                 className="text-slate-400 hover:text-white text-sm px-1 cursor-pointer"
               >
                 ✕
@@ -380,7 +147,7 @@ export default function Home() {
               whitelistStatus={whitelistStatus}
               serverInfo={serverInfo}
               playerHistory={playerHistory}
-              onRefresh={fetchStatus}
+              onRefresh={refresh}
               isRefreshing={isRefreshing}
               onNavigateTab={(tab) => setCurrentTab(tab)}
             />
@@ -407,7 +174,7 @@ export default function Home() {
           {currentTab === "backups" && (
             <BackupPage
               backupStatus={backupStatus}
-              onRefresh={fetchStatus}
+              onRefresh={refresh}
               onTriggerBackup={handleTriggerBackup}
               onDeleteBackup={handleDeleteBackup}
               onSetRetention={handleSetRetention}

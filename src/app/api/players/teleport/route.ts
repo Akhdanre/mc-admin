@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { executeRconCommand } from "@/services/rcon";
+import { executeRconCommand } from "@/server/services/rcon";
 import type { TeleportRequestBody } from "@/types";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{1,16}$/;
