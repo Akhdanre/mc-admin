@@ -1,9 +1,7 @@
 services:
-  mc-dashboard:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: mc-dashboard
+  mc-admin:
+    image: ghcr.io/akhdanre/mc-admin:latest
+    container_name: mc-admin
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -14,16 +12,17 @@ services:
       - RCON_PASSWORD=${RCON_PASSWORD}
       - RCON_TIMEOUT_MS=${RCON_TIMEOUT_MS:-5000}
       - NEXT_PUBLIC_MAP_URL=${NEXT_PUBLIC_MAP_URL:-http://localhost:8123}
-      # Optional script paths when mounted via volume
-      - BACKUP_SCRIPT_PATH=/scripts/backup_manager.py
-      - TRACKER_SCRIPT_PATH=/scripts/player_tracker.py
-    env_file:
-      - .env
-    # volumes:
-    #   - ./scripts:/scripts:ro
-    # networks:
-    #   - mc-network
+      - MC_DATA_PATH=/data
+      - MC_BACKUPS_PATH=/backups
+    volumes:
+      # Minecraft world data & logs (read-only for security)
+      - ./data:/data:ro
+      # Backup target directory (read-write for backup creation & pruning)
+      - ./backups:/backups:rw
+    networks:
+      - default
 
-# networks:
-#   mc-network:
-#     external: true
+networks:
+  default:
+    name: minecraft_default
+    external: true
