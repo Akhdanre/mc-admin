@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-10-06
+
 ### Fixed
 
 - Auto-start chat tailer and Discord bot on container boot via Next.js `src/instrumentation.ts` (`fa03a97`).
