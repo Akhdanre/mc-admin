@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Live in-game chat tracking & broadcasting**:
   - Native log stream parsing from `/data/logs/latest.log` supporting Vanilla and Forge/modded chat formats.
+  - Real-time Server-Sent Events (SSE) streaming via `/api/chat/stream` with zero-latency push and keep-alive pings.
   - Live scrolling chat feed with player badges, server broadcast highlights, and auto-scroll control.
   - Real-time in-app broadcasting via Minecraft RCON `say` command with input sanitization.
   - Dedicated `/api/chat` route and "In-Game Chat" navigation tab.

@@ -2,6 +2,7 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import readline from "readline";
+import { EventEmitter } from "events";
 import { config } from "@/server/config";
 import { executeRconCommand } from "@/server/services/rcon";
 import type { ChatMessage, ChatResponse } from "@/types";
@@ -116,4 +117,82 @@ export async function sendChatMessage(message: string): Promise<{ success: boole
       error: err instanceof Error ? err.message : "Failed to broadcast message",
     };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Realtime Log File Tailer & Event Stream
+// ---------------------------------------------------------------------------
+
+class ChatLogTailer extends EventEmitter {
+  private logPath: string;
+  private currentOffset = 0;
+  private isWatching = false;
+  private lineCount = 0;
+
+  constructor(logPath: string) {
+    super();
+    this.logPath = logPath;
+  }
+
+  public start() {
+    if (this.isWatching) return;
+    this.isWatching = true;
+
+    try {
+      if (fs.existsSync(this.logPath)) {
+        const stat = fs.statSync(this.logPath);
+        this.currentOffset = stat.size;
+      }
+    } catch {
+      this.currentOffset = 0;
+    }
+
+    // Watch for log additions with 300ms polling for reliable Docker volume events
+    fs.watchFile(this.logPath, { interval: 300 }, (curr) => {
+      if (curr.size > this.currentOffset) {
+        this.readNewLines(this.currentOffset, curr.size);
+        this.currentOffset = curr.size;
+      } else if (curr.size < this.currentOffset) {
+        // Log rotation
+        this.currentOffset = 0;
+        this.readNewLines(0, curr.size);
+        this.currentOffset = curr.size;
+      }
+    });
+  }
+
+  private readNewLines(start: number, end: number) {
+    try {
+      const stream = fs.createReadStream(this.logPath, {
+        start,
+        end: end - 1,
+        encoding: "utf-8",
+      });
+
+      const rl = readline.createInterface({
+        input: stream,
+        crlfDelay: Infinity,
+      });
+
+      rl.on("line", (line) => {
+        this.lineCount++;
+        const chat = parseChatLine(line, this.lineCount);
+        if (chat) {
+          this.emit("chat", chat);
+        }
+      });
+    } catch (err) {
+      console.warn("Failed reading new lines from log stream:", err);
+    }
+  }
+}
+
+const tailer = new ChatLogTailer(path.join(config.paths.data, "logs", "latest.log"));
+
+export function subscribeToChatStream(callback: (msg: ChatMessage) => void): () => void {
+  tailer.start();
+  tailer.on("chat", callback);
+  return () => {
+    tailer.off("chat", callback);
+  };
 }

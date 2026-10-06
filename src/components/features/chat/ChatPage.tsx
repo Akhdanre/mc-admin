@@ -11,6 +11,7 @@ export function ChatPage() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [isLive, setIsLive] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fetchChat = useCallback(async () => {
@@ -26,7 +27,45 @@ export function ChatPage() {
     }
   }, []);
 
-  usePolling(fetchChat, 3000);
+  // Background fallback poll (every 10s if SSE is active, every 3s if disconnected)
+  usePolling(fetchChat, isLive ? 10000 : 3000);
+
+  // Realtime Server-Sent Events (SSE) listener
+  useEffect(() => {
+    let es: EventSource | null = null;
+    try {
+      es = new EventSource("/api/chat/stream");
+
+      es.onopen = () => {
+        setIsLive(true);
+      };
+
+      es.onmessage = (event) => {
+        if (!event.data || event.data.startsWith(":")) return;
+        try {
+          const msg = JSON.parse(event.data) as ChatMessage;
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
+        } catch {
+          // Non-JSON or comment line
+        }
+      };
+
+      es.onerror = () => {
+        setIsLive(false);
+      };
+    } catch {
+      // EventSource failed to instantiate, fallback polling continues
+    }
+
+    return () => {
+      if (es) {
+        es.close();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (autoScroll && messagesEndRef.current) {
@@ -67,9 +106,22 @@ export function ChatPage() {
       {/* Header Bar */}
       <div className="flex items-center justify-between shrink-0">
         <div>
-          <SectionTitle className="text-lg font-bold">In-Game Chat</SectionTitle>
-          <Muted className="text-xs">
-            Live player conversations and server broadcasting
+          <div className="flex items-center gap-3">
+            <SectionTitle className="text-lg font-bold">In-Game Chat</SectionTitle>
+            <Badge
+              tone={isLive ? "success" : "neutral"}
+              className="px-2 py-0.5 text-[11px] font-medium"
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                  isLive ? "bg-emerald-400 animate-pulse" : "bg-slate-400"
+                }`}
+              />
+              {isLive ? "Realtime (SSE)" : "Polling"}
+            </Badge>
+          </div>
+          <Muted className="text-xs mt-0.5">
+            Instant player conversation feed and server broadcasting
           </Muted>
         </div>
         <div className="flex items-center gap-3">
