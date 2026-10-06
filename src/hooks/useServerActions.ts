@@ -150,6 +150,27 @@ export function useServerActions({ showFeedback, refresh, setWhitelistStatus }: 
     }
   };
 
+  const handleRestoreBackup = async (filename: string) => {
+    setIsBackingUp(true);
+    try {
+      const data = await apiPost<{ success?: boolean; error?: string }>("/api/backup", {
+        action: "restore",
+        filename,
+      });
+
+      if (data.success) {
+        showFeedback(`Successfully rolled back to ${filename}. Server restart recommended.`);
+      } else {
+        showFeedback(`Rollback failed: ${data.error || "Unknown error"}`, true);
+      }
+      await refresh();
+    } catch (err: unknown) {
+      showFeedback(`Rollback failed: ${errMsg(err)}`, true);
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
   const handleSetRetention = async (days: number) => {
     if (!Number.isFinite(days) || days < 1 || days > 365) {
       showFeedback("Retention must be between 1 and 365 days", true);
@@ -184,5 +205,6 @@ export function useServerActions({ showFeedback, refresh, setWhitelistStatus }: 
     handleTriggerBackup,
     handleDeleteBackup,
     handleSetRetention,
+    handleRestoreBackup,
   };
 }

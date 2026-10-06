@@ -64,6 +64,12 @@ export interface BackupRetentionResponse {
   error?: string;
 }
 
+export interface BackupRestoreResponse {
+  success: boolean;
+  restored?: string;
+  error?: string;
+}
+
 export interface WhitelistStatus {
   players: string[];
   raw: string;

@@ -53,6 +53,7 @@ export default function Home() {
     handleTriggerBackup,
     handleDeleteBackup,
     handleSetRetention,
+    handleRestoreBackup,
   } = useServerActions({ showFeedback, refresh, setWhitelistStatus });
 
   const isConnected = !playerStatus.error;
@@ -182,6 +183,7 @@ export default function Home() {
               isBusy={isBusy}
               currentDifficulty={playerStatus.difficulty}
               onRefreshStatus={refresh}
+              onShowFeedback={showFeedback}
             />
           )}
           {currentTab === "mods" && (
@@ -196,6 +198,7 @@ export default function Home() {
               onTriggerBackup={handleTriggerBackup}
               onDeleteBackup={handleDeleteBackup}
               onSetRetention={handleSetRetention}
+              onRestoreBackup={handleRestoreBackup}
               isBackingUp={isBackingUp}
               isBusy={isBusy}
             />

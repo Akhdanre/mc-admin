@@ -30,6 +30,7 @@ interface BackupPageProps {
   onTriggerBackup: () => Promise<void>;
   onDeleteBackup: (filename: string) => Promise<void>;
   onSetRetention: (days: number) => Promise<void>;
+  onRestoreBackup?: (filename: string) => Promise<void>;
   isBackingUp: boolean;
   isBusy: boolean;
 }
@@ -40,6 +41,7 @@ export function BackupPage({
   onTriggerBackup,
   onDeleteBackup,
   onSetRetention,
+  onRestoreBackup,
   isBackingUp,
   isBusy,
 }: BackupPageProps) {
@@ -290,24 +292,54 @@ export function BackupPage({
                       </div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                    <a
+                      href={`/api/backup/download?filename=${encodeURIComponent(b.filename)}`}
+                      download={b.filename}
+                      className="inline-flex items-center justify-center font-semibold transition cursor-pointer rounded-xl px-2.5 py-1.5 text-xs bg-surface-raised text-foreground border border-border-strong hover:bg-surface-elevated"
+                      title="Download archive directly"
+                    >
+                      Download
+                    </a>
 
-                  <Button
-                    variant="danger"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `Permanently delete ${b.filename}?\n\nThis cannot be undone.`
-                        )
-                      ) {
-                        onDeleteBackup(b.filename);
-                      }
-                    }}
-                    disabled={isBusy || isBackingUp}
-                    title="Delete backup"
-                    className="self-start sm:self-auto shrink-0 px-2.5 py-1.5 text-xs"
-                  >
-                    Delete
-                  </Button>
+                    {onRestoreBackup && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Roll back world data to snapshot ${b.filename}?\n\nWarning: Current world data will be overwritten by this archive. A server restart will be recommended.`
+                            )
+                          ) {
+                            onRestoreBackup(b.filename);
+                          }
+                        }}
+                        disabled={isBusy || isBackingUp}
+                        title="Rollback world to this snapshot"
+                        className="px-2.5 py-1.5 text-xs text-amber-400 hover:bg-amber-500/10 border-amber-500/20"
+                      >
+                        Rollback
+                      </Button>
+                    )}
+
+                    <Button
+                      variant="danger"
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            `Permanently delete ${b.filename}?\n\nThis cannot be undone.`
+                          )
+                        ) {
+                          onDeleteBackup(b.filename);
+                        }
+                      }}
+                      disabled={isBusy || isBackingUp}
+                      title="Delete backup"
+                      className="px-2.5 py-1.5 text-xs"
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </Card>
               );
             })}

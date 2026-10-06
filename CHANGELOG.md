@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added mod and package management interface to track installed mods, toggle state, upload `.jar` files, and search and install packages from Modrinth.
+- Added direct backup archive download and one-click world snapshot rollback system.
+- Added world map archive import with automatic safety backup and root world level detection.
 
 ### Fixed
 
