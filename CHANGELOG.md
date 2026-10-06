@@ -9,53 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.5] - 2026-10-06
 
-### Changed
+### Fixed
 
-- Release version 0.1.5.
+- Fixed login loop on plain HTTP / local network setups by removing HTTPS-only `secure` flag requirement from auth session cookies (`bde512e`).
+
+### Added
+
+- **Discord to Minecraft Bot sync**:
+  - Real-time relay of Discord channel messages into Minecraft in-game chat using Discord Gateway WebSocket (`0d1deef`).
+  - Formatted broadcast via Minecraft RCON `tellraw` (`[Discord] <Username> Message`).
+  - Automated filtering to ignore bot messages and webhook echoes.
+  - Configurable in Settings page with Discord Bot Token and Channel ID.
 
 ## [0.1.4] - 2026-10-06
-
-### Changed
-
-- Release version 0.1.4.
-
-## [0.1.3] - 2026-10-06
-
-### Changed
-
-- Release version 0.1.3.
-
-## [0.1.2] - 2026-10-06
-
-### Changed
-
-- Release version 0.1.2.
-
-## [0.1.1] - 2026-10-06
 
 ### Added
 
 - **Discord Webhook relay integration**:
-  - Real-time relay of Minecraft in-game player chat directly to Discord via webhooks.
+  - Real-time relay of Minecraft in-game player chat directly to Discord via webhooks (`6a57023`).
   - Automatically fetches player skin heads from public avatar API (`mc-heads.net`) for avatar icons.
   - Relays player join and leave events as colored Discord embeds (green for joined, red for left).
   - Configuration card in Settings page with webhook URL management, toggles, and live "Send Test Ping" button.
   - Configuration persisted to `/data/discord_config.json` with fallback to `DISCORD_WEBHOOK_URL` environment variable.
-- **Discord to Minecraft Bot sync**:
-  - Real-time relay of Discord channel messages into Minecraft in-game chat using Discord Gateway WebSocket.
-  - Formatted broadcast via Minecraft RCON `tellraw` (`[Discord] <Username> Message`).
-  - Automated filtering to ignore bot messages and webhook echoes.
-  - Configurable in Settings page with Discord Bot Token and Channel ID.
 - **Live in-game chat tracking & broadcasting**:
-  - Native log stream parsing from `/data/logs/latest.log` supporting Vanilla and Forge/modded chat formats.
-  - Real-time Server-Sent Events (SSE) streaming via `/api/chat/stream` with zero-latency push and keep-alive pings.
+  - Native log stream parsing from `/data/logs/latest.log` supporting Vanilla and Forge/modded chat formats (`28c8919`).
+  - Real-time Server-Sent Events (SSE) streaming via `/api/chat/stream` with zero-latency push and keep-alive pings (`a974843`).
   - Live scrolling chat feed with player badges, server broadcast highlights, and auto-scroll control.
   - Real-time in-app broadcasting via Minecraft RCON `say` command with input sanitization.
   - Dedicated `/api/chat` route and "In-Game Chat" navigation tab.
 - **Authentication and session system**:
-  - Native Node crypto password hashing using `scrypt` and timing-safe comparisons.
-  - Signed HMAC-SHA256 session tokens stored in secure HTTP-only cookies (`mc_admin_session`).
-  - Migrated deprecated Next.js `middleware.ts` to standard `proxy.ts`.
+  - Native Node crypto password hashing using `scrypt` and timing-safe comparisons (`c2e7b9e`).
+  - Signed HMAC-SHA256 session tokens stored in HTTP-only cookies (`mc_admin_session`).
   - Edge middleware protecting dashboard and API routes with automatic redirects to `/login`.
   - Dedicated `/login` page with theme toggle and responsive layout.
   - Auth API endpoints: `/api/auth/login`, `/api/auth/logout`, `/api/auth/session`, and `/api/auth/change-password`.
@@ -64,6 +48,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Backup retention policy configuration.
   - One-click session sign-out from settings or sidebar footer.
   - Navigation sidebar integration with dedicated Settings tab and Sign Out action.
+
+### Changed
+
+- Migrated deprecated Next.js `middleware.ts` to standard `proxy.ts` (`ac26d8f`).
+
+## [0.1.3] - 2026-10-06
+
+### Added
+
+- Replaced external `mc-backup` container and python scripts with native TypeScript backup & player tracking system (`aab2350`):
+  - Direct volume mounting of `/data` (read-only) and `/backups` (read-write).
+  - Safe RCON flush (`save-off` -> `save-all flush` -> `save-on`) and automatic `.tar.gz` archiving.
+  - Automatic retention policy enforcement and pruning.
+  - Native Node/Bun player activity and login tracking from `usercache.json` and `latest.log`.
+
+### Changed
+
+- Updated `docker-compose.yml` to use external `minecraft_default` network (`045c11d`).
+- Removed SSH host/user configuration in favor of local/containerized execution for backup and player tracker scripts (`aab2350`).
+
+### Fixed
+
+- Lowercased docker image name for GHCR in release workflow (`8a6e15f`).
+
+## [0.1.2] - 2026-10-06
+
+### Fixed
+
+- Updated Docker base image to `oven/bun:1.4-alpine` to support lockfileVersion 2 (`6b4af07`).
+
+## [0.1.1] - 2026-10-06
+
+### Added
+
 - **Light mode support** with theme toggle and system preference default:
   - Configured `@custom-variant dark` in Tailwind CSS and dynamic CSS custom properties on `:root` and `.dark`.
   - Integrated `next-themes` with hydration-safe `ThemeToggle` in the dashboard header.
@@ -77,22 +95,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   module, so server code (RCON credentials) can never be bundled to the client.
 - Added `.env.example` template covering RCON and Map URL variables.
 - Added Docker support: multi-stage `Dockerfile`, `docker-compose.yml`, and `.dockerignore` with standalone Next.js deployment.
-- Replaced external `mc-backup` container and python scripts with a 100% native TypeScript backup & player tracking system:
-  - Direct volume mounting of `/data` (read-only) and `/backups` (read-write).
-  - Safe RCON flush (`save-off` -> `save-all flush` -> `save-on`) and automatic `.tar.gz` archiving.
-  - Automatic retention policy enforcement and pruning.
-  - Native Node/Bun player activity and login tracking from `usercache.json` and `latest.log`.
 - Added automated GitHub Actions CI pipeline (`.github/workflows/ci.yml`) running typecheck, lint, unit tests, and production build on push/PR for `main` and `development`.
 - Added unit tests using `bun:test` covering Minecraft RCON list parsing, whitelist parsing, and `cn()` utility.
 - Added automated Release & Container CD workflow (`.github/workflows/release.yml`) that triggers on merge/push to `main`:
   - Automatically bumps version in `package.json`.
   - Promotes `[Unreleased]` changes to a dated version section in `CHANGELOG.md`.
-  - Creates and pushes Git tag (e.g. `v0.1.1`).
+  - Creates and pushes Git tag.
   - Builds and pushes multi-arch Docker image to GitHub Container Registry (`ghcr.io`).
+
 ### Fixed
 
-- Fixed login loop on plain HTTP / local network setups by removing HTTPS-only `secure` flag requirement from auth session cookies.
 - Fixed sidebar navigation buttons alignment issue caused by `justify-center` base style conflict.
+
 ### Changed
 
 - **Broke up the `page.tsx` god-component** (430 lines, 7 handlers, 12 `useState`)
@@ -103,8 +117,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Moved server code** from `src/services/` + `src/config.ts` to
   `src/server/services/` + `src/server/config.ts`, updating all import paths.
 - Removed redundant `PORT` config parsing to use default platform behavior.
-- Removed SSH host/user configuration in favor of local/containerized execution for backup and player tracker scripts.
-
 ## [0.1.0] - 2026-10-06
 
 ### Added
