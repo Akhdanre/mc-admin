@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed light mode text legibility across buttons, inputs, headers, and views by replacing hardcoded slate text classes with theme-adaptive tokens.
 - Persisted and synced server maintenance difficulty state across page/tab navigation by querying live Minecraft server difficulty via RCON.
 - Prevented sidebar badge text wrapping.
 

@@ -188,7 +188,7 @@ export function WorldControls({
 
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-xs text-slate-300 font-medium">Difficulty:</span>
+              <span className="text-xs text-foreground font-medium">Difficulty:</span>
               <div className="flex items-center gap-1">
                 {["peaceful", "easy", "normal", "hard"].map((diff) => (
                   <Button

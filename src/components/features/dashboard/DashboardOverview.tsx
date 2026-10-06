@@ -220,7 +220,7 @@ export function DashboardOverview({
           ) : playerStatus.players.length === 0 ? (
             <Card tone="muted" padding="none" className="text-center py-12">
               <span className="text-3xl">😴</span>
-              <p className="text-slate-300 text-sm font-semibold mt-2">No Players Online</p>
+              <p className="text-foreground text-sm font-semibold mt-2">No Players Online</p>
               <Muted className="mt-1">The server is empty at the moment.</Muted>
             </Card>
           ) : (

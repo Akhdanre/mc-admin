@@ -85,7 +85,7 @@ export default function Home() {
               </svg>
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase font-mono font-semibold tracking-wider text-slate-500">
+              <span className="text-xs uppercase font-mono font-semibold tracking-wider text-muted-foreground">
                 Active View:
               </span>
               <span className="text-sm font-bold text-heading capitalize">{TAB_LABELS[currentTab]}</span>
@@ -94,7 +94,7 @@ export default function Home() {
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 text-xs font-mono px-3 py-1 bg-overlay/80 border border-border rounded-lg text-foreground">
-              <span className="text-slate-500">Host:</span>
+              <span className="text-muted-foreground">Host:</span>
               <span>{serverInfo.host || "Connecting..."}</span>
               <span className="text-slate-600">:</span>
               <span>{serverInfo.port || 25575}</span>

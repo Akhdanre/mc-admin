@@ -35,7 +35,7 @@ const sizes: Record<ButtonSize, string> = {
 const variants: Record<ButtonVariant, string> = {
   primary: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm",
   secondary:
-    "bg-surface-raised text-slate-200 border border-border-strong hover:bg-slate-700",
+    "bg-surface-raised text-foreground border border-border-strong hover:bg-surface-elevated hover:text-heading",
   success:
     "bg-emerald-600/20 text-success-foreground border border-emerald-500/30 hover:bg-emerald-600/30",
   danger:
