@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Button, Input, SectionTitle, Muted, Badge } from "@/components/ui";
-import type { BackupStatusResponse } from "@/types";
+import type { BackupStatusResponse, DiscordConfig } from "@/types";
 
 interface SettingsPageProps {
   backupStatus?: BackupStatusResponse | null;
@@ -30,6 +30,34 @@ export function SettingsPage({
     backupStatus?.retentionDays || 7
   );
   const [isUpdatingRetention, setIsUpdatingRetention] = useState(false);
+  // Discord Webhook State
+  const [discordConfig, setDiscordConfig] = useState<DiscordConfig>({
+    webhookUrl: "",
+    enabled: false,
+    relayChat: true,
+    relayEvents: true,
+  });
+  const [isSavingDiscord, setIsSavingDiscord] = useState(false);
+  const [isTestingDiscord, setIsTestingDiscord] = useState(false);
+  const [discordStatus, setDiscordStatus] = useState<{
+    success?: boolean;
+    message?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const loadDiscord = async () => {
+      try {
+        const res = await fetch("/api/discord/settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.config) setDiscordConfig(data.config);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    loadDiscord();
+  }, []);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +118,52 @@ export function SettingsPage({
       await onUpdateRetention(Number(retentionDays));
     } finally {
       setIsUpdatingRetention(false);
+    }
+  };
+  const handleSaveDiscord = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingDiscord(true);
+    setDiscordStatus(null);
+    try {
+      const res = await fetch("/api/discord/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(discordConfig),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setDiscordStatus({ success: false, message: data.error || "Failed to save" });
+      } else {
+        setDiscordStatus({ success: true, message: "Discord settings saved successfully!" });
+        if (data.config) setDiscordConfig(data.config);
+      }
+    } catch {
+      setDiscordStatus({ success: false, message: "Network error saving settings" });
+    } finally {
+      setIsSavingDiscord(false);
+    }
+  };
+
+  const handleTestDiscord = async () => {
+    if (!discordConfig.webhookUrl) return;
+    setIsTestingDiscord(true);
+    setDiscordStatus(null);
+    try {
+      const res = await fetch("/api/discord/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ webhookUrl: discordConfig.webhookUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setDiscordStatus({ success: false, message: data.error || "Webhook test failed" });
+      } else {
+        setDiscordStatus({ success: true, message: "Test message sent to Discord!" });
+      }
+    } catch {
+      setDiscordStatus({ success: false, message: "Network error testing webhook" });
+    } finally {
+      setIsTestingDiscord(false);
     }
   };
 
@@ -234,6 +308,113 @@ export function SettingsPage({
           </form>
         </Card>
       )}
+      {/* Discord Webhook Integration */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <SectionTitle className="text-base font-semibold">
+              Discord Webhook Integration
+            </SectionTitle>
+            <Muted className="text-xs mt-0.5">
+              Relay in-game Minecraft chat and player join/leave events directly to Discord
+            </Muted>
+          </div>
+          <Badge
+            tone={discordConfig.enabled && discordConfig.webhookUrl ? "success" : "neutral"}
+            className="text-xs"
+          >
+            {discordConfig.enabled && discordConfig.webhookUrl ? "Active" : "Disabled"}
+          </Badge>
+        </div>
+
+        <form onSubmit={handleSaveDiscord} className="space-y-4 max-w-xl">
+          <div>
+            <label
+              htmlFor="webhook-url"
+              className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5"
+            >
+              Discord Webhook URL
+            </label>
+            <Input
+              id="webhook-url"
+              type="password"
+              placeholder="https://discord.com/api/webhooks/..."
+              value={discordConfig.webhookUrl}
+              onChange={(e) =>
+                setDiscordConfig((prev) => ({ ...prev, webhookUrl: e.target.value }))
+              }
+            />
+          </div>
+
+          <div className="space-y-2 pt-1">
+            <label className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={discordConfig.enabled}
+                onChange={(e) =>
+                  setDiscordConfig((prev) => ({ ...prev, enabled: e.target.checked }))
+                }
+                className="rounded border-border text-primary focus:ring-primary/40"
+              />
+              <span>Enable Discord Webhook</span>
+            </label>
+
+            <label className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={discordConfig.relayChat}
+                onChange={(e) =>
+                  setDiscordConfig((prev) => ({ ...prev, relayChat: e.target.checked }))
+                }
+                className="rounded border-border text-primary focus:ring-primary/40"
+              />
+              <span>Relay in-game chat messages</span>
+            </label>
+
+            <label className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={discordConfig.relayEvents}
+                onChange={(e) =>
+                  setDiscordConfig((prev) => ({ ...prev, relayEvents: e.target.checked }))
+                }
+                className="rounded border-border text-primary focus:ring-primary/40"
+              />
+              <span>Relay player join / leave events</span>
+            </label>
+          </div>
+
+          {discordStatus && (
+            <div
+              className={`p-3 rounded-lg text-xs border ${
+                discordStatus.success
+                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
+                  : "bg-red-500/10 border-red-500/20 text-red-500"
+              }`}
+            >
+              {discordStatus.message}
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSavingDiscord || isTestingDiscord}
+            >
+              {isSavingDiscord ? "Saving..." : "Save Discord Settings"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleTestDiscord}
+              disabled={!discordConfig.webhookUrl || isTestingDiscord || isSavingDiscord}
+            >
+              {isTestingDiscord ? "Testing..." : "Send Test Ping"}
+            </Button>
+          </div>
+        </form>
+      </Card>
 
       {/* Session Management */}
       <Card className="p-6">

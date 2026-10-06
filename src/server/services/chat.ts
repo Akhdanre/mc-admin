@@ -5,6 +5,7 @@ import readline from "readline";
 import { EventEmitter } from "events";
 import { config } from "@/server/config";
 import { executeRconCommand } from "@/server/services/rcon";
+import { sendDiscordChatMessage, sendDiscordEvent } from "@/server/services/discord";
 import type { ChatMessage, ChatResponse } from "@/types";
 
 const MAX_CHAT_MESSAGES = 150;
@@ -17,6 +18,8 @@ const PLAYER_CHAT_REGEX = /<([a-zA-Z0-9_]{1,16})>\s*(.*)$/;
 
 // Matches [Server] Message
 const SERVER_CHAT_REGEX = /\[Server\]\s*(.*)$/;
+const JOIN_REGEX = /:\s*([a-zA-Z0-9_]{1,16})\s+joined the game/;
+const LEAVE_REGEX = /:\s*([a-zA-Z0-9_]{1,16})\s+left the game/;
 
 export function parseChatLine(line: string, index: number): ChatMessage | null {
   const tsMatch = line.match(TIMESTAMP_REGEX);
@@ -179,6 +182,17 @@ class ChatLogTailer extends EventEmitter {
         const chat = parseChatLine(line, this.lineCount);
         if (chat) {
           this.emit("chat", chat);
+          sendDiscordChatMessage(chat.sender, chat.message, chat.isServer).catch(() => {});
+        } else {
+          const joinMatch = line.match(JOIN_REGEX);
+          if (joinMatch) {
+            sendDiscordEvent("Player Joined", `**${joinMatch[1]}** joined the game`, 0x57f287).catch(() => {});
+          } else {
+            const leaveMatch = line.match(LEAVE_REGEX);
+            if (leaveMatch) {
+              sendDiscordEvent("Player Left", `**${leaveMatch[1]}** left the game`, 0xed4245).catch(() => {});
+            }
+          }
         }
       });
     } catch (err) {

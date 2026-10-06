@@ -145,3 +145,20 @@ export interface ChatResponse {
 export interface SendChatRequestBody {
   message: string;
 }
+
+export interface DiscordConfig {
+  webhookUrl: string;
+  enabled: boolean;
+  relayChat: boolean;
+  relayEvents: boolean;
+}
+
+export interface DiscordSettingsResponse {
+  config: DiscordConfig;
+  error?: string;
+}
+
+export interface TestDiscordWebhookResponse {
+  success: boolean;
+  error?: string;
+}

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Discord Webhook relay integration**:
+  - Real-time relay of Minecraft in-game player chat directly to Discord via webhooks.
+  - Automatically fetches player skin heads from public avatar API (`mc-heads.net`) for avatar icons.
+  - Relays player join and leave events as colored Discord embeds (green for joined, red for left).
+  - Configuration card in Settings page with webhook URL management, toggles, and live "Send Test Ping" button.
+  - Configuration persisted to `/data/discord_config.json` with fallback to `DISCORD_WEBHOOK_URL` environment variable.
 - **Live in-game chat tracking & broadcasting**:
   - Native log stream parsing from `/data/logs/latest.log` supporting Vanilla and Forge/modded chat formats.
   - Real-time Server-Sent Events (SSE) streaming via `/api/chat/stream` with zero-latency push and keep-alive pings.
