@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, Card, Badge } from "@/components/ui";
+
 interface PlayerListProps {
   players: string[];
   errorMessage?: string;
@@ -14,40 +16,42 @@ export function PlayerList({
   isRefreshing,
 }: PlayerListProps) {
   return (
-    <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-6 mb-8">
+    <Card className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
           <span>Active Players</span>
         </h2>
-        <button
+        <Button
+          variant="secondary"
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="px-3 py-1 text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 rounded-lg transition border border-slate-700 cursor-pointer"
         >
           {isRefreshing ? "Syncing..." : "Sync Now"}
-        </button>
+        </Button>
       </div>
 
       {errorMessage ? (
-        <div className="text-center py-10 border border-dashed border-rose-900/50 rounded-lg">
-          <p className="text-rose-400 text-sm">Failed to connect: {errorMessage}</p>
-        </div>
+        <Card tone="muted" padding="none" className="text-center py-10 border-rose-900/50">
+          <p className="text-danger-muted text-sm">Failed to connect: {errorMessage}</p>
+        </Card>
       ) : players.length === 0 ? (
-        <div className="text-center py-10 border border-dashed border-slate-800 rounded-lg">
-          <p className="text-slate-400 text-sm">No players currently online in the server.</p>
-        </div>
+        <Card tone="muted" padding="none" className="text-center py-10">
+          <p className="text-muted-foreground text-sm">No players currently online in the server.</p>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {players.map((name) => (
-            <div
+            <Card
               key={name}
-              className="flex items-center gap-3 p-3 bg-slate-950/80 border border-slate-800 rounded-lg hover:border-slate-700 transition"
+              tone="solid"
+              padding="none"
+              className="flex items-center gap-3 p-3 bg-background/80 border-border rounded-lg hover:border-border-strong"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`https://mc-heads.net/avatar/${name}/36`}
                 alt={name}
-                className="w-9 h-9 rounded-md bg-slate-800"
+                className="w-9 h-9 rounded-md bg-surface-raised"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).src =
                     "https://mc-heads.net/avatar/Steve/36";
@@ -55,12 +59,12 @@ export function PlayerList({
               />
               <div>
                 <p className="text-sm font-semibold text-white">{name}</p>
-                <p className="text-xs text-emerald-400 font-medium">In Game</p>
+                <Badge tone="success" className="mt-0.5">In Game</Badge>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

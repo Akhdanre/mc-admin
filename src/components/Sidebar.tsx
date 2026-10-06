@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge, Button, Caption, Muted, PageTitle } from "@/components/ui";
+
 export type AdminTab = "dashboard" | "users" | "world" | "backups" | "map" | "commands";
 
 interface SidebarProps {
@@ -117,92 +119,96 @@ export function Sidebar({
   ];
 
   const content = (
-    <aside className="w-64 bg-slate-900/90 border-r border-slate-800 flex flex-col h-full">
+    <aside className="w-64 bg-surface/90 border-r border-border flex flex-col h-full">
       {/* Brand Header */}
-      <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+      <div className="p-5 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-2xl p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">⛏️</span>
+          <span className="text-2xl p-2 bg-primary/10 border border-primary/20 rounded-xl">⛏️</span>
           <div>
-            <h1 className="font-bold text-white text-base tracking-tight leading-tight">MC Admin Panel</h1>
-            <p className="text-xs text-slate-400">Server Management</p>
+            <PageTitle className="text-base leading-tight">MC Admin Panel</PageTitle>
+            <Muted>Server Management</Muted>
           </div>
         </div>
         {isOpenMobile && (
-          <button
+          <Button
+            variant="ghost"
             onClick={onCloseMobile}
-            className="md:hidden text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer"
+            className="md:hidden p-1 rounded-lg hover:bg-transparent"
           >
             ✕
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Connection Indicator */}
-      <div className="px-5 py-3 border-b border-slate-800/60 bg-slate-950/40">
+      <div className="px-5 py-3 border-b border-border/60 bg-background/40">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-slate-400">Server Connection</span>
-          <span
-            className={`inline-flex items-center gap-1.5 font-medium px-2 py-0.5 rounded-full ${
-              isConnected
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-            }`}
+          <Muted>Server Connection</Muted>
+          <Badge
+            tone={isConnected ? "success" : "danger"}
+            className="font-medium px-2 text-xs"
           >
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                isConnected ? "bg-emerald-400 animate-pulse" : "bg-rose-400"
+                isConnected ? "bg-success-muted animate-pulse" : "bg-danger-muted"
               }`}
             />
             {isConnected ? "Online" : "Offline"}
-          </span>
+          </Badge>
         </div>
       </div>
 
       {/* Navigation List */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        <p className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+        <Caption className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wider uppercase">
           Menu
-        </p>
+        </Caption>
         {navItems.map((item) => {
           const isActive = currentTab === item.id;
           return (
-            <button
+            <Button
               key={item.id}
+              variant="tab"
+              active={isActive}
+              size="md"
               onClick={() => {
                 onSelectTab(item.id);
                 onCloseMobile();
               }}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer ${
-                isActive
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
+              className={`w-full justify-between px-3 py-2.5 font-medium ${
+                isActive ? "shadow-lg shadow-primary/20" : "shadow-none"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <span className={isActive ? "text-white" : "text-slate-400"}>{item.icon}</span>
+              <span className="flex items-center gap-3">
+                <span className={isActive ? "text-foreground" : "text-muted-foreground"}>
+                  {item.icon}
+                </span>
                 <span>{item.label}</span>
-              </div>
+              </span>
               {item.badge && (
-                <span
-                  className={`text-[11px] px-2 py-0.5 rounded-full font-mono font-medium ${
-                    isActive ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400"
+                <Badge
+                  tone={isActive ? "primary" : "neutral"}
+                  className={`text-[11px] py-0.5 font-mono font-medium ${
+                    isActive
+                      ? "bg-white/20 text-white border-transparent"
+                      : "bg-surface-raised border-transparent"
                   }`}
                 >
                   {item.badge}
-                </span>
+                </Badge>
               )}
-            </button>
+            </Button>
           );
         })}
       </nav>
 
       {/* Bottom Footer Info */}
-      <div className="p-4 border-t border-slate-800 bg-slate-950/50">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="w-2 h-2 rounded-full bg-slate-600" />
+      <div className="p-4 border-t border-border bg-background/50">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="w-2 h-2 rounded-full bg-faint-foreground" />
           <span>Dynmap & RCON Enabled</span>
         </div>
-        <p className="text-[11px] text-slate-500 mt-1">Live Map on port 8123</p>
+        <Caption className="text-[11px] mt-1">Live Map on port 8123</Caption>
       </div>
     </aside>
   );
@@ -218,7 +224,7 @@ export function Sidebar({
       {isOpenMobile && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
           />
           <div className="relative z-10">{content}</div>

@@ -1,3 +1,5 @@
+import { Card, CardLabel, Caption } from "@/components/ui";
+
 interface StatCardsProps {
   onlineCount: number;
   maxCount: number;
@@ -17,30 +19,30 @@ export function StatCards({
 }: StatCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-      <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5">
-        <p className="text-xs font-medium uppercase text-slate-400">Online Players</p>
+      <Card className="rounded-xl">
+        <CardLabel>Online Players</CardLabel>
         <div className="flex items-baseline gap-2 mt-2">
           <span className="text-3xl font-extrabold text-white">{onlineCount}</span>
-          <span className="text-sm text-slate-500">/ {maxCount} max</span>
+          <Caption>/ {maxCount} max</Caption>
         </div>
-      </div>
-      <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5">
-        <p className="text-xs font-medium uppercase text-slate-400">Whitelisted Users</p>
+      </Card>
+      <Card className="rounded-xl">
+        <CardLabel>Whitelisted Users</CardLabel>
         <div className="flex items-baseline gap-2 mt-2">
-          <span className="text-3xl font-extrabold text-indigo-400">{whitelistCount}</span>
-          <span className="text-sm text-slate-500">total</span>
+          <span className="text-3xl font-extrabold text-primary-muted">{whitelistCount}</span>
+          <Caption>total</Caption>
         </div>
-      </div>
-      <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5">
-        <p className="text-xs font-medium uppercase text-slate-400">Target Server</p>
+      </Card>
+      <Card className="rounded-xl">
+        <CardLabel>Target Server</CardLabel>
         <p className="text-base font-semibold text-white mt-2 font-mono">{serverHost || "-"}</p>
-        <p className="text-xs text-slate-500">{serverPort ? `Port ${serverPort}` : "-"}</p>
-      </div>
-      <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5">
-        <p className="text-xs font-medium uppercase text-slate-400">Last Synced</p>
+        <Caption>{serverPort ? `Port ${serverPort}` : "-"}</Caption>
+      </Card>
+      <Card className="rounded-xl">
+        <CardLabel>Last Synced</CardLabel>
         <p className="text-base font-semibold text-white mt-2">{updatedAt || "-"}</p>
-        <p className="text-xs text-slate-500">Auto refresh every 4s</p>
-      </div>
+        <Caption>Auto refresh every 4s</Caption>
+      </Card>
     </div>
   );
 }

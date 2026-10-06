@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type SubmitEvent } from "react";
+import { Badge, Button, Card, Input, Select } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import type { WhitelistAction, PlayerLocation, PlayerHistoryResponse } from "@/types";
 
 interface UserManagementProps {
@@ -116,73 +118,68 @@ export function UserManagement({
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <Card padding="lg" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-2">
+          <Badge tone="primary" className="mb-2">
             <span>Player Administration & Teleportation</span>
-          </div>
+          </Badge>
           <h2 className="text-xl font-bold text-white tracking-tight">User Management</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Monitor real-time player locations, teleport users, toggle gamemodes, and manage whitelist access.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 self-start sm:self-auto">
-          <button
+        <div className="flex bg-overlay p-1 rounded-xl border border-border self-start sm:self-auto">
+          <Button
+            variant="tab"
+            active={activeTab === "online"}
             onClick={() => setActiveTab("online")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer flex items-center gap-2 ${
-              activeTab === "online"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-400 hover:text-white"
-            }`}
+            className="rounded-lg gap-2"
           >
             <span>Active Players</span>
             <span className="px-1.5 py-0.2 bg-black/30 rounded-md text-[10px]">
               {onlinePlayers.length}
             </span>
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="tab"
+            active={activeTab === "whitelist"}
             onClick={() => setActiveTab("whitelist")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer flex items-center gap-2 ${
-              activeTab === "whitelist"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-400 hover:text-white"
-            }`}
+            className="rounded-lg gap-2"
           >
             <span>Whitelist Registry</span>
             <span className="px-1.5 py-0.2 bg-black/30 rounded-md text-[10px]">
               {whitelistedPlayers.length}
             </span>
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="tab"
+            active={activeTab === "history"}
             onClick={() => setActiveTab("history")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer flex items-center gap-2 ${
-              activeTab === "history"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-400 hover:text-white"
-            }`}
+            className="rounded-lg gap-2"
           >
             <span>Login History</span>
             <span className="px-1.5 py-0.2 bg-black/30 rounded-md text-[10px]">
               {playerHistory?.players.length ?? 0}
             </span>
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
 
       {/* Search & Actions Bar */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <input
+          <Input
             type="text"
+            mono
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search players by username..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 pl-9 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+            className="rounded-xl pl-9"
           />
           <svg
-            className="w-4 h-4 text-slate-500 absolute left-3 top-2.5"
+            className="w-4 h-4 text-subtle-foreground absolute left-3 top-2.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -198,80 +195,83 @@ export function UserManagement({
 
         {activeTab === "whitelist" && (
           <div className="flex items-center gap-2 flex-wrap">
-            <button
+            <Button
+              variant="success"
               onClick={() => onWhitelistAction("on")}
               disabled={isBusy}
-              className="px-3 py-1.5 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded-xl transition border border-emerald-500/30 font-medium cursor-pointer"
+              className="font-medium"
             >
               Turn On
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="danger"
               onClick={() => onWhitelistAction("off")}
               disabled={isBusy}
-              className="px-3 py-1.5 text-xs bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 rounded-xl transition border border-rose-500/30 font-medium cursor-pointer"
+              className="font-medium"
             >
               Turn Off
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
               onClick={() => onWhitelistAction("reload")}
               disabled={isBusy}
-              className="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition border border-slate-700 font-medium cursor-pointer"
+              className="font-medium"
             >
               Reload
-            </button>
+            </Button>
           </div>
         )}
 
         {activeTab === "history" && (
           <div className="flex items-center gap-2 flex-wrap">
             {/* Filter Pills */}
-            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-              <button
+            <div className="flex bg-overlay p-1 rounded-xl border border-border text-xs">
+              <Button
+                variant="tab"
+                active={historyFilter === "all"}
                 onClick={() => setHistoryFilter("all")}
-                className={`px-2.5 py-1 rounded-lg transition font-medium cursor-pointer ${
-                  historyFilter === "all"
-                    ? "bg-slate-800 text-white"
-                    : "text-slate-400 hover:text-white"
-                }`}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg font-medium",
+                  historyFilter === "all" && "bg-surface-raised text-white"
+                )}
               >
                 All
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="tab"
+                active={historyFilter === "today"}
                 onClick={() => setHistoryFilter("today")}
-                className={`px-2.5 py-1 rounded-lg transition font-medium cursor-pointer ${
-                  historyFilter === "today"
-                    ? "bg-indigo-600 text-white shadow-sm"
-                    : "text-slate-400 hover:text-white"
-                }`}
+                className="px-2.5 py-1 rounded-lg font-medium"
               >
                 Today
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="tab"
+                active={historyFilter === "online"}
                 onClick={() => setHistoryFilter("online")}
-                className={`px-2.5 py-1 rounded-lg transition font-medium cursor-pointer ${
-                  historyFilter === "online"
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-slate-400 hover:text-white"
-                }`}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg font-medium",
+                  historyFilter === "online" && "bg-emerald-600"
+                )}
               >
                 Online
-              </button>
+              </Button>
             </div>
 
             {/* Sort Dropdown */}
-            <select
+            <Select
               value={historySort}
               onChange={(e) =>
                 setHistorySort(
                   e.target.value as "lastLoginDesc" | "lastSeenDesc" | "nameAsc"
                 )
               }
-              className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 font-medium cursor-pointer"
+              className="rounded-xl px-2.5 py-1.5"
             >
               <option value="lastLoginDesc">Sort: Last Login (Newest)</option>
               <option value="lastSeenDesc">Sort: Last Seen (Newest)</option>
               <option value="nameAsc">Sort: Name (A–Z)</option>
-            </select>
+            </Select>
           </div>
         )}
       </div>
@@ -280,23 +280,24 @@ export function UserManagement({
       {activeTab === "online" && (
         <div className="space-y-4">
           {filteredOnline.length === 0 ? (
-            <div className="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-12 text-center">
+            <Card tone="muted" padding="lg" className="p-12 text-center">
               <span className="text-3xl">👥</span>
               <p className="text-sm font-semibold text-slate-300 mt-2">
                 {searchQuery ? "No matching online players found" : "No players currently online"}
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-subtle-foreground mt-1">
                 When players connect to your server, they will appear here with live coordinates and teleport controls.
               </p>
-            </div>
+            </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredOnline.map((name) => {
                 const loc = playerLocations[name];
                 return (
-                  <div
+                  <Card
                     key={name}
-                    className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition"
+                    padding="sm"
+                    className="flex flex-col justify-between hover:border-border-strong transition"
                   >
                     <div>
                       <div className="flex items-center justify-between">
@@ -305,7 +306,7 @@ export function UserManagement({
                           <img
                             src={`https://mc-heads.net/avatar/${name}/44`}
                             alt={name}
-                            className="w-11 h-11 rounded-xl bg-slate-800"
+                            className="w-11 h-11 rounded-xl bg-surface-raised"
                             onError={(e) => {
                               (e.currentTarget as HTMLImageElement).src =
                                 "https://mc-heads.net/avatar/Steve/44";
@@ -313,7 +314,7 @@ export function UserManagement({
                           />
                           <div>
                             <h4 className="font-bold text-white text-sm">{name}</h4>
-                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium mt-0.5">
+                            <span className="inline-flex items-center gap-1 text-[11px] text-success-muted font-medium mt-0.5">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                               Online
                             </span>
@@ -321,30 +322,32 @@ export function UserManagement({
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <button
+                          <Button
+                            variant="primary"
                             onClick={() => handleTeleportPrompt(name)}
                             disabled={isBusy}
                             title="Teleport player"
-                            className="px-2.5 py-1 text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg transition cursor-pointer flex items-center gap-1"
+                            className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg"
                           >
                             <span>🌀</span>
                             <span>TP</span>
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="danger"
                             onClick={() => handleKickPlayer(name)}
                             disabled={isBusy}
                             title="Kick player"
-                            className="px-2.5 py-1 text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg transition cursor-pointer"
+                            className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-danger-muted border border-rose-500/20 rounded-lg"
                           >
                             Kick
-                          </button>
+                          </Button>
                         </div>
                       </div>
 
                       {/* Live Coordinates Pill */}
                       {loc && (
-                        <div className="mt-3 p-2 bg-slate-950/80 border border-slate-800/60 rounded-xl flex items-center justify-between text-xs font-mono">
-                          <span className="text-slate-400 flex items-center gap-1">
+                        <div className="mt-3 p-2 bg-background/80 border border-border/60 rounded-xl flex items-center justify-between text-xs font-mono">
+                          <span className="text-muted-foreground flex items-center gap-1">
                             <span>📍</span>
                             <span className="capitalize">{loc.dimension}</span>
                           </span>
@@ -356,46 +359,51 @@ export function UserManagement({
                     </div>
 
                     {/* Quick Player Actions */}
-                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 flex-wrap">
+                    <div className="mt-4 pt-3 border-t border-border/80 flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-slate-400 font-medium">Mode:</span>
-                        <button
+                        <span className="text-[11px] text-muted-foreground font-medium">Mode:</span>
+                        <Button
+                          variant="ghost"
                           onClick={() => handleSetGamemode(name, "survival")}
-                          className="text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer"
+                          className="text-[10px] px-2 py-0.5 bg-surface-raised hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Surv
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
                           onClick={() => handleSetGamemode(name, "creative")}
-                          className="text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer"
+                          className="text-[10px] px-2 py-0.5 bg-surface-raised hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Crea
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
                           onClick={() => handleSetGamemode(name, "spectator")}
-                          className="text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer"
+                          className="text-[10px] px-2 py-0.5 bg-surface-raised hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Spec
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <button
+                        <Button
+                          variant="ghost"
                           onClick={() => onExecuteCommand(`tp ${name} 0 ~ 0`)}
-                          className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer"
+                          className="text-[11px] text-primary-muted hover:text-indigo-300 font-medium bg-transparent"
                         >
                           To Spawn
-                        </button>
+                        </Button>
                         <span className="text-slate-700">•</span>
-                        <button
+                        <Button
+                          variant="ghost"
                           onClick={() => onExecuteCommand(`kill ${name}`)}
-                          className="text-[11px] text-slate-400 hover:text-rose-400 transition cursor-pointer"
+                          className="text-[11px] text-muted-foreground hover:text-danger-muted bg-transparent"
                         >
                           Kill
-                        </button>
+                        </Button>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
@@ -406,55 +414,58 @@ export function UserManagement({
       {/* Whitelist Tab */}
       {activeTab === "whitelist" && (
         <div className="space-y-6">
-          <form
-            onSubmit={handleAddWhitelist}
-            className="flex gap-2 p-4 bg-slate-900/60 border border-slate-800 rounded-2xl"
-          >
-            <input
-              type="text"
-              maxLength={16}
-              value={whitelistInput}
-              onChange={(e) => setWhitelistInput(e.target.value)}
-              placeholder="Enter Minecraft username to whitelist (e.g. Notch, Alex)..."
-              disabled={isBusy}
-              className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
-            />
-            <button
-              type="submit"
-              disabled={isBusy || !whitelistInput.trim()}
-              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-medium text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-sm"
-            >
-              <span>+ Add to Whitelist</span>
-            </button>
-          </form>
+          <Card padding="sm">
+            <form onSubmit={handleAddWhitelist} className="flex gap-2">
+              <Input
+                type="text"
+                mono
+                maxLength={16}
+                value={whitelistInput}
+                onChange={(e) => setWhitelistInput(e.target.value)}
+                placeholder="Enter Minecraft username to whitelist (e.g. Notch, Alex)..."
+                disabled={isBusy}
+                className="flex-1 rounded-xl"
+              />
+              <Button
+                type="submit"
+                variant="success"
+                size="md"
+                disabled={isBusy || !whitelistInput.trim()}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium gap-1.5 shadow-sm"
+              >
+                <span>+ Add to Whitelist</span>
+              </Button>
+            </form>
+          </Card>
 
           {whitelistError ? (
-            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-xl text-xs font-mono">
+            <div className="bg-rose-500/10 border border-rose-500/20 text-danger-muted p-4 rounded-xl text-xs font-mono">
               {whitelistError}
             </div>
           ) : filteredWhitelist.length === 0 ? (
-            <div className="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-12 text-center">
+            <Card tone="muted" padding="lg" className="p-12 text-center">
               <span className="text-3xl">🛡️</span>
               <p className="text-sm font-semibold text-slate-300 mt-2">
                 {searchQuery ? "No matching whitelisted players found" : "No players in whitelist"}
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-subtle-foreground mt-1">
                 Add usernames above to restrict server access to approved players only.
               </p>
-            </div>
+            </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {filteredWhitelist.map((name) => (
-                <div
+                <Card
                   key={name}
-                  className="flex items-center justify-between p-3.5 bg-slate-900/70 border border-slate-800/80 rounded-xl hover:border-slate-700 transition"
+                  padding="none"
+                  className="flex items-center justify-between p-3.5 rounded-xl hover:border-border-strong transition"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`https://mc-heads.net/avatar/${name}/36`}
                       alt={name}
-                      className="w-9 h-9 rounded-lg bg-slate-800 shrink-0"
+                      className="w-9 h-9 rounded-lg bg-surface-raised shrink-0"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).src =
                           "https://mc-heads.net/avatar/Steve/36";
@@ -462,11 +473,12 @@ export function UserManagement({
                     />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-white truncate">{name}</p>
-                      <p className="text-xs text-indigo-400 font-medium">Whitelisted</p>
+                      <p className="text-xs text-primary-muted font-medium">Whitelisted</p>
                     </div>
                   </div>
 
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => {
                       if (window.confirm(`Remove ${name} from whitelist?`)) {
                         onWhitelistAction("remove", name);
@@ -474,7 +486,7 @@ export function UserManagement({
                     }}
                     disabled={isBusy}
                     title="Remove user"
-                    className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition border border-transparent hover:border-rose-500/20 cursor-pointer"
+                    className="p-1.5 text-muted-foreground hover:text-danger-muted hover:bg-rose-500/10 rounded-lg border border-transparent hover:border-rose-500/20 bg-transparent"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -484,8 +496,8 @@ export function UserManagement({
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                       />
                     </svg>
-                  </button>
-                </div>
+                  </Button>
+                </Card>
               ))}
             </div>
           )}
@@ -496,21 +508,22 @@ export function UserManagement({
       {activeTab === "history" && (
         <div className="space-y-4">
           {filteredHistory.length === 0 ? (
-            <div className="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-12 text-center">
+            <Card tone="muted" padding="lg" className="p-12 text-center">
               <span className="text-3xl">📜</span>
               <p className="text-sm font-semibold text-slate-300 mt-2">
                 {searchQuery ? "No matching players found" : "No login records found"}
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-subtle-foreground mt-1">
                 Player login times and last seen timestamps will be indexed as players connect.
               </p>
-            </div>
+            </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredHistory.map((player) => (
-                <div
+                <Card
                   key={player.username}
-                  className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition"
+                  padding="sm"
+                  className="flex flex-col justify-between hover:border-border-strong transition"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -518,7 +531,7 @@ export function UserManagement({
                       <img
                         src={`https://mc-heads.net/avatar/${player.username}/44`}
                         alt={player.username}
-                        className="w-11 h-11 rounded-xl bg-slate-800 shrink-0"
+                        className="w-11 h-11 rounded-xl bg-surface-raised shrink-0"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).src =
                             "https://mc-heads.net/avatar/Steve/44";
@@ -527,12 +540,12 @@ export function UserManagement({
                       <div>
                         <h4 className="font-bold text-white text-sm">{player.username}</h4>
                         {player.online ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium mt-0.5">
+                          <span className="inline-flex items-center gap-1 text-[11px] text-success-muted font-medium mt-0.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                             Online Now
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 font-medium mt-0.5">
+                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-medium mt-0.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
                             Offline
                           </span>
@@ -541,15 +554,15 @@ export function UserManagement({
                     </div>
 
                     {player.uuid && (
-                      <span className="text-[10px] font-mono text-slate-500 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-850 truncate max-w-[120px]" title={player.uuid}>
+                      <span className="text-[10px] font-mono text-subtle-foreground bg-background/80 px-2 py-1 rounded-md border border-slate-850 truncate max-w-[120px]" title={player.uuid}>
                         {player.uuid.slice(0, 8)}...
                       </span>
                     )}
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-800/80 space-y-1.5 text-xs">
+                  <div className="mt-4 pt-3 border-t border-border/80 space-y-1.5 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400 flex items-center gap-1">
+                      <span className="text-muted-foreground flex items-center gap-1">
                         <span>🕒</span>
                         <span>Last Login:</span>
                       </span>
@@ -560,7 +573,7 @@ export function UserManagement({
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400 flex items-center gap-1">
+                      <span className="text-muted-foreground flex items-center gap-1">
                         <span>🚪</span>
                         <span>Last Seen / Logout:</span>
                       </span>
@@ -571,7 +584,7 @@ export function UserManagement({
                       </span>
                     </div>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}

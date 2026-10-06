@@ -99,9 +99,18 @@ export default function Home() {
       .then((data: ServerInfoResponse) => setServerInfo(data))
       .catch((err) => console.error(err));
 
-    fetchStatus();
     const timer = setInterval(fetchStatus, 4000);
-    return () => clearInterval(timer);
+    // Defer the first run to a microtask so the effect body only schedules
+    // work instead of synchronously calling setState (isRefreshing) — avoids
+    // a cascading render. cleanup marks it stale via `cancelled`.
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void fetchStatus();
+    });
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, [fetchStatus]);
 
   const handleWhitelistAction = async (action: WhitelistAction, username?: string) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type SubmitEvent } from "react";
+import { Badge, Button, Input } from "@/components/ui";
 
 interface ConsoleViewProps {
   onExecuteCommand: (command: string) => Promise<string>;
@@ -94,71 +95,73 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-surface/60 border border-border/80 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-2">
+          <Badge tone="success" className="mb-2">
             <span>Direct Console Terminal</span>
-          </div>
+          </Badge>
           <h2 className="text-xl font-bold text-white tracking-tight">RCON Command Center</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Execute raw server commands with instant operator privileges.
           </p>
         </div>
 
-        <button
+        <Button
+          variant="secondary"
           onClick={clearLogs}
-          className="self-start sm:self-auto px-3 py-1.5 text-xs text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition cursor-pointer"
+          className="self-start sm:self-auto text-muted-foreground hover:text-white"
         >
           Clear Screen
-        </button>
+        </Button>
       </div>
 
       {/* Preset Command Shortcuts */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        <span className="text-[11px] text-slate-500 font-medium shrink-0 uppercase tracking-wider">
+        <span className="text-[11px] text-subtle-foreground font-medium shrink-0 uppercase tracking-wider">
           Presets:
         </span>
         {presets.map((p) => (
-          <button
+          <Button
             key={p.label}
+            variant="secondary"
             onClick={() => runCommand(p.label)}
             disabled={isBusy}
             title={p.desc}
-            className="px-2.5 py-1 text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-300 font-mono transition shrink-0 cursor-pointer"
+            className="font-mono shrink-0 bg-surface/80 hover:bg-surface-raised"
           >
             {p.label}
-          </button>
+          </Button>
         ))}
       </div>
 
       {/* Terminal Output Window */}
-      <div className="bg-slate-950 rounded-2xl border border-slate-800/90 overflow-hidden shadow-2xl flex flex-col h-[480px]">
+      <div className="bg-overlay rounded-2xl border border-border/90 overflow-hidden shadow-2xl flex flex-col h-[480px]">
         {/* Terminal Titlebar */}
-        <div className="bg-slate-900/80 px-4 py-2.5 border-b border-slate-800/80 flex items-center justify-between">
+        <div className="bg-surface/80 px-4 py-2.5 border-b border-border/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-rose-500/80" />
             <div className="w-3 h-3 rounded-full bg-amber-500/80" />
             <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-            <span className="text-xs font-mono text-slate-400 ml-2">minecraft-server: rcon-cli</span>
+            <span className="text-xs font-mono text-muted-foreground ml-2">minecraft-server: rcon-cli</span>
           </div>
-          <span className="text-[11px] text-slate-500 font-mono">session: active</span>
+          <span className="text-[11px] text-subtle-foreground font-mono">session: active</span>
         </div>
 
         {/* Terminal Logs Content */}
         <div
           ref={logContainerRef}
-          className="flex-1 p-4 font-mono text-xs overflow-y-auto space-y-3 scroll-smooth"
+          className="flex-1 p-4 font-mono text-xs text-slate-300 overflow-y-auto space-y-3 scroll-smooth"
         >
           {logs.map((entry) => (
             <div key={entry.id} className="space-y-1">
-              <div className="flex items-center gap-2 text-slate-500 text-[11px]">
+              <div className="flex items-center gap-2 text-subtle-foreground text-[11px]">
                 <span>[{entry.time}]</span>
-                <span className="text-indigo-400 font-bold">&gt;</span>
+                <span className="text-primary-muted font-bold">&gt;</span>
                 <span className="text-slate-200 font-semibold">{entry.command}</span>
               </div>
               <div
                 className={`pl-4 whitespace-pre-wrap leading-relaxed ${
-                  entry.isError ? "text-rose-400" : "text-emerald-300/90"
+                  entry.isError ? "text-danger-foreground" : "text-success-foreground/90"
                 }`}
               >
                 {entry.response}
@@ -168,24 +171,21 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
         </div>
 
         {/* Terminal Input Bar */}
-        <form onSubmit={handleSubmit} className="p-3 bg-slate-900/60 border-t border-slate-800 flex gap-2">
-          <span className="text-indigo-400 font-mono text-sm self-center font-bold pl-2">&gt;</span>
-          <input
+        <form onSubmit={handleSubmit} className="p-3 bg-surface/60 border-t border-border flex gap-2">
+          <span className="text-primary-muted font-mono text-sm self-center font-bold pl-2">&gt;</span>
+          <Input
+            mono
             type="text"
             value={command}
             onChange={(e) => setCommand(e.target.value)}
             placeholder="Type a Minecraft command (e.g. say hello, time set day, gamemode creative)..."
             disabled={isBusy}
-            className="flex-1 bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono"
+            className="flex-1 border-0 bg-transparent px-0 py-0 text-xs text-white placeholder:text-faint-foreground"
             autoFocus
           />
-          <button
-            type="submit"
-            disabled={isBusy || !command.trim()}
-            className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold text-xs rounded-lg transition cursor-pointer"
-          >
+          <Button type="submit" variant="primary" disabled={isBusy || !command.trim()}>
             {isBusy ? "Running..." : "Execute"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

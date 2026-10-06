@@ -1,26 +1,61 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Design tokens — single source of truth.
+ * The app is a permanent dark dashboard; tokens are mapped 1:1 from the
+ * previous hardcoded slate/indigo/emerald/rose/amber palette so visuals
+ * stay identical while becoming semantic.
+ *
+ * Usage: bg-surface, text-muted-foreground, border-border, bg-primary …
+ */
+@theme {
+  /* ---------- Surfaces (layered backgrounds, deepest → highest) ---------- */
+  --color-background: var(--color-slate-950); /* app root background        */
+  --color-surface: var(--color-slate-900);    /* cards, panels              */
+  --color-surface-raised: var(--color-slate-800); /* hover, inset, wells    */
+  --color-overlay: var(--color-slate-950);    /* inputs, tab bars, consoles */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* ---------- Borders ---------- */
+  --color-border: var(--color-slate-800);         /* default card border   */
+  --color-border-strong: var(--color-slate-700);  /* hover / emphasized    */
+
+  /* ---------- Text ---------- */
+  --color-foreground: var(--color-slate-100);          /* headings          */
+  --color-muted-foreground: var(--color-slate-400);    /* body / secondary  */
+  --color-subtle-foreground: var(--color-slate-500);   /* captions, hints   */
+  --color-faint-foreground: var(--color-slate-600);    /* placeholders      */
+
+  /* ---------- Brand / primary (indigo) ---------- */
+  --color-primary: var(--color-indigo-600);
+  --color-primary-hover: var(--color-indigo-500);
+  --color-primary-foreground: var(--color-white);
+  --color-primary-muted: var(--color-indigo-400); /* text on dark surfaces */
+
+  /* ---------- Semantic statuses ---------- */
+  --color-success: var(--color-emerald-500);
+  --color-success-muted: var(--color-emerald-400);
+  --color-success-foreground: var(--color-emerald-300);
+
+  --color-danger: var(--color-rose-500);
+  --color-danger-muted: var(--color-rose-400);
+  --color-danger-foreground: var(--color-rose-300);
+
+  --color-warning: var(--color-amber-500);
+  --color-warning-muted: var(--color-amber-400);
+  --color-warning-foreground: var(--color-amber-300);
+
+  --color-info: var(--color-sky-500);
+  --color-info-muted: var(--color-sky-400);
+  --color-info-foreground: var(--color-sky-300);
+
+  /* ---------- Focus ring ---------- */
+  --color-ring: var(--color-indigo-500);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
 }
