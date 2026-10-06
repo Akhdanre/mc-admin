@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Docker support: multi-stage `Dockerfile`, `docker-compose.yml`, and `.dockerignore` with standalone Next.js deployment.
 - Added automated GitHub Actions CI pipeline (`.github/workflows/ci.yml`) running typecheck, lint, unit tests, and production build on push/PR for `main` and `development`.
 - Added unit tests using `bun:test` covering Minecraft RCON list parsing, whitelist parsing, and `cn()` utility.
+- Added automated Release & Container CD workflow (`.github/workflows/release.yml`) that triggers on merge/push to `main`:
+  - Automatically bumps version in `package.json`.
+  - Promotes `[Unreleased]` changes to a dated version section in `CHANGELOG.md`.
+  - Creates and pushes Git tag (e.g. `v0.1.1`).
+  - Builds and pushes multi-arch Docker image to GitHub Container Registry (`ghcr.io`).
 ### Fixed
 
 - Fixed sidebar navigation buttons alignment issue caused by `justify-center` base style conflict.
