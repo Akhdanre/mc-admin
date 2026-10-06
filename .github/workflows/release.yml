@@ -55,6 +55,11 @@ jobs:
         with:
           ref: ${{ needs.version-and-release.outputs.tag }}
 
+      - name: Lowercase repository name
+        id: repo_name
+        run: |
+          echo "IMAGE=ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -69,7 +74,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ steps.repo_name.outputs.IMAGE }}
           tags: |
             type=raw,value=latest
             type=raw,value=${{ needs.version-and-release.outputs.version }}
