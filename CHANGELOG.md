@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Typed fetch helpers `apiGet` / `apiPost` in `src/lib/api.ts`.
 - `server-only` package and a `server-only` guard import in every `src/server/`
   module, so server code (RCON credentials) can never be bundled to the client.
-
+- Added `.env.example` template covering RCON, SSH, PORT, and Map URL variables.
 ### Fixed
 
 - Fixed sidebar navigation buttons alignment issue caused by `justify-center` base style conflict.
