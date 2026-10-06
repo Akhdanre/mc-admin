@@ -13,6 +13,7 @@ import type {
   WhitelistStatus,
   WhitelistAction,
   ServerInfoResponse,
+  PlayerHistoryResponse,
 } from "@/types";
 
 export default function Home() {
@@ -28,6 +29,7 @@ export default function Home() {
   });
 
   const [playerLocations, setPlayerLocations] = useState<Record<string, PlayerLocation>>({});
+  const [playerHistory, setPlayerHistory] = useState<PlayerHistoryResponse | null>(null);
 
   const [whitelistStatus, setWhitelistStatus] = useState<WhitelistStatus>({
     players: [],
@@ -54,15 +56,17 @@ export default function Home() {
   const fetchStatus = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const [statusRes, whitelistRes, locationsRes] = await Promise.all([
+      const [statusRes, whitelistRes, locationsRes, historyRes] = await Promise.all([
         fetch("/api/status"),
         fetch("/api/whitelist"),
         fetch("/api/players/locations"),
+        fetch("/api/players/history"),
       ]);
 
       const statusData = (await statusRes.json()) as PlayerStatus;
       const whitelistData = (await whitelistRes.json()) as WhitelistStatus;
       const locationsData = (await locationsRes.json()) as { locations?: PlayerLocation[] };
+      const historyData = (await historyRes.json()) as PlayerHistoryResponse;
 
       setPlayerStatus(statusData);
       setWhitelistStatus(whitelistData);
@@ -74,6 +78,7 @@ export default function Home() {
         }
         setPlayerLocations(locMap);
       }
+      setPlayerHistory(historyData);
     } catch (err: unknown) {
       console.error("Failed to sync server status:", err);
     } finally {
@@ -285,6 +290,7 @@ export default function Home() {
               playerStatus={playerStatus}
               whitelistStatus={whitelistStatus}
               serverInfo={serverInfo}
+              playerHistory={playerHistory}
               onRefresh={fetchStatus}
               isRefreshing={isRefreshing}
               onNavigateTab={(tab) => setCurrentTab(tab)}
@@ -297,6 +303,7 @@ export default function Home() {
               playerLocations={playerLocations}
               whitelistedPlayers={whitelistStatus.players}
               whitelistError={whitelistStatus.error}
+              playerHistory={playerHistory}
               onWhitelistAction={handleWhitelistAction}
               onExecuteCommand={handleExecuteCommand}
               onTeleport={handleTeleport}
@@ -309,7 +316,7 @@ export default function Home() {
           )}
 
           {currentTab === "map" && (
-            <LiveMap mapUrl={process.env.NEXT_PUBLIC_MAP_URL || "http://192.168.137.158:8123"} />
+            <LiveMap mapUrl={process.env.NEXT_PUBLIC_MAP_URL || "http://192.168.137.194:8123"} />
           )}
 
           {currentTab === "commands" && (

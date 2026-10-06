@@ -1,11 +1,12 @@
 "use client";
 
-import type { PlayerStatus, WhitelistStatus, ServerInfoResponse } from "@/types";
+import type { PlayerStatus, WhitelistStatus, ServerInfoResponse, PlayerHistoryResponse } from "@/types";
 
 interface DashboardOverviewProps {
   playerStatus: PlayerStatus;
   whitelistStatus: WhitelistStatus;
   serverInfo: ServerInfoResponse;
+  playerHistory?: PlayerHistoryResponse | null;
   onRefresh: () => void;
   isRefreshing: boolean;
   onNavigateTab: (tab: "users" | "commands") => void;
@@ -15,6 +16,7 @@ export function DashboardOverview({
   playerStatus,
   whitelistStatus,
   serverInfo,
+  playerHistory,
   onRefresh,
   isRefreshing,
   onNavigateTab,
@@ -74,7 +76,7 @@ export function DashboardOverview({
       </div>
 
       {/* Primary Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700/80 transition">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Online Players</p>
@@ -116,6 +118,38 @@ export function DashboardOverview({
             <span>Manage users</span>
             <span>&rarr;</span>
           </button>
+        </div>
+
+        <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700/80 transition">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Last Login</p>
+            <span className="p-2 bg-purple-500/10 text-purple-400 rounded-lg text-sm">🕒</span>
+          </div>
+          {playerHistory?.lastLoginPlayer ? (
+            <div className="mt-3">
+              <p className="text-base font-bold text-purple-300 truncate">
+                {playerHistory.lastLoginPlayer.username}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                {playerHistory.lastLoginPlayer.lastLogin
+                  ? new Date(playerHistory.lastLoginPlayer.lastLogin).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : playerHistory.lastLoginPlayer.lastSeen
+                  ? new Date(playerHistory.lastLoginPlayer.lastSeen).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "-"}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <p className="text-base font-semibold text-slate-400">-</p>
+              <p className="text-xs text-slate-500 mt-1">No recorded logins</p>
+            </div>
+          )}
         </div>
 
         <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700/80 transition">

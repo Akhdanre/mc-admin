@@ -7,6 +7,23 @@ export interface PlayerStatus {
   updatedAt: string;
 }
 
+export interface PlayerHistory {
+  username: string;
+  uuid?: string | null;
+  lastSeen?: string | null;
+  lastSeenTimestamp?: number | null;
+  lastLogin?: string | null;
+  lastLoginTimestamp?: number | null;
+  online: boolean;
+}
+
+export interface PlayerHistoryResponse {
+  players: PlayerHistory[];
+  lastLoginPlayer?: PlayerHistory | null;
+  error?: string;
+  updatedAt: string;
+}
+
 export interface WhitelistStatus {
   players: string[];
   raw: string;

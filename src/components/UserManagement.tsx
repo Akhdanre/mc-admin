@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, type SubmitEvent } from "react";
-import type { WhitelistAction, PlayerLocation } from "@/types";
+import type { WhitelistAction, PlayerLocation, PlayerHistoryResponse } from "@/types";
 
 interface UserManagementProps {
   onlinePlayers: string[];
   playerLocations: Record<string, PlayerLocation>;
   whitelistedPlayers: string[];
   whitelistError?: string;
+  playerHistory?: PlayerHistoryResponse | null;
   onWhitelistAction: (action: WhitelistAction, username?: string) => Promise<void>;
   onExecuteCommand: (command: string) => Promise<string>;
   onTeleport: (player: string, target?: string, x?: number, y?: number, z?: number) => Promise<void>;
@@ -19,14 +20,17 @@ export function UserManagement({
   playerLocations,
   whitelistedPlayers,
   whitelistError,
+  playerHistory,
   onWhitelistAction,
   onExecuteCommand,
   onTeleport,
   isBusy,
 }: UserManagementProps) {
-  const [activeTab, setActiveTab] = useState<"online" | "whitelist">("online");
+  const [activeTab, setActiveTab] = useState<"online" | "whitelist" | "history">("online");
   const [whitelistInput, setWhitelistInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [historyFilter, setHistoryFilter] = useState<"all" | "today" | "online">("all");
+  const [historySort, setHistorySort] = useState<"lastLoginDesc" | "lastSeenDesc" | "nameAsc">("lastLoginDesc");
 
   const handleAddWhitelist = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -72,6 +76,42 @@ export function UserManagement({
   const filteredWhitelist = whitelistedPlayers.filter((p) =>
     p.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const filteredHistory = (playerHistory?.players || [])
+    .filter((p) => {
+      const matchesSearch = p.username.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+
+      if (historyFilter === "online") {
+        return p.online;
+      }
+
+      if (historyFilter === "today") {
+        const targetTs = p.lastLoginTimestamp ?? p.lastSeenTimestamp;
+        if (!targetTs) return false;
+        const date = new Date(targetTs);
+        const today = new Date();
+        return (
+          date.getDate() === today.getDate() &&
+          date.getMonth() === today.getMonth() &&
+          date.getFullYear() === today.getFullYear()
+        );
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      if (historySort === "nameAsc") {
+        return a.username.localeCompare(b.username);
+      }
+      if (historySort === "lastSeenDesc") {
+        return (b.lastSeenTimestamp ?? 0) - (a.lastSeenTimestamp ?? 0);
+      }
+      // default: lastLoginDesc
+      return (
+        (b.lastLoginTimestamp ?? b.lastSeenTimestamp ?? 0) -
+        (a.lastLoginTimestamp ?? a.lastSeenTimestamp ?? 0)
+      );
+    });
 
   return (
     <div className="space-y-6">
@@ -113,6 +153,19 @@ export function UserManagement({
             <span>Whitelist Registry</span>
             <span className="px-1.5 py-0.2 bg-black/30 rounded-md text-[10px]">
               {whitelistedPlayers.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer flex items-center gap-2 ${
+              activeTab === "history"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <span>Login History</span>
+            <span className="px-1.5 py-0.2 bg-black/30 rounded-md text-[10px]">
+              {playerHistory?.players.length ?? 0}
             </span>
           </button>
         </div>
@@ -166,6 +219,59 @@ export function UserManagement({
             >
               Reload
             </button>
+          </div>
+        )}
+
+        {activeTab === "history" && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Filter Pills */}
+            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+              <button
+                onClick={() => setHistoryFilter("all")}
+                className={`px-2.5 py-1 rounded-lg transition font-medium cursor-pointer ${
+                  historyFilter === "all"
+                    ? "bg-slate-800 text-white"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setHistoryFilter("today")}
+                className={`px-2.5 py-1 rounded-lg transition font-medium cursor-pointer ${
+                  historyFilter === "today"
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                Today
+              </button>
+              <button
+                onClick={() => setHistoryFilter("online")}
+                className={`px-2.5 py-1 rounded-lg transition font-medium cursor-pointer ${
+                  historyFilter === "online"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                Online
+              </button>
+            </div>
+
+            {/* Sort Dropdown */}
+            <select
+              value={historySort}
+              onChange={(e) =>
+                setHistorySort(
+                  e.target.value as "lastLoginDesc" | "lastSeenDesc" | "nameAsc"
+                )
+              }
+              className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 font-medium cursor-pointer"
+            >
+              <option value="lastLoginDesc">Sort: Last Login (Newest)</option>
+              <option value="lastSeenDesc">Sort: Last Seen (Newest)</option>
+              <option value="nameAsc">Sort: Name (A–Z)</option>
+            </select>
           </div>
         )}
       </div>
@@ -379,6 +485,92 @@ export function UserManagement({
                       />
                     </svg>
                   </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Login History Tab */}
+      {activeTab === "history" && (
+        <div className="space-y-4">
+          {filteredHistory.length === 0 ? (
+            <div className="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-12 text-center">
+              <span className="text-3xl">📜</span>
+              <p className="text-sm font-semibold text-slate-300 mt-2">
+                {searchQuery ? "No matching players found" : "No login records found"}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                Player login times and last seen timestamps will be indexed as players connect.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredHistory.map((player) => (
+                <div
+                  key={player.username}
+                  className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://mc-heads.net/avatar/${player.username}/44`}
+                        alt={player.username}
+                        className="w-11 h-11 rounded-xl bg-slate-800 shrink-0"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src =
+                            "https://mc-heads.net/avatar/Steve/44";
+                        }}
+                      />
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{player.username}</h4>
+                        {player.online ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium mt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            Online Now
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 font-medium mt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                            Offline
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {player.uuid && (
+                      <span className="text-[10px] font-mono text-slate-500 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-850 truncate max-w-[120px]" title={player.uuid}>
+                        {player.uuid.slice(0, 8)}...
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-800/80 space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 flex items-center gap-1">
+                        <span>🕒</span>
+                        <span>Last Login:</span>
+                      </span>
+                      <span className="text-indigo-300 font-medium">
+                        {player.lastLogin
+                          ? new Date(player.lastLogin).toLocaleString()
+                          : "Recorded in playerdata"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 flex items-center gap-1">
+                        <span>🚪</span>
+                        <span>Last Seen / Logout:</span>
+                      </span>
+                      <span className="text-slate-300 font-medium">
+                        {player.lastSeen
+                          ? new Date(player.lastSeen).toLocaleString()
+                          : "-"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

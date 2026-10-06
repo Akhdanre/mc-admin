@@ -6,7 +6,7 @@ interface LiveMapProps {
   mapUrl?: string;
 }
 
-export function LiveMap({ mapUrl = "http://192.168.137.158:8123" }: LiveMapProps) {
+export function LiveMap({ mapUrl = "http://192.168.137.194:8123" }: LiveMapProps) {
   const [currentUrl, setCurrentUrl] = useState(mapUrl);
   const [isEditingUrl, setIsEditingUrl] = useState(false);
   const [customInput, setCustomInput] = useState(mapUrl);
