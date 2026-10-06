@@ -10,6 +10,7 @@ import { LiveMap } from "@/components/features/world/LiveMap";
 import { ConsoleView } from "@/components/features/console/ConsoleView";
 import { BackupPage } from "@/components/features/backup/BackupPage";
 import { SettingsPage } from "@/components/features/settings/SettingsPage";
+import { ChatPage } from "@/components/features/chat/ChatPage";
 import { useServerStatus } from "@/hooks/useServerStatus";
 import { useServerActions } from "@/hooks/useServerActions";
 import { useFeedback } from "@/hooks/useFeedback";
@@ -21,6 +22,7 @@ const TAB_LABELS: Record<AdminTab, string> = {
   backups: "Backup Management",
   map: "Live Web Map",
   commands: "RCON Console",
+  chat: "In-Game Chat",
   settings: "Settings",
 };
 
@@ -195,6 +197,8 @@ export default function Home() {
           {currentTab === "commands" && (
             <ConsoleView onExecuteCommand={handleExecuteCommand} isBusy={isBusy} />
           )}
+
+          {currentTab === "chat" && <ChatPage />}
 
           {currentTab === "settings" && (
             <SettingsPage

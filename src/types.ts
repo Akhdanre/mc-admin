@@ -127,3 +127,21 @@ export interface ServerSettingsResponse {
   rconPort: number;
   retentionDays: number;
 }
+
+export interface ChatMessage {
+  id: string;
+  sender: string;
+  message: string;
+  timestamp: string;
+  isServer: boolean;
+}
+
+export interface ChatResponse {
+  messages: ChatMessage[];
+  error?: string;
+  updatedAt: string;
+}
+
+export interface SendChatRequestBody {
+  message: string;
+}
