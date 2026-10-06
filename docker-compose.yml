@@ -3,6 +3,10 @@ services:
     image: ghcr.io/akhdanre/mc-admin:latest
     container_name: mc-admin
     restart: unless-stopped
+    user: "${UID:-1000}:${GID:-1000}"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     ports:
       - "3000:3000"
     environment:
@@ -15,8 +19,8 @@ services:
       - MC_DATA_PATH=/data
       - MC_BACKUPS_PATH=/backups
     volumes:
-      # Minecraft world data & logs (read-only for security)
-      - ./data:/data:ro
+      # Minecraft world data & logs (read-write for admin config persistence)
+      - ./data:/data:rw
       # Backup target directory (read-write for backup creation & pruning)
       - ./backups:/backups:rw
     networks:
