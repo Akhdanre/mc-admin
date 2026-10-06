@@ -1,0 +1,29 @@
+services:
+  mc-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mc-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - RCON_HOST=${RCON_HOST:-mc-server}
+      - RCON_PORT=${RCON_PORT:-25575}
+      - RCON_PASSWORD=${RCON_PASSWORD}
+      - RCON_TIMEOUT_MS=${RCON_TIMEOUT_MS:-5000}
+      - NEXT_PUBLIC_MAP_URL=${NEXT_PUBLIC_MAP_URL:-http://localhost:8123}
+      # Optional script paths when mounted via volume
+      - BACKUP_SCRIPT_PATH=/scripts/backup_manager.py
+      - TRACKER_SCRIPT_PATH=/scripts/player_tracker.py
+    env_file:
+      - .env
+    # volumes:
+    #   - ./scripts:/scripts:ro
+    # networks:
+    #   - mc-network
+
+# networks:
+#   mc-network:
+#     external: true

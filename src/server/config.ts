@@ -6,8 +6,9 @@ export const config = {
     password: process.env.RCON_PASSWORD || "",
     timeoutMs: Number(process.env.RCON_TIMEOUT_MS) || 5000,
   },
-  ssh: {
-    host: process.env.SSH_HOST || "mc-server",
-    user: process.env.SSH_USER || "oukendev",
+  scripts: {
+    // When deployed in container, scripts can run locally (e.g. via shared volume) or via docker exec
+    backupManager: process.env.BACKUP_SCRIPT_PATH || "/scripts/backup_manager.py",
+    playerTracker: process.env.TRACKER_SCRIPT_PATH || "/scripts/player_tracker.py",
   },
 };

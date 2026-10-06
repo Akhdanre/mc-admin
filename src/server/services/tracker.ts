@@ -10,9 +10,7 @@ export async function getPlayerHistory(onlinePlayerNames: string[] = []): Promis
   const updatedAt = new Date().toLocaleTimeString();
 
   try {
-    const remoteCmd = "python3 /home/oukendev/scripts/player_tracker.py";
-    const sshTarget = config.ssh.host;
-    const command = `ssh -o BatchMode=yes -o ConnectTimeout=5 ${sshTarget} "${remoteCmd}"`;
+    const command = `python3 ${config.scripts.playerTracker}`;
 
     const { stdout } = await execAsync(command, { timeout: 8000 });
     const rawList: Array<{

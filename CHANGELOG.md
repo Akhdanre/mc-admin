@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Typed fetch helpers `apiGet` / `apiPost` in `src/lib/api.ts`.
 - `server-only` package and a `server-only` guard import in every `src/server/`
   module, so server code (RCON credentials) can never be bundled to the client.
-- Added `.env.example` template covering RCON, SSH, and Map URL variables.
+- Added `.env.example` template covering RCON and Map URL variables.
+- Added Docker support: multi-stage `Dockerfile`, `docker-compose.yml`, and `.dockerignore` with standalone Next.js deployment.
 ### Fixed
 
 - Fixed sidebar navigation buttons alignment issue caused by `justify-center` base style conflict.
@@ -35,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Moved server code** from `src/services/` + `src/config.ts` to
   `src/server/services/` + `src/server/config.ts`, updating all import paths.
 - Removed redundant `PORT` config parsing to use default platform behavior.
+- Removed SSH host/user configuration in favor of local/containerized execution for backup and player tracker scripts.
 ## [0.1.0] - 2026-10-06
 
 ### Added

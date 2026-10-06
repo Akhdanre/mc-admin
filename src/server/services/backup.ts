@@ -11,10 +11,8 @@ import type {
 
 const execAsync = promisify(exec);
 
-const REMOTE_SCRIPT = "/home/oukendev/scripts/backup_manager.py";
-
-function sshCommand(remoteArgs: string): string {
-  return `ssh -o BatchMode=yes -o ConnectTimeout=5 ${config.ssh.host} "python3 ${REMOTE_SCRIPT} ${remoteArgs}"`;
+function getCommand(args: string): string {
+  return `python3 ${config.scripts.backupManager} ${args}`.trim();
 }
 
 function shellQuote(value: string): string {
@@ -25,7 +23,7 @@ export async function getBackupStatus(): Promise<BackupStatusResponse> {
   const updatedAt = new Date().toLocaleTimeString();
 
   try {
-    const { stdout } = await execAsync(sshCommand(""), { timeout: 10000 });
+    const { stdout } = await execAsync(getCommand(""), { timeout: 10000 });
     const parsed = JSON.parse(stdout.trim());
 
     return {
@@ -56,7 +54,7 @@ export async function triggerBackup(): Promise<BackupTriggerResponse> {
   const triggeredAt = new Date().toLocaleTimeString();
 
   try {
-    const { stdout } = await execAsync(sshCommand("trigger"), { timeout: 180000 });
+    const { stdout } = await execAsync(getCommand("trigger"), { timeout: 180000 });
     const parsed = JSON.parse(stdout.trim());
 
     return {
@@ -76,7 +74,7 @@ export async function triggerBackup(): Promise<BackupTriggerResponse> {
 
 export async function deleteBackup(filename: string): Promise<BackupDeleteResponse> {
   try {
-    const { stdout } = await execAsync(sshCommand(`delete ${shellQuote(filename)}`), { timeout: 15000 });
+    const { stdout } = await execAsync(getCommand(`delete ${shellQuote(filename)}`), { timeout: 15000 });
     const parsed = JSON.parse(stdout.trim());
 
     return {
@@ -92,7 +90,7 @@ export async function deleteBackup(filename: string): Promise<BackupDeleteRespon
 
 export async function setRetention(days: number): Promise<BackupRetentionResponse> {
   try {
-    const { stdout } = await execAsync(sshCommand(`retention ${Math.trunc(days)}`), { timeout: 15000 });
+    const { stdout } = await execAsync(getCommand(`retention ${Math.trunc(days)}`), { timeout: 15000 });
     const parsed = JSON.parse(stdout.trim());
 
     return {
