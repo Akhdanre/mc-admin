@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   module, so server code (RCON credentials) can never be bundled to the client.
 - Added `.env.example` template covering RCON and Map URL variables.
 - Added Docker support: multi-stage `Dockerfile`, `docker-compose.yml`, and `.dockerignore` with standalone Next.js deployment.
+- Added automated GitHub Actions CI pipeline (`.github/workflows/ci.yml`) running typecheck, lint, unit tests, and production build on push/PR for `main` and `development`.
+- Added unit tests using `bun:test` covering Minecraft RCON list parsing, whitelist parsing, and `cn()` utility.
 ### Fixed
 
 - Fixed sidebar navigation buttons alignment issue caused by `justify-center` base style conflict.
