@@ -193,7 +193,12 @@ class DiscordBotClient {
   }
 }
 
-const botClient = new DiscordBotClient();
+declare global {
+  var __mcDiscordBotClient: DiscordBotClient | undefined;
+}
+
+const botClient = globalThis.__mcDiscordBotClient ?? new DiscordBotClient();
+globalThis.__mcDiscordBotClient = botClient;
 
 export function startDiscordBot(): void {
   botClient.start().catch(() => {});

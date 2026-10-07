@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added official MIT license (`80cb26a`).
+
+### Changed
+
+- Rewrote project documentation for public release with architecture diagrams, deployment instructions, and feature overview (`80cb26a`).
+
+### Fixed
+
+- Prevented duplicate Discord webhook dispatches and gateway client initializations across isolated Next.js runtime chunks by storing singletons on `globalThis` and removing top-level tailer execution (`25ab894`).
+
+
 ## [0.1.7] - 2026-10-07
 
 ### Added

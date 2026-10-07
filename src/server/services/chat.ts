@@ -231,15 +231,18 @@ class ChatLogTailer extends EventEmitter {
   }
 }
 
-const tailer = new ChatLogTailer(path.join(config.paths.data, "logs", "latest.log"));
+declare global {
+  var __mcChatTailer: ChatLogTailer | undefined;
+}
+
+const tailer =
+  globalThis.__mcChatTailer ??
+  new ChatLogTailer(path.join(config.paths.data, "logs", "latest.log"));
+globalThis.__mcChatTailer = tailer;
 
 export function startChatTailer(): void {
   tailer.start();
 }
-
-// Auto-start tailer so background Discord relay runs 24/7
-startChatTailer();
-
 export function subscribeToChatStream(callback: (msg: ChatMessage) => void): () => void {
   tailer.start();
   tailer.on("chat", callback);
