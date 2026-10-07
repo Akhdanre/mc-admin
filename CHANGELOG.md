@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added world map archive import with automatic safety backup and root world level detection.
 - Added in-app configuration for Minecraft RCON connection and Live Web Map URL in Settings, persisted to persistent storage without requiring `.env` files.
 
+### Removed
+
+- Removed `.env.example` in favor of in-app Settings configuration.
+
 ### Fixed
 
 - Fixed light mode text legibility across buttons, inputs, headers, and views by replacing hardcoded slate text classes with theme-adaptive tokens.
