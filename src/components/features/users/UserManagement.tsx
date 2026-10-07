@@ -282,7 +282,7 @@ export function UserManagement({
           {filteredOnline.length === 0 ? (
             <Card tone="muted" padding="lg" className="p-12 text-center">
               <span className="text-3xl">👥</span>
-              <p className="text-sm font-semibold text-slate-300 mt-2">
+              <p className="text-sm font-semibold text-foreground mt-2">
                 {searchQuery ? "No matching online players found" : "No players currently online"}
               </p>
               <p className="text-xs text-subtle-foreground mt-1">
@@ -365,21 +365,21 @@ export function UserManagement({
                         <Button
                           variant="ghost"
                           onClick={() => handleSetGamemode(name, "survival")}
-                          className="text-[10px] px-2 py-0.5 bg-surface-raised hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-[10px] px-2 py-0.5 bg-surface-raised hover:bg-surface-elevated text-foreground rounded font-mono transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Surv
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={() => handleSetGamemode(name, "creative")}
-                          className="text-[10px] px-2 py-0.5 bg-surface-raised hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-[10px] px-2 py-0.5 bg-surface-raised hover:bg-surface-elevated text-foreground rounded font-mono transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Crea
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={() => handleSetGamemode(name, "spectator")}
-                          className="text-[10px] px-2 py-0.5 bg-surface-raised hover:bg-slate-700 text-slate-300 rounded font-mono transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-[10px] px-2 py-0.5 bg-surface-raised hover:bg-surface-elevated text-foreground rounded font-mono transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Spec
                         </Button>
@@ -445,7 +445,7 @@ export function UserManagement({
           ) : filteredWhitelist.length === 0 ? (
             <Card tone="muted" padding="lg" className="p-12 text-center">
               <span className="text-3xl">🛡️</span>
-              <p className="text-sm font-semibold text-slate-300 mt-2">
+              <p className="text-sm font-semibold text-foreground mt-2">
                 {searchQuery ? "No matching whitelisted players found" : "No players in whitelist"}
               </p>
               <p className="text-xs text-subtle-foreground mt-1">
@@ -510,7 +510,7 @@ export function UserManagement({
           {filteredHistory.length === 0 ? (
             <Card tone="muted" padding="lg" className="p-12 text-center">
               <span className="text-3xl">📜</span>
-              <p className="text-sm font-semibold text-slate-300 mt-2">
+              <p className="text-sm font-semibold text-foreground mt-2">
                 {searchQuery ? "No matching players found" : "No login records found"}
               </p>
               <p className="text-xs text-subtle-foreground mt-1">
@@ -577,7 +577,7 @@ export function UserManagement({
                         <span>🚪</span>
                         <span>Last Seen / Logout:</span>
                       </span>
-                      <span className="text-slate-300 font-medium">
+                      <span className="text-foreground font-medium">
                         {player.lastSeen
                           ? new Date(player.lastSeen).toLocaleString()
                           : "-"}

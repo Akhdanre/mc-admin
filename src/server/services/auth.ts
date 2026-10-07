@@ -1,11 +1,13 @@
 import "server-only";
 import crypto from "crypto";
 import fs from "fs/promises";
+import fsSync from "fs";
 import path from "path";
 import { config } from "@/server/config";
 
 export const SESSION_COOKIE_NAME = "mc_admin_session";
 const AUTH_FILE = "admin_auth.json";
+const SESSION_SECRET_FILE = "session_secret";
 
 interface AuthStore {
   hash: string;
@@ -15,10 +17,23 @@ interface AuthStore {
 let sessionSecretCache: string | null = null;
 
 function getSessionSecret(): string {
-  if (process.env.SESSION_SECRET) {
-    return process.env.SESSION_SECRET;
+  if (sessionSecretCache) {
+    return sessionSecretCache;
   }
-  if (!sessionSecretCache) {
+  if (process.env.SESSION_SECRET) {
+    sessionSecretCache = process.env.SESSION_SECRET;
+    return sessionSecretCache;
+  }
+
+  const secretPath = path.join(config.paths.data, SESSION_SECRET_FILE);
+  try {
+    if (fsSync.existsSync(secretPath)) {
+      sessionSecretCache = fsSync.readFileSync(secretPath, "utf-8").trim();
+      if (sessionSecretCache) return sessionSecretCache;
+    }
+    sessionSecretCache = crypto.randomBytes(32).toString("hex");
+    fsSync.writeFileSync(secretPath, sessionSecretCache, "utf-8");
+  } catch {
     sessionSecretCache = crypto.randomBytes(32).toString("hex");
   }
   return sessionSecretCache;

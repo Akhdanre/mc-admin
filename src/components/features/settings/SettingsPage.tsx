@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Button, Input, SectionTitle, Muted, Badge } from "@/components/ui";
-import type { BackupStatusResponse, DiscordConfig } from "@/types";
+import type { BackupStatusResponse, DiscordConfig, AppSettings } from "@/types";
 
 interface SettingsPageProps {
   backupStatus?: BackupStatusResponse | null;
@@ -44,6 +44,25 @@ export function SettingsPage({
     message?: string;
   } | null>(null);
 
+  // Server & Map Settings State
+  const [appSettings, setAppSettings] = useState<AppSettings>({
+    rconHost: "mc-server",
+    rconPort: 25575,
+    rconPassword: "",
+    rconTimeoutMs: 5000,
+    mapUrl: "http://localhost:8123",
+  });
+  const [isSavingApp, setIsSavingApp] = useState(false);
+  const [isTestingRcon, setIsTestingRcon] = useState(false);
+  const [appSettingsStatus, setAppSettingsStatus] = useState<{
+    success?: boolean;
+    message?: string;
+  } | null>(null);
+  const [rconTestStatus, setRconTestStatus] = useState<{
+    success?: boolean;
+    message?: string;
+  } | null>(null);
+
   useEffect(() => {
     const loadDiscord = async () => {
       try {
@@ -57,6 +76,19 @@ export function SettingsPage({
       }
     };
     loadDiscord();
+
+    const loadAppSettings = async () => {
+      try {
+        const res = await fetch("/api/settings/app");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.settings) setAppSettings(data.settings);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    loadAppSettings();
   }, []);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -167,6 +199,52 @@ export function SettingsPage({
     }
   };
 
+  const handleSaveApp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingApp(true);
+    setAppSettingsStatus(null);
+    try {
+      const res = await fetch("/api/settings/app", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(appSettings),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setAppSettingsStatus({ success: false, message: data.error || "Failed to save settings" });
+      } else {
+        setAppSettingsStatus({ success: true, message: "Server connection & map settings saved!" });
+        if (data.settings) setAppSettings(data.settings);
+      }
+    } catch {
+      setAppSettingsStatus({ success: false, message: "Network error saving settings" });
+    } finally {
+      setIsSavingApp(false);
+    }
+  };
+
+  const handleTestRcon = async () => {
+    setIsTestingRcon(true);
+    setRconTestStatus(null);
+    try {
+      const res = await fetch("/api/settings/test-rcon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(appSettings),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setRconTestStatus({ success: false, message: data.error || "Connection failed" });
+      } else {
+        setRconTestStatus({ success: true, message: data.message || "RCON connected successfully!" });
+      }
+    } catch {
+      setRconTestStatus({ success: false, message: "Network error testing RCON" });
+    } finally {
+      setIsTestingRcon(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -178,6 +256,126 @@ export function SettingsPage({
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {/* Server & RCON Connection Settings */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <SectionTitle className="text-base font-semibold">
+              Minecraft Server Connection (RCON)
+            </SectionTitle>
+            <Muted className="text-xs mt-0.5">
+              Configure host, port, and credentials to communicate with Minecraft
+            </Muted>
+          </div>
+          <Badge tone="primary" className="text-xs">
+            Live Connection
+          </Badge>
+        </div>
+
+        <form onSubmit={handleSaveApp} className="space-y-4 max-w-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                RCON Host
+              </label>
+              <Input
+                value={appSettings.rconHost}
+                onChange={(e) => setAppSettings((p) => ({ ...p, rconHost: e.target.value }))}
+                placeholder="mc-server or 127.0.0.1"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Port
+              </label>
+              <Input
+                type="number"
+                value={appSettings.rconPort}
+                onChange={(e) => setAppSettings((p) => ({ ...p, rconPort: Number(e.target.value) }))}
+                placeholder="25575"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                RCON Password
+              </label>
+              <Input
+                type="password"
+                value={appSettings.rconPassword}
+                onChange={(e) => setAppSettings((p) => ({ ...p, rconPassword: e.target.value }))}
+                placeholder="••••••••"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Timeout (ms)
+              </label>
+              <Input
+                type="number"
+                value={appSettings.rconTimeoutMs}
+                onChange={(e) => setAppSettings((p) => ({ ...p, rconTimeoutMs: Number(e.target.value) }))}
+                placeholder="5000"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              Live Web Map URL
+            </label>
+            <Input
+              value={appSettings.mapUrl}
+              onChange={(e) => setAppSettings((p) => ({ ...p, mapUrl: e.target.value }))}
+              placeholder="http://localhost:8123 or https://map.yourdomain.com"
+            />
+            <Muted className="text-[11px] mt-1">
+              Used by the Live Web Map view tab (e.g. Dynmap, BlueMap, Squaremap)
+            </Muted>
+          </div>
+
+          {appSettingsStatus && (
+            <div
+              className={`p-3 rounded-lg text-xs border ${
+                appSettingsStatus.success
+                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
+                  : "bg-red-500/10 border-red-500/20 text-red-500"
+              }`}
+            >
+              {appSettingsStatus.message}
+            </div>
+          )}
+
+          {rconTestStatus && (
+            <div
+              className={`p-3 rounded-lg text-xs border ${
+                rconTestStatus.success
+                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
+                  : "bg-red-500/10 border-red-500/20 text-red-500"
+              }`}
+            >
+              {rconTestStatus.message}
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 pt-2">
+            <Button type="submit" variant="primary" disabled={isSavingApp}>
+              {isSavingApp ? "Saving..." : "Save Connection & Map Settings"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleTestRcon}
+              disabled={isTestingRcon || isSavingApp}
+            >
+              {isTestingRcon ? "Testing..." : "Test RCON Connection"}
+            </Button>
+          </div>
+        </form>
+      </Card>
+
       {/* Admin Password Change */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">

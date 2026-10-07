@@ -4,12 +4,10 @@ on:
   push:
     branches:
       - main
-      - development
   pull_request:
     branches:
       - main
       - development
-
 jobs:
   lint-test-build:
     name: Lint, Test & Build

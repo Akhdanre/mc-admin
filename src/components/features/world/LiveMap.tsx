@@ -78,7 +78,7 @@ export function LiveMap({ mapUrl = "http://192.168.137.194:8123" }: LiveMapProps
             href={currentUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-semibold px-3 py-1.5 bg-surface-raised hover:bg-slate-700 text-slate-200 border border-border-strong rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+            className="text-xs font-semibold px-3 py-1.5 bg-surface-raised hover:bg-surface-elevated text-foreground border border-border-strong rounded-xl transition flex items-center gap-1.5 cursor-pointer"
           >
             <span>Open in New Tab</span>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

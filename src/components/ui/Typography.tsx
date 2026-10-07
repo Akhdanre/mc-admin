@@ -52,7 +52,7 @@ export function Caption({ className, children, ...props }: HTMLAttributes<HTMLPa
 
 export function Mono({ className, children, ...props }: HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn("font-mono text-slate-200", className)} {...props}>
+    <span className={cn("font-mono text-foreground", className)} {...props}>
       {children}
     </span>
   );

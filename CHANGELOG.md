@@ -7,9 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.6] - 2026-10-06
+### Added
+
+- Added mod and package management interface to track installed mods, toggle state, upload `.jar` files, and search and install packages from Modrinth (`3b73356`).
+- Added direct backup archive download and one-click world snapshot rollback system (`f3e5516`).
+- Added world map archive import with automatic safety backup and root world level detection (`f3e5516`).
+- Added in-app configuration for Minecraft RCON connection and Live Web Map URL in Settings, persisted to persistent storage without requiring `.env` files (`2b34ead`).
+- Added persistent session secret storage in `/data/session_secret` to retain login sessions across container restarts without manual environment configuration (`6b3a63f`).
+
+### Removed
+
+- Removed `.env.example` in favor of in-app Settings configuration (`1d45dea`).
+- Removed obsolete RCON and web map environment variables from `docker-compose.yml` (`6b3a63f`).
 
 ### Fixed
+- Published release notes and changelog descriptions to GitHub Releases during automated release workflow (`427b4d2`).
+
+- Fixed light mode text legibility across buttons, inputs, headers, and views by replacing hardcoded slate text classes with theme-adaptive tokens (`dc543b9`).
+- Persisted and synced server maintenance difficulty state across page/tab navigation by querying live Minecraft server difficulty via RCON (`3973790`).
+- Prevented sidebar badge text wrapping (`725126c`).
+## [0.1.6] - 2026-10-06
+### Fixed
+
 
 - Auto-start chat tailer and Discord bot on container boot via Next.js `src/instrumentation.ts` (`fa03a97`).
 - Upgraded bind-mount log tailer to active `fs.promises.stat` polling (500ms) with console diagnostics to prevent Docker volume inotify sync deadlocks across containers (`fa03a97`).

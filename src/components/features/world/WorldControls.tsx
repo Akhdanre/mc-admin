@@ -7,12 +7,24 @@ import { Badge, Button, Card, Input } from "@/components/ui";
 interface WorldControlsProps {
   onExecuteCommand: (command: string) => Promise<string>;
   isBusy: boolean;
+  currentDifficulty?: string;
+  onRefreshStatus?: () => void;
+  onShowFeedback?: (message: string, isError?: boolean) => void;
 }
 
-export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) {
+export function WorldControls({
+  onExecuteCommand,
+  isBusy,
+  currentDifficulty,
+  onRefreshStatus,
+  onShowFeedback,
+}: WorldControlsProps) {
+  const [isImporting, setIsImporting] = useState(false);
+  const [pendingRestart, setPendingRestart] = useState(false);
   const [broadcastMessage, setBroadcastMessage] = useState("");
-  const [difficulty, setDifficulty] = useState<string>("normal");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
 
+  const activeDifficulty = selectedDifficulty ?? currentDifficulty ?? "normal";
   const runCommand = async (cmd: string) => {
     await onExecuteCommand(cmd);
   };
@@ -23,6 +35,51 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
     if (!clean) return;
     await onExecuteCommand(`say [ANNOUNCEMENT] ${clean}`);
     setBroadcastMessage("");
+  };
+  const handleImportMap = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const name = file.name.toLowerCase();
+    if (!name.endsWith(".zip") && !name.endsWith(".tar.gz") && !name.endsWith(".tgz")) {
+      onShowFeedback?.("Only .zip and .tar.gz world archives are supported", true);
+      return;
+    }
+
+    if (
+      !window.confirm(
+        `Import map archive "${file.name}"?\n\nWarning: An automatic safety backup will be created, and the active server world will be replaced. A server restart will be required.`
+      )
+    ) {
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      setIsImporting(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/world/import", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to import world");
+      }
+
+      setPendingRestart(true);
+      onShowFeedback?.(data.message || "Map successfully imported! Restart server to load.");
+      onRefreshStatus?.();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Import failed";
+      onShowFeedback?.(msg, true);
+    } finally {
+      setIsImporting(false);
+      e.target.value = "";
+    }
   };
 
   return (
@@ -36,6 +93,51 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
         <p className="text-xs text-muted-foreground mt-0.5">
           Control day/night cycles, weather patterns, gamerules, and perform server maintenance.
         </p>
+      </Card>
+
+      {pendingRestart && (
+        <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">⚠️</span>
+            <div>
+              <p className="font-semibold text-sm">Server restart required</p>
+              <p className="text-xs text-amber-200/80">
+                New world map files have been extracted. Restart Minecraft server container to load the new map.
+              </p>
+            </div>
+          </div>
+          <Button size="sm" variant="secondary" onClick={() => setPendingRestart(false)}>
+            Dismiss
+          </Button>
+        </div>
+      )}
+
+      {/* Map Import Card */}
+      <Card padding="lg" className="space-y-3 border-primary/20 bg-primary/5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🗺️</span>
+              <h3 className="text-base font-semibold text-heading">Import New World Map</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Upload a custom map archive (.zip or .tar.gz). A safety backup will be generated before replacing the world.
+            </p>
+          </div>
+
+          <label className="cursor-pointer self-start sm:self-auto shrink-0">
+            <input
+              type="file"
+              accept=".zip,.tar.gz,.tgz"
+              className="hidden"
+              disabled={isImporting || isBusy}
+              onChange={handleImportMap}
+            />
+            <span className="inline-flex items-center justify-center font-semibold transition cursor-pointer rounded-xl px-3 py-2 text-xs bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm">
+              {isImporting ? "Importing Map..." : "Upload & Import Map"}
+            </span>
+          </label>
+        </div>
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -180,17 +282,18 @@ export function WorldControls({ onExecuteCommand, isBusy }: WorldControlsProps) 
 
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-xs text-slate-300 font-medium">Difficulty:</span>
+              <span className="text-xs text-foreground font-medium">Difficulty:</span>
               <div className="flex items-center gap-1">
                 {["peaceful", "easy", "normal", "hard"].map((diff) => (
                   <Button
                     key={diff}
                     variant="tab"
-                    active={difficulty === diff}
+                    active={activeDifficulty.toLowerCase() === diff}
                     size="sm"
                     onClick={async () => {
-                      setDifficulty(diff);
+                      setSelectedDifficulty(diff);
                       await runCommand(`difficulty ${diff}`);
+                      onRefreshStatus?.();
                     }}
                     disabled={isBusy}
                     className="px-2.5 py-1 text-[11px] capitalize font-mono"

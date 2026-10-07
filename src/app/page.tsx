@@ -11,6 +11,7 @@ import { ConsoleView } from "@/components/features/console/ConsoleView";
 import { BackupPage } from "@/components/features/backup/BackupPage";
 import { SettingsPage } from "@/components/features/settings/SettingsPage";
 import { ChatPage } from "@/components/features/chat/ChatPage";
+import { ModManager } from "@/components/features/mods/ModManager";
 import { useServerStatus } from "@/hooks/useServerStatus";
 import { useServerActions } from "@/hooks/useServerActions";
 import { useFeedback } from "@/hooks/useFeedback";
@@ -19,6 +20,7 @@ const TAB_LABELS: Record<AdminTab, string> = {
   dashboard: "dashboard",
   users: "users",
   world: "World Controls",
+  mods: "Mods & Packages",
   backups: "Backup Management",
   map: "Live Web Map",
   commands: "RCON Console",
@@ -51,6 +53,7 @@ export default function Home() {
     handleTriggerBackup,
     handleDeleteBackup,
     handleSetRetention,
+    handleRestoreBackup,
   } = useServerActions({ showFeedback, refresh, setWhitelistStatus });
 
   const isConnected = !playerStatus.error;
@@ -83,7 +86,7 @@ export default function Home() {
               </svg>
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase font-mono font-semibold tracking-wider text-slate-500">
+              <span className="text-xs uppercase font-mono font-semibold tracking-wider text-muted-foreground">
                 Active View:
               </span>
               <span className="text-sm font-bold text-heading capitalize">{TAB_LABELS[currentTab]}</span>
@@ -92,7 +95,7 @@ export default function Home() {
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 text-xs font-mono px-3 py-1 bg-overlay/80 border border-border rounded-lg text-foreground">
-              <span className="text-slate-500">Host:</span>
+              <span className="text-muted-foreground">Host:</span>
               <span>{serverInfo.host || "Connecting..."}</span>
               <span className="text-slate-600">:</span>
               <span>{serverInfo.port || 25575}</span>
@@ -175,8 +178,18 @@ export default function Home() {
           )}
 
           {currentTab === "world" && (
-            <WorldControls onExecuteCommand={handleExecuteCommand} isBusy={isBusy} />
+            <WorldControls
+              onExecuteCommand={handleExecuteCommand}
+              isBusy={isBusy}
+              currentDifficulty={playerStatus.difficulty}
+              onRefreshStatus={refresh}
+              onShowFeedback={showFeedback}
+            />
           )}
+          {currentTab === "mods" && (
+            <ModManager onShowFeedback={showFeedback} />
+          )}
+
 
           {currentTab === "backups" && (
             <BackupPage
@@ -185,13 +198,14 @@ export default function Home() {
               onTriggerBackup={handleTriggerBackup}
               onDeleteBackup={handleDeleteBackup}
               onSetRetention={handleSetRetention}
+              onRestoreBackup={handleRestoreBackup}
               isBackingUp={isBackingUp}
               isBusy={isBusy}
             />
           )}
 
           {currentTab === "map" && (
-            <LiveMap mapUrl={process.env.NEXT_PUBLIC_MAP_URL || "http://192.168.137.194:8123"} />
+            <LiveMap mapUrl={serverInfo.mapUrl || "http://localhost:8123"} />
           )}
 
           {currentTab === "commands" && (

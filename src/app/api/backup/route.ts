@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { getBackupStatus, triggerBackup, deleteBackup, setRetention } from "@/server/services/backup";
+import { getBackupStatus, triggerBackup, deleteBackup, setRetention, restoreBackup } from "@/server/services/backup";
 
 interface BackupActionBody {
-  action?: "trigger" | "delete" | "retention";
+  action?: "trigger" | "delete" | "retention" | "restore";
   filename?: string;
   retentionDays?: number;
 }
@@ -40,6 +40,13 @@ export async function POST(request: Request) {
         );
       }
       const result = await setRetention(body.retentionDays);
+      return NextResponse.json(result, { status: result.success ? 200 : 500 });
+    }
+    case "restore": {
+      if (!body.filename) {
+        return NextResponse.json({ success: false, error: "filename is required" }, { status: 400 });
+      }
+      const result = await restoreBackup(body.filename);
       return NextResponse.json(result, { status: result.success ? 200 : 500 });
     }
     default:

@@ -2,6 +2,7 @@ export interface PlayerStatus {
   onlineCount: number;
   maxCount: number;
   players: string[];
+  difficulty?: string;
   raw: string;
   error?: string;
   updatedAt: string;
@@ -63,6 +64,12 @@ export interface BackupRetentionResponse {
   error?: string;
 }
 
+export interface BackupRestoreResponse {
+  success: boolean;
+  restored?: string;
+  error?: string;
+}
+
 export interface WhitelistStatus {
   players: string[];
   raw: string;
@@ -84,6 +91,7 @@ export interface CommandRequestBody {
 export interface ServerInfoResponse {
   host: string;
   port: number;
+  mapUrl?: string;
 }
 
 export interface PlayerLocation {
@@ -121,11 +129,23 @@ export interface AuthResponse {
   error?: string;
 }
 
-export interface ServerSettingsResponse {
-  mapUrl: string;
+export interface AppSettings {
   rconHost: string;
   rconPort: number;
-  retentionDays: number;
+  rconPassword: string;
+  rconTimeoutMs: number;
+  mapUrl: string;
+}
+
+export interface AppSettingsResponse {
+  settings: AppSettings;
+  error?: string;
+}
+
+export interface TestRconResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
 }
 
 export interface ChatMessage {
@@ -163,5 +183,39 @@ export interface DiscordSettingsResponse {
 
 export interface TestDiscordWebhookResponse {
   success: boolean;
+  error?: string;
+}
+
+export interface ModInfo {
+  fileName: string;
+  name: string;
+  id?: string;
+  version?: string;
+  description?: string;
+  loader?: "fabric" | "forge" | "neoforge" | "quilt" | "unknown";
+  sizeBytes: number;
+  modifiedAt: string;
+  enabled: boolean;
+}
+
+export interface ModsListResponse {
+  mods: ModInfo[];
+  error?: string;
+}
+
+export interface ModrinthSearchResult {
+  project_id: string;
+  title: string;
+  description: string;
+  author: string;
+  icon_url?: string;
+  downloads: number;
+  loaders: string[];
+  versions: string[];
+}
+
+export interface ModrinthSearchResponse {
+  hits: ModrinthSearchResult[];
+  total_hits: number;
   error?: string;
 }

@@ -10,6 +10,7 @@ import type {
   BackupTriggerResponse,
   BackupDeleteResponse,
   BackupRetentionResponse,
+  BackupRestoreResponse,
   BackupItem,
 } from "@/types";
 
@@ -237,6 +238,50 @@ export async function triggerBackup(): Promise<BackupTriggerResponse> {
       success: false,
       error: err instanceof Error ? err.message : String(err),
       triggeredAt,
+    };
+  }
+}
+
+/**
+ * Restores / rolls back world data from an existing backup archive (.tar.gz):
+ * 1. Checks backup file existence
+ * 2. Attempts to stop autosave and alert players via RCON
+ * 3. Extracts tar archive over the data directory
+ */
+export async function restoreBackup(filename: string): Promise<BackupRestoreResponse> {
+  if (!filename || filename.includes("/") || filename.includes("\\")) {
+    return { success: false, error: "Invalid filename" };
+  }
+
+  const backupDir = config.paths.backups;
+  const dataDir = config.paths.data;
+  const archivePath = path.join(backupDir, filename);
+
+  try {
+    await fs.access(archivePath);
+  } catch {
+    return { success: false, error: "Backup archive file not found" };
+  }
+
+  try {
+    try {
+      await executeRconCommand("say [SERVER] World rollback in progress...");
+      await executeRconCommand("save-off");
+    } catch {
+      // RCON might be offline if server is stopped
+    }
+
+    // Extract archive over target data directory
+    await execAsync(`tar -xzf "${archivePath}" -C "${dataDir}"`, { timeout: 300000 });
+
+    return {
+      success: true,
+      restored: filename,
+    };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
     };
   }
 }
