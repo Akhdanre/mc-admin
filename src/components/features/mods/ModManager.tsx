@@ -39,7 +39,11 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
   };
 
   useEffect(() => {
-    loadMods();
+    // Defer initial load to avoid synchronous setState inside render effect
+    queueMicrotask(() => {
+      loadMods();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleToggle = async (mod: ModInfo) => {
@@ -325,6 +329,7 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
                 <div key={item.project_id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-start gap-3 min-w-0 flex-1">
                     {item.icon_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={item.icon_url}
                         alt={item.title}

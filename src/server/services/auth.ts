@@ -1,6 +1,7 @@
 import "server-only";
 import crypto from "crypto";
 import fs from "fs/promises";
+import fsSync from "fs";
 import path from "path";
 import { config } from "@/server/config";
 
@@ -26,7 +27,6 @@ function getSessionSecret(): string {
 
   const secretPath = path.join(config.paths.data, SESSION_SECRET_FILE);
   try {
-    const fsSync = require("fs");
     if (fsSync.existsSync(secretPath)) {
       sessionSecretCache = fsSync.readFileSync(secretPath, "utf-8").trim();
       if (sessionSecretCache) return sessionSecretCache;

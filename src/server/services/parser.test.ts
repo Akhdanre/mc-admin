@@ -1,6 +1,5 @@
 import { describe, expect, it } from "bun:test";
 import { parseDifficulty, parsePlayerList, parseWhitelist } from "@/server/services/parser";
-import { cn } from "@/lib/cn";
 
 describe("parser service", () => {
   it("parses standard Minecraft player list output", () => {
