@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed obsolete RCON and web map environment variables from `docker-compose.yml` (`6b3a63f`).
 
 ### Fixed
+- Published release notes and changelog descriptions to GitHub Releases during automated release workflow (`427b4d2`).
 
 - Fixed light mode text legibility across buttons, inputs, headers, and views by replacing hardcoded slate text classes with theme-adaptive tokens (`dc543b9`).
 - Persisted and synced server maintenance difficulty state across page/tab navigation by querying live Minecraft server difficulty via RCON (`3973790`).
