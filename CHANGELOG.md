@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-10-07
+
 ### Added
 
 - Added mod and package management interface to track installed mods, toggle state, upload `.jar` files, and search and install packages from Modrinth (`3b73356`).
@@ -26,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed light mode text legibility across buttons, inputs, headers, and views by replacing hardcoded slate text classes with theme-adaptive tokens (`dc543b9`).
 - Persisted and synced server maintenance difficulty state across page/tab navigation by querying live Minecraft server difficulty via RCON (`3973790`).
 - Prevented sidebar badge text wrapping (`725126c`).
+
 ## [0.1.6] - 2026-10-06
 ### Fixed
 
