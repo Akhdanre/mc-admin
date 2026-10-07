@@ -11,11 +11,6 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - RCON_HOST=${RCON_HOST:-mc-server}
-      - RCON_PORT=${RCON_PORT:-25575}
-      - RCON_PASSWORD=${RCON_PASSWORD}
-      - RCON_TIMEOUT_MS=${RCON_TIMEOUT_MS:-5000}
-      - NEXT_PUBLIC_MAP_URL=${NEXT_PUBLIC_MAP_URL:-http://localhost:8123}
       - MC_DATA_PATH=/data
       - MC_BACKUPS_PATH=/backups
     volumes:

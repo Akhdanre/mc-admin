@@ -13,10 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added direct backup archive download and one-click world snapshot rollback system.
 - Added world map archive import with automatic safety backup and root world level detection.
 - Added in-app configuration for Minecraft RCON connection and Live Web Map URL in Settings, persisted to persistent storage without requiring `.env` files.
+- Added persistent session secret storage in `/data/session_secret` to retain login sessions across container restarts without manual environment configuration.
 
 ### Removed
 
 - Removed `.env.example` in favor of in-app Settings configuration.
+- Removed obsolete RCON and web map environment variables from `docker-compose.yml`.
 
 ### Fixed
 
