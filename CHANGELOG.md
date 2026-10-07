@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added official MIT license (`80cb26a`).
+
+### Changed
+
+- Rewrote project documentation for public release with architecture diagrams, deployment instructions, and feature overview (`80cb26a`).
+
+### Fixed
+
+- Prevented duplicate Discord webhook dispatches and gateway client initializations across isolated Next.js runtime chunks by storing singletons on `globalThis` and removing top-level tailer execution (`25ab894`).
+
+
+## [0.1.7] - 2026-10-07
+
+### Added
+
 - Added mod and package management interface to track installed mods, toggle state, upload `.jar` files, and search and install packages from Modrinth (`3b73356`).
 - Added direct backup archive download and one-click world snapshot rollback system (`f3e5516`).
 - Added world map archive import with automatic safety backup and root world level detection (`f3e5516`).
@@ -26,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed light mode text legibility across buttons, inputs, headers, and views by replacing hardcoded slate text classes with theme-adaptive tokens (`dc543b9`).
 - Persisted and synced server maintenance difficulty state across page/tab navigation by querying live Minecraft server difficulty via RCON (`3973790`).
 - Prevented sidebar badge text wrapping (`725126c`).
-- Prevented duplicate Discord webhook dispatches and gateway client initializations across isolated Next.js runtime chunks by storing singletons on `globalThis` and removing top-level tailer execution.
+
 ## [0.1.6] - 2026-10-06
 ### Fixed
 
