@@ -49,9 +49,13 @@ export async function saveAppSettings(patch: Partial<AppSettings>): Promise<AppS
     rconTimeoutMs: patch.rconTimeoutMs !== undefined ? Number(patch.rconTimeoutMs) : current.rconTimeoutMs,
     mapUrl: patch.mapUrl !== undefined ? patch.mapUrl.trim() : current.mapUrl,
   };
-
-  await fs.mkdir(config.paths.data, { recursive: true });
-  await fs.writeFile(getSettingsPath(), JSON.stringify(updated, null, 2), "utf-8");
+  try {
+    await fs.mkdir(config.paths.data, { recursive: true });
+    await fs.writeFile(getSettingsPath(), JSON.stringify(updated, null, 2), "utf-8");
+  } catch (err) {
+    // If data directory cannot be written (e.g. read-only CI test environment), keep in-memory
+    console.warn("[AppSettings] Could not persist settings to disk:", err);
+  }
   cachedSettings = updated;
   return updated;
 }
