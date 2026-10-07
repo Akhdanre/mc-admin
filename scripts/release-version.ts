@@ -43,24 +43,30 @@ async function main() {
   const unreleasedRegex = /## \[Unreleased\]([\s\S]*?)(## \[\d+\.\d+\.\d+\])/;
   const match = changelog.match(unreleasedRegex);
 
+  let releaseNotes = "";
   if (match) {
     const unreleasedContent = match[1].trim();
 
     // If there is actual content in unreleased
     if (unreleasedContent.length > 0) {
+      releaseNotes = unreleasedContent;
       const releaseSection = `## [Unreleased]\n\n## [${newVersion}] - ${today}\n\n${unreleasedContent}\n\n`;
       changelog = changelog.replace(unreleasedRegex, `${releaseSection}$2`);
     } else {
       // Empty unreleased section, still add version anchor
-      const releaseSection = `## [Unreleased]\n\n## [${newVersion}] - ${today}\n\n### Changed\n\n- Release version ${newVersion}.\n\n`;
+      releaseNotes = `### Changed\n\n- Release version ${newVersion}.`;
+      const releaseSection = `## [Unreleased]\n\n## [${newVersion}] - ${today}\n\n${releaseNotes}\n\n`;
       changelog = changelog.replace(unreleasedRegex, `${releaseSection}$2`);
     }
 
     fs.writeFileSync(changelogPath, changelog, "utf-8");
     console.log(`Updated CHANGELOG.md with release section [${newVersion}] - ${today}`);
   } else {
+    releaseNotes = `### Changed\n\n- Release version ${newVersion}.`;
     console.warn("Could not find ## [Unreleased] section in CHANGELOG.md");
   }
+
+  fs.writeFileSync("RELEASE_NOTES.md", releaseNotes + "\n", "utf-8");
 
   // Set GitHub Action output if in GHA environment
   if (process.env.GITHUB_OUTPUT) {

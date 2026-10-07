@@ -44,6 +44,13 @@ jobs:
           git tag ${{ steps.bump.outputs.tag }}
           git push origin main --tags
 
+      - name: Create GitHub Release
+        run: |
+          gh release create "${{ steps.bump.outputs.tag }}" \
+            --title "${{ steps.bump.outputs.tag }}" \
+            --notes-file RELEASE_NOTES.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build-container:
     name: Build & Push Container Image
     needs: version-and-release
