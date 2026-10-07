@@ -1,15 +1,16 @@
 import "server-only";
 import { Rcon } from "rcon-client";
-import { config } from "@/server/config";
+import { getAppSettings } from "@/server/services/appSettings";
 import { parseDifficulty, parsePlayerList, parseWhitelist } from "@/server/services/parser";
 import type { PlayerStatus, WhitelistStatus } from "@/types";
 
 export async function executeRconCommand(command: string): Promise<string> {
+  const settings = await getAppSettings();
   const rcon = await Rcon.connect({
-    host: config.rcon.host,
-    port: config.rcon.port,
-    password: config.rcon.password,
-    timeout: config.rcon.timeoutMs,
+    host: settings.rconHost,
+    port: settings.rconPort,
+    password: settings.rconPassword,
+    timeout: settings.rconTimeoutMs,
   });
 
   try {

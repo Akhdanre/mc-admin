@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { config } from "@/server/config";
+import { getAppSettings } from "@/server/services/appSettings";
 
 export async function GET() {
+  const settings = await getAppSettings();
   return NextResponse.json({
-    host: config.rcon.host,
-    port: config.rcon.port,
+    host: settings.rconHost,
+    port: settings.rconPort,
+    mapUrl: settings.mapUrl,
   });
 }

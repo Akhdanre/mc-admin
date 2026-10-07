@@ -205,7 +205,7 @@ export default function Home() {
           )}
 
           {currentTab === "map" && (
-            <LiveMap mapUrl={process.env.NEXT_PUBLIC_MAP_URL || "http://192.168.137.194:8123"} />
+            <LiveMap mapUrl={serverInfo.mapUrl || "http://localhost:8123"} />
           )}
 
           {currentTab === "commands" && (

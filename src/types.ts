@@ -91,6 +91,7 @@ export interface CommandRequestBody {
 export interface ServerInfoResponse {
   host: string;
   port: number;
+  mapUrl?: string;
 }
 
 export interface PlayerLocation {
@@ -128,11 +129,23 @@ export interface AuthResponse {
   error?: string;
 }
 
-export interface ServerSettingsResponse {
-  mapUrl: string;
+export interface AppSettings {
   rconHost: string;
   rconPort: number;
-  retentionDays: number;
+  rconPassword: string;
+  rconTimeoutMs: number;
+  mapUrl: string;
+}
+
+export interface AppSettingsResponse {
+  settings: AppSettings;
+  error?: string;
+}
+
+export interface TestRconResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
 }
 
 export interface ChatMessage {
