@@ -35,6 +35,17 @@ describe("Chat Log Parser", () => {
     expect(result?.isServer).toBe(true);
   });
 
+  it("parses rcon/console broadcast lines with [Not Secure] prefix", () => {
+    const line =
+      "[10Oct2026 18:43:48.355] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Rcon] test_discord_webhook";
+    const result = parseChatLine(line, 4);
+
+    expect(result).not.toBeNull();
+    expect(result?.sender).toBe("Server");
+    expect(result?.message).toBe("test_discord_webhook");
+    expect(result?.isServer).toBe(true);
+  });
+
   it("returns null for non-chat lines", () => {
     const loginLine =
       "[06Oct2026 11:59:00.677] [Server thread/INFO]: Karepto joined the game";

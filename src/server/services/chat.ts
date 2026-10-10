@@ -16,8 +16,8 @@ const TIMESTAMP_REGEX = /^\[([^\]]+)\]/;
 // Matches [Not Secure] <Username> Message or <Username> Message
 const PLAYER_CHAT_REGEX = /<([a-zA-Z0-9_]{1,16})>\s*(.*)$/;
 
-// Matches [Server] Message
-const SERVER_CHAT_REGEX = /\[Server\]\s*(.*)$/;
+// Matches [Server] or [Rcon] Message
+const SERVER_CHAT_REGEX = /\[(Server|Rcon)\]\s*(.*)$/;
 export const JOIN_REGEX = /:\s*([a-zA-Z0-9_]{1,16})\s+joined the game/;
 export const LEAVE_REGEX = /:\s*([a-zA-Z0-9_]{1,16})\s+left the game/;
 export const ADVANCEMENT_REGEX = /:\s*([a-zA-Z0-9_]{1,16})\s+(has made the advancement|has completed the challenge|has reached the goal)\s+(\[.+\])/;
@@ -88,7 +88,7 @@ export function parseChatLine(line: string, index: number): ChatMessage | null {
     return {
       id: `chat-${index}-${Date.now()}`,
       sender: "Server",
-      message: serverMatch[1].trim(),
+      message: serverMatch[2].trim(),
       timestamp,
       isServer: true,
     };
@@ -264,7 +264,9 @@ class ChatLogTailer extends EventEmitter {
           }
         }
       });
+      rl.on("close", () => resolve());
       rl.on("error", () => resolve());
+      stream.on("error", () => resolve());
     } catch {
       resolve();
     }
