@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseChatLine } from "./chat";
+import { parseChatLine, parseServerEvent } from "./chat";
 
 describe("Chat Log Parser", () => {
   it("parses Forge/Modded player chat lines with [Not Secure] prefix", () => {
@@ -42,5 +42,31 @@ describe("Chat Log Parser", () => {
 
     const garbageLine = "Some random line without tags";
     expect(parseChatLine(garbageLine, 5)).toBeNull();
+  });
+
+  it("parses player death events", () => {
+    const pvpLine =
+      "[10Oct2026 18:03:04.506] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: oukenz was slain by zackers69";
+    const event = parseServerEvent(pvpLine);
+    expect(event).not.toBeNull();
+    expect(event?.type).toBe("death");
+    expect(event?.title).toBe("Player Death");
+    expect(event?.description).toContain("oukenz was slain by zackers69");
+
+    const fallLine =
+      "[10Oct2026 15:19:54.073] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: viniciusell fell from a high place";
+    const fallEvent = parseServerEvent(fallLine);
+    expect(fallEvent?.type).toBe("death");
+    expect(fallEvent?.description).toContain("viniciusell fell from a high place");
+  });
+
+  it("parses player advancement events", () => {
+    const advLine =
+      "[10Oct2026 18:16:57.321] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: oukenz has made the advancement [Suit Up]";
+    const event = parseServerEvent(advLine);
+    expect(event).not.toBeNull();
+    expect(event?.type).toBe("advancement");
+    expect(event?.title).toBe("Advancement Made");
+    expect(event?.description).toContain("Suit Up");
   });
 });

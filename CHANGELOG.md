@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added Discord notifications for player death messages and advancement/achievement unlocks (including challenges and goals) with colored embeds.
 - Added official MIT license (`80cb26a`).
-
 ### Changed
 
 - Rewrote project documentation for public release with architecture diagrams, deployment instructions, and feature overview (`80cb26a`).
