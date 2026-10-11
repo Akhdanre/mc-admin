@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added automated world backup scheduler to execute periodic backups and enforce retention policy (`startBackupScheduler`).
 
+## [0.1.9] - 2026-10-10
+
+### Changed
+
+- Release version 0.1.9.
+
 ## [0.1.8] - 2026-10-07
 
 ### Added
