@@ -312,21 +312,40 @@ declare global {
   var __mcBackupTimer: NodeJS.Timeout | undefined;
 }
 
-export function startBackupScheduler(intervalMs = 24 * 60 * 60 * 1000): void {
+export function getMsUntilTargetHour(targetHour = 5): number {
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(targetHour, 0, 0, 0);
+  if (next.getTime() <= now.getTime()) {
+    next.setDate(next.getDate() + 1);
+  }
+  return next.getTime() - now.getTime();
+}
+
+export function startBackupScheduler(targetHour = 5): void {
   if (globalThis.__mcBackupTimer) return;
 
-  console.log(`[BackupScheduler] Initializing auto backup schedule (interval: ${Math.round(intervalMs / 3600000)}h)`);
-  globalThis.__mcBackupTimer = setInterval(async () => {
-    try {
-      console.log("[BackupScheduler] Triggering scheduled world backup...");
-      const res = await triggerBackup();
-      if (res.success) {
-        console.log(`[BackupScheduler] Scheduled backup finished: ${res.output}`);
-      } else {
-        console.error(`[BackupScheduler] Scheduled backup failed: ${res.error}`);
+  const delay = getMsUntilTargetHour(targetHour);
+  console.log(
+    `[BackupScheduler] Scheduled daily auto backup at ${String(targetHour).padStart(2, "0")}:00 (in ${(delay / 3600000).toFixed(1)}h)`
+  );
+
+  globalThis.__mcBackupTimer = setTimeout(() => {
+    const runBackup = async () => {
+      try {
+        console.log("[BackupScheduler] Triggering scheduled world backup...");
+        const res = await triggerBackup();
+        if (res.success) {
+          console.log(`[BackupScheduler] Scheduled backup finished: ${res.output}`);
+        } else {
+          console.error(`[BackupScheduler] Scheduled backup failed: ${res.error}`);
+        }
+      } catch (err) {
+        console.error("[BackupScheduler] Error running scheduled backup:", err);
       }
-    } catch (err) {
-      console.error("[BackupScheduler] Error running scheduled backup:", err);
-    }
-  }, intervalMs);
+    };
+
+    runBackup();
+    globalThis.__mcBackupTimer = setInterval(runBackup, 24 * 60 * 60 * 1000);
+  }, delay);
 }

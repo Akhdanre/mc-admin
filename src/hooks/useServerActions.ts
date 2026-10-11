@@ -113,7 +113,8 @@ export function useServerActions({ showFeedback, refresh, setWhitelistStatus }: 
     showFeedback("Backup started. This may take a moment...");
     try {
       const data = await apiPost<{ success?: boolean; output?: string; error?: string }>(
-        "/api/backup"
+        "/api/backup",
+        { action: "trigger" }
       );
 
       if (data.success) {
