@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseFallbackFromFilename, extractJarMetadata } from "@/server/services/mods";
+import { parseFallbackFromFilename, extractJarMetadata } from "@/server/domain/parse/mods";
 
 describe("mod service", () => {
   it("parses fallback name and version from filename conventions", () => {
