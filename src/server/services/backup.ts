@@ -307,3 +307,26 @@ async function pruneBackups(): Promise<void> {
     }
   }
 }
+
+declare global {
+  var __mcBackupTimer: NodeJS.Timeout | undefined;
+}
+
+export function startBackupScheduler(intervalMs = 24 * 60 * 60 * 1000): void {
+  if (globalThis.__mcBackupTimer) return;
+
+  console.log(`[BackupScheduler] Initializing auto backup schedule (interval: ${Math.round(intervalMs / 3600000)}h)`);
+  globalThis.__mcBackupTimer = setInterval(async () => {
+    try {
+      console.log("[BackupScheduler] Triggering scheduled world backup...");
+      const res = await triggerBackup();
+      if (res.success) {
+        console.log(`[BackupScheduler] Scheduled backup finished: ${res.output}`);
+      } else {
+        console.error(`[BackupScheduler] Scheduled backup failed: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[BackupScheduler] Error running scheduled backup:", err);
+    }
+  }, intervalMs);
+}
