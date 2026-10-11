@@ -13,9 +13,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  let body: BackupActionBody;
+  let body: BackupActionBody = { action: "trigger" };
   try {
-    body = (await request.json()) as BackupActionBody;
+    const text = await request.text();
+    if (text.trim()) {
+      body = JSON.parse(text) as BackupActionBody;
+    }
   } catch {
     return NextResponse.json({ success: false, error: "Invalid JSON body" }, { status: 400 });
   }

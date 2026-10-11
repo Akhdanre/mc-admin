@@ -13,6 +13,7 @@ services:
       - NODE_ENV=production
       - MC_DATA_PATH=/data
       - MC_BACKUPS_PATH=/backups
+      - TZ=Asia/Jakarta
     volumes:
       # Minecraft world data & logs (read-write for admin config persistence)
       - ./data:/data:rw
