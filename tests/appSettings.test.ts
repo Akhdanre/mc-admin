@@ -1,5 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { getAppSettings, saveAppSettings } from "@/server/settings";
+import {
+  getAppSettings,
+  saveAppSettings,
+  getServerProperties,
+  saveServerProperties,
+} from "@/server/settings";
 
 describe("app settings service", () => {
   it("loads default settings structure", async () => {
@@ -19,5 +24,23 @@ describe("app settings service", () => {
 
     // Revert
     await saveAppSettings({ rconPort: 25575 });
+  });
+
+  it("loads server.properties key-value map", async () => {
+    const props = await getServerProperties();
+    expect(typeof props).toBe("object");
+    expect(props["server-port"]).toBeDefined();
+    expect(props["difficulty"]).toBeDefined();
+  });
+
+  it("updates and persists server.properties patches", async () => {
+    const original = await getServerProperties();
+    const origPort = original["server-port"] || "25565";
+
+    const updated = await saveServerProperties({ "server-port": "25566" });
+    expect(updated["server-port"]).toBe("25566");
+
+    // Revert
+    await saveServerProperties({ "server-port": origPort });
   });
 });

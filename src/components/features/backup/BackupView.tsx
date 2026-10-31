@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { BackupStatusResponse } from "@/types";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { ProgressGauge } from "@/components/ui/ProgressGauge";
-import { cn } from "@/lib/cn";
 
 export interface BackupPageProps {
   backupStatus?: BackupStatusResponse | null;
@@ -29,29 +35,76 @@ interface BackupArchiveItem {
   isLatest?: boolean;
 }
 
-
 export function BackupView({
+  backupStatus,
   onRefresh,
   onTriggerBackup,
   onDeleteBackup,
   onRestoreBackup,
+  onSetRetention,
   isBackingUp = false,
   isBusy = false,
 }: BackupPageProps) {
-  const [archives, setArchives] = useState<BackupArchiveItem[]>([]);
+  const [internalStatus, setInternalStatus] = useState<BackupStatusResponse | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [actionNotice, setActionNotice] = useState<string | null>(null);
 
-  const handleCreateSnapshot = async () => {
-    if (onTriggerBackup) {
-      await onTriggerBackup();
+  // Use props if provided, else internal polled status
+  const currentStatus = backupStatus ?? internalStatus;
+
+  useEffect(() => {
+    if (!backupStatus) {
+      fetch("/api/backup")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: BackupStatusResponse | null) => {
+          if (data) setInternalStatus(data);
+        })
+        .catch(() => {});
     }
-    setActionNotice("Snapshot initiated: Creating world gzip archive...");
-    setTimeout(() => {
+  }, [backupStatus]);
+
+  const archives: BackupArchiveItem[] = (currentStatus?.backups || []).map((b) => {
+    const isManual = b.filename.includes("manual");
+    return {
+      filename: b.filename,
+      timestamp: b.createdAt
+        ? new Date(b.createdAt).toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : new Date(b.mtime * 1000).toLocaleString(),
+      trigger: isManual ? "Manual (Pre-mod)" : "Automated (Cron)",
+      size: b.sizeFormatted,
+      format: "tar.gz",
+      status: isManual ? "Pinned (Manual)" : "Verified",
+      isLatest: b.isLatest,
+    };
+  });
+
+  const handleCreateSnapshot = async () => {
+    setActionNotice("Snapshot initiated: Freezing chunks & creating world tar.gz archive...");
+    try {
+      if (onTriggerBackup) {
+        await onTriggerBackup();
+      } else {
+        const res = await fetch("/api/backup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "trigger" }),
+        });
+        if (!res.ok) throw new Error("Backup failed");
+      }
+      onRefresh?.();
       setActionNotice("Snapshot completed successfully.");
-      setTimeout(() => setActionNotice(null), 3000);
-    }, 2000);
+    } catch (err: unknown) {
+      setActionNotice(`Snapshot error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setTimeout(() => setActionNotice(null), 4000);
+    }
   };
 
   const handleRestore = async (filename: string) => {
@@ -62,29 +115,57 @@ export function BackupView({
     ) {
       return;
     }
-    if (onRestoreBackup) {
-      await onRestoreBackup(filename);
+    setActionNotice(`Restoring snapshot ${filename}... World chunks will be restored.`);
+    try {
+      if (onRestoreBackup) {
+        await onRestoreBackup(filename);
+      } else {
+        const res = await fetch("/api/backup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "restore", filename }),
+        });
+        if (!res.ok) throw new Error("Restore failed");
+      }
+      onRefresh?.();
+      setActionNotice(`Restored ${filename} successfully!`);
+    } catch (err: unknown) {
+      setActionNotice(`Restore error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setTimeout(() => setActionNotice(null), 5000);
     }
-    setActionNotice(`Restoring snapshot ${filename}... Server restarting.`);
-    setTimeout(() => setActionNotice(null), 4000);
   };
 
   const handleDelete = async (filename: string) => {
     if (!window.confirm(`Permanently delete archive "${filename}"?`)) return;
-    if (onDeleteBackup) {
-      await onDeleteBackup(filename);
+    try {
+      if (onDeleteBackup) {
+        await onDeleteBackup(filename);
+      } else {
+        const res = await fetch("/api/backup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "delete", filename }),
+        });
+        if (!res.ok) throw new Error("Delete failed");
+      }
+      onRefresh?.();
+      setActionNotice(`Deleted archive: ${filename}`);
+    } catch (err: unknown) {
+      setActionNotice(`Delete error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setTimeout(() => setActionNotice(null), 3000);
     }
-    setArchives((prev) => prev.filter((a) => a.filename !== filename));
-    setActionNotice(`Deleted archive: ${filename}`);
-    setTimeout(() => setActionNotice(null), 3000);
+  };
+
+  const handleDownload = (filename: string) => {
+    window.open(`/api/backup/download?filename=${encodeURIComponent(filename)}`, "_blank");
   };
 
   const filteredArchives = archives.filter((item) => {
-    // Filter by category segment
     if (activeFilter === "automated" && item.trigger !== "Automated (Cron)") return false;
     if (activeFilter === "manual" && item.trigger !== "Manual (Pre-mod)") return false;
 
-    // Filter by search query
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
@@ -99,13 +180,20 @@ export function BackupView({
   const automatedCount = archives.filter((a) => a.trigger === "Automated (Cron)").length;
   const manualCount = archives.filter((a) => a.trigger === "Manual (Pre-mod)").length;
 
+  const totalBytes = currentStatus?.totalSizeBytes || 0;
+  const quotaBytes = 100 * 1024 * 1024 * 1024; // 100 GB quota
+  const usedPct = Math.min(100, Math.round((totalBytes / quotaBytes) * 100));
+
   return (
     <div className="space-y-4">
       {/* Toast Notice */}
       {actionNotice && (
         <div className="p-3 rounded-lg bg-surface border border-primary/30 text-xs font-mono text-primary flex items-center justify-between shadow-xs">
           <span>{actionNotice}</span>
-          <button onClick={() => setActionNotice(null)} className="text-subtle-foreground hover:text-foreground cursor-pointer">
+          <button
+            onClick={() => setActionNotice(null)}
+            className="text-subtle-foreground hover:text-foreground cursor-pointer"
+          >
             ✕
           </button>
         </div>
@@ -118,7 +206,8 @@ export function BackupView({
             Backups & Restore
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-success font-bold">●</span> HEALTHY · Daily Snapshots · 7-Day Auto Retention · 174 GB Disk Free
+            <span className="text-success font-bold">●</span> HEALTHY · Daily Snapshots ·{" "}
+            {currentStatus?.retentionDays ?? 7}-Day Auto Retention · 100 GB Quota
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -150,9 +239,7 @@ export function BackupView({
         {/* Card 1: Storage Quota */}
         <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-overline text-muted-foreground uppercase">
-              STORAGE QUOTA
-            </span>
+            <span className="text-overline text-muted-foreground uppercase">STORAGE QUOTA</span>
             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-surface-raised border border-border text-heading font-mono">
               {archives.length} Archives
             </span>
@@ -160,13 +247,12 @@ export function BackupView({
 
           <div>
             <div className="text-xl sm:text-2xl font-semibold text-heading font-mono">
-              31.0 GB / 100 GB (31%)
+              {currentStatus?.totalSizeFormatted || "0 MB"} / 100 GB ({usedPct}%)
             </div>
             <div className="mt-2">
-              <ProgressGauge value={31} size="md" />
+              <ProgressGauge value={usedPct} size="md" />
             </div>
           </div>
-
           <div className="text-xs text-muted-foreground font-mono">
             174 GB free on disk · /home/oukendev/minecraft/backups
           </div>
@@ -192,8 +278,34 @@ export function BackupView({
             </div>
           </div>
 
-          <div className="text-xs text-subtle-foreground">
-            Retention rule: Backups older than 7 days will be deleted
+          <div className="flex items-center gap-1.5 flex-wrap pt-1">
+            <span className="text-xs text-subtle-foreground">Retention:</span>
+            {[3, 7, 14, 30].map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={async () => {
+                  if (onSetRetention) await onSetRetention(d);
+                  else {
+                    await fetch("/api/backup", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ action: "retention", retentionDays: d }),
+                    });
+                  }
+                  onRefresh?.();
+                  setActionNotice(`Retention policy set to ${d} days`);
+                  setTimeout(() => setActionNotice(null), 3000);
+                }}
+                className={`px-1.5 py-0.5 rounded text-[11px] font-mono cursor-pointer border ${
+                  (currentStatus?.retentionDays ?? 7) === d
+                    ? "bg-primary text-primary-foreground border-primary font-semibold"
+                    : "bg-surface-raised text-muted-foreground border-border hover:text-heading"
+                }`}
+              >
+                {d}d
+              </button>
+            ))}
           </div>
         </div>
 
@@ -282,16 +394,12 @@ export function BackupView({
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {archive.timestamp}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{archive.timestamp}</div>
                     </div>
                   </TableCell>
 
                   <TableCell>
-                    <span className="text-xs text-heading font-medium">
-                      {archive.trigger}
-                    </span>
+                    <span className="text-xs text-heading font-medium">{archive.trigger}</span>
                   </TableCell>
 
                   <TableCell>
@@ -323,10 +431,7 @@ export function BackupView({
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => {
-                          setActionNotice(`Downloading archive ${archive.filename}...`);
-                          setTimeout(() => setActionNotice(null), 2500);
-                        }}
+                        onClick={() => handleDownload(archive.filename)}
                         className="text-xs h-7 px-2.5"
                       >
                         Download

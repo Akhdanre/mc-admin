@@ -1,1 +1,6 @@
-export { getAppSettings, saveAppSettings } from "./service";
+export {
+  getAppSettings,
+  saveAppSettings,
+  getServerProperties,
+  saveServerProperties,
+} from "./service";

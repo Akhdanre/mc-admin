@@ -374,3 +374,63 @@ export interface ModItem {
   author: string;
   description: string;
 }
+export interface TelemetryData {
+  host: {
+    os: string;
+    kernel: string;
+    cpuModel: string;
+    cores: number;
+    threads: number;
+    loadAvg: [number, number, number];
+    uptimeSeconds: number;
+  };
+  metrics: {
+    tps: number;
+    mspt: number;
+    cpuUsagePct: number;
+    jvm: {
+      allocatedBytes: number;
+      maxBytes: number;
+      usedBytes: number;
+      usedPct: number;
+      collector: string;
+      eden: string;
+      survivor: string;
+      tenured: string;
+    };
+    ram: {
+      totalBytes: number;
+      freeBytes: number;
+      usedBytes: number;
+      usedPct: number;
+      cacheBytes?: number;
+    };
+    disk: {
+      totalBytes: number;
+      freeBytes: number;
+      usedBytes: number;
+      usedPct: number;
+    };
+  };
+  dimensions: {
+    overworld: { mspt: number; tps: number; loadPct: number };
+    nether: { mspt: number; tps: number; loadPct: number };
+    end: { mspt: number; tps: number; loadPct: number };
+  };
+  tickDistribution: {
+    entities: number;
+    mods: number;
+    redstone: number;
+    io: number;
+    idle: number;
+  };
+  sparkHotspots: Array<{
+    rank: string;
+    pct: string;
+    pctColor: string;
+    category: string;
+    method: string;
+    isAltBg?: boolean;
+  }>;
+  updatedAt: string;
+}

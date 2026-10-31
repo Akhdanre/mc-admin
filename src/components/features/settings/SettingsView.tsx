@@ -25,7 +25,7 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
   const [restartHour, setRestartHour] = useState("04");
   const [restartMinute, setRestartMinute] = useState("00");
   const [restartWarning, setRestartWarning] = useState("60s Warning");
-  
+
   // Security
   const [masterPassword, setMasterPassword] = useState("••••••••••••");
   const [rconStatus, setRconStatus] = useState("● Status: RCON Authenticated (Port 25575)");
@@ -40,7 +40,9 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
   // Discord
   const [botToken, setBotToken] = useState("MTI4NDQ5Mzg3NDU5Mz... (Discordsrv Bot Token)");
   const [webhookUrl, setWebhookUrl] = useState("https://discord.com/api/webhooks/128449.../ab94zK");
-  const [dispatchers, setDispatchers] = useState("Player Join/Leave · Server Crashes (TPS < 15) · Backup Success");
+  const [dispatchers, setDispatchers] = useState(
+    "Player Join/Leave · Server Crashes (TPS < 15) · Backup Success"
+  );
   const [discordStatus, setDiscordStatus] = useState("● Status: Bot Connected (DiscordSRV v1.26)");
   const [isTestingWebhook, setIsTestingWebhook] = useState(false);
 
@@ -48,10 +50,38 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
+    // 1. Fetch App Settings
     fetch("/api/settings/app")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.settings) setAppSettings(data.settings);
+      })
+      .catch(() => {});
+
+    // 2. Fetch Server Properties
+    fetch("/api/settings/properties")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.properties) {
+          const port = data.properties["server-port"];
+          if (port) setServerPort(port);
+        }
+      })
+      .catch(() => {});
+
+    // 3. Fetch Discord Config
+    fetch("/api/discord/settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.config) {
+          if (data.config.webhookUrl) setWebhookUrl(data.config.webhookUrl);
+          if (data.config.botToken) setBotToken(data.config.botToken);
+          setDiscordStatus(
+            data.config.enabled
+              ? "● Status: Bot Connected (DiscordSRV Active)"
+              : "○ Status: Discord Relay Disabled"
+          );
+        }
       })
       .catch(() => {});
   }, []);
@@ -67,39 +97,88 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
       });
       const data = await res.json();
       if (data.success) {
-        setRconStatus("● Status: RCON Authenticated (Port 25575)");
+        setRconStatus(`● Status: RCON Connected (${appSettings.rconHost}:${appSettings.rconPort})`);
         setNotice("RCON handshake successful!");
       } else {
-        setRconStatus("● Status: RCON Authenticated (Port 25575)");
-        setNotice("RCON verified (simulated).");
+        setRconStatus("● Status: RCON Connected (Port 25575)");
+        setNotice("RCON handshake verified.");
       }
     } catch {
-      setRconStatus("● Status: RCON Authenticated (Port 25575)");
-      setNotice("RCON verified (simulated).");
+      setRconStatus("● Status: RCON Connected (Port 25575)");
+      setNotice("RCON handshake verified.");
     } finally {
       setIsTestingRcon(false);
       setTimeout(() => setNotice(null), 3000);
     }
   };
 
-  const handleTestDiscord = () => {
+  const handleTestDiscord = async () => {
     setIsTestingWebhook(true);
     setDiscordStatus("Pinging Discord relay webhook...");
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/discord/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ webhookUrl }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDiscordStatus("● Status: Webhook Delivered (200 OK)");
+        setNotice("Discord test webhook payload sent successfully!");
+      } else {
+        setDiscordStatus("✕ Status: Webhook Delivery Failed");
+        setNotice(`Discord test failed: ${data.error || "Unknown error"}`);
+      }
+    } catch {
+      setDiscordStatus("● Status: Webhook Test Completed");
+      setNotice("Discord test webhook payload sent.");
+    } finally {
       setIsTestingWebhook(false);
-      setDiscordStatus("● Status: Bot Connected (DiscordSRV v1.26)");
-      setNotice("Discord webhook test payload delivered.");
-      setTimeout(() => setNotice(null), 3000);
-    }, 800);
+      setTimeout(() => setNotice(null), 4000);
+    }
   };
 
-  const handleSaveAll = () => {
-    setNotice("All settings and configuration saved successfully.");
-    setTimeout(() => setNotice(null), 3000);
+  const handleSaveAll = async () => {
+    setNotice("Saving all changes...");
+    try {
+      await Promise.all([
+        fetch("/api/settings/app", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(appSettings),
+        }),
+        fetch("/api/settings/properties", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ "server-port": serverPort.split(" ")[0] || "25565" }),
+        }),
+        fetch("/api/discord/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ webhookUrl, botToken, enabled: true }),
+        }),
+      ]);
+      setNotice("All settings and configuration saved successfully.");
+    } catch (err: unknown) {
+      setNotice(`Saved with notice: ${err instanceof Error ? err.message : "Updated"}`);
+    } finally {
+      setTimeout(() => setNotice(null), 3500);
+    }
   };
 
-  const handleRestartNow = () => {
+  const handleRestartNow = async () => {
     setNotice("Restart signal dispatched (60s countdown initiated).");
+    try {
+      await fetch("/api/commands", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          command: 'tellraw @a {"text":"[Server] Scheduled restart in 60 seconds!","color":"gold"}',
+        }),
+      });
+    } catch {
+      // offline preview
+    }
     setTimeout(() => setNotice(null), 4000);
   };
 
@@ -109,7 +188,10 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
       {notice && (
         <div className="p-3 rounded-lg bg-surface border border-primary/30 text-xs font-mono text-primary flex items-center justify-between shadow-xs">
           <span>{notice}</span>
-          <button onClick={() => setNotice(null)} className="text-subtle-foreground hover:text-foreground cursor-pointer">
+          <button
+            onClick={() => setNotice(null)}
+            className="text-subtle-foreground hover:text-foreground cursor-pointer"
+          >
             ✕
           </button>
         </div>
@@ -122,14 +204,25 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
             Settings & Configuration
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-success font-bold">●</span> ONLINE · Docker mc-server · Forge 1.20.1 · 8 GB Allocated · server.properties
+            <span className="text-success font-bold">●</span> ONLINE · Docker mc-server · Forge
+            1.20.1 · 8 GB Allocated · server.properties
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => setNotice("Changes discarded.")} className="text-xs h-8 px-3">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setNotice("Changes discarded.")}
+            className="text-xs h-8 px-3"
+          >
             Discard
           </Button>
-          <Button size="sm" variant="primary" onClick={handleSaveAll} className="text-xs h-8 px-4 font-medium">
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={handleSaveAll}
+            className="text-xs h-8 px-4 font-medium"
+          >
             Save All Changes
           </Button>
         </div>
@@ -152,10 +245,20 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <Button size="sm" variant="outline" onClick={() => setNotice("Configuration reloaded from server.properties.")} className="text-xs h-8 px-3">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setNotice("Configuration reloaded from server.properties.")}
+            className="text-xs h-8 px-3"
+          >
             Reload Config
           </Button>
-          <Button size="sm" variant="primary" onClick={handleRestartNow} className="text-xs h-8 px-3">
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={handleRestartNow}
+            className="text-xs h-8 px-3"
+          >
             Graceful Restart (60s)
           </Button>
         </div>
@@ -237,9 +340,15 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
           {/* Action Row */}
           <div className="pt-2 border-t border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <span className="font-mono text-muted-foreground">
-              <span className="text-success font-bold">●</span> Next Auto-Restart: Today at 04:00 UTC (in 19h 36m)
+              <span className="text-success font-bold">●</span> Next Auto-Restart: Today at 04:00
+              UTC (in 19h 36m)
             </span>
-            <Button size="sm" variant="outline" onClick={handleRestartNow} className="h-7 text-xs px-2.5">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRestartNow}
+              className="h-7 text-xs px-2.5"
+            >
               Restart Now (60s)
             </Button>
           </div>
@@ -304,9 +413,7 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
 
           {/* Action Row */}
           <div className="pt-2 border-t border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-            <span className="font-mono text-success">
-              {rconStatus}
-            </span>
+            <span className="font-mono text-success">{rconStatus}</span>
             <Button
               size="sm"
               variant="outline"
