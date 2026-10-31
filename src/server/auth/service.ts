@@ -10,7 +10,7 @@ import {
   verifySessionToken as checkSessionToken,
   hashPassword,
   verifyPasswordHash,
-} from "@/server/domain/token";
+} from "./token";
 
 export { SESSION_COOKIE_NAME };
 

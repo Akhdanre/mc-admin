@@ -53,12 +53,11 @@ export function hashPassword(password: string, salt: string): Promise<string> {
   return promise;
 }
 
-export function verifyPasswordHash(password: string, salt: string, expectedHash: string): Promise<boolean> {
-  const testHash = hashPassword(password, salt);
-  return testHash.then((hash) => {
-    const bufA = Buffer.from(expectedHash, "hex");
-    const bufB = Buffer.from(hash, "hex");
-    if (bufA.length !== bufB.length) return false;
-    return crypto.timingSafeEqual(bufA, bufB);
+export function verifyPasswordHash(password: string, salt: string, storedHash: string): Promise<boolean> {
+  return hashPassword(password, salt).then((computedHash) => {
+    const computedBuf = Buffer.from(computedHash, "hex");
+    const storedBuf = Buffer.from(storedHash, "hex");
+    if (computedBuf.length !== storedBuf.length) return false;
+    return crypto.timingSafeEqual(computedBuf, storedBuf);
   });
 }
