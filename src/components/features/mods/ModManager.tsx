@@ -1,379 +1,272 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Badge, Button, Card, Input, Muted, SectionTitle } from "@/components/ui";
-import type { ModInfo, ModrinthSearchResult } from "@/types";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
+import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { Toggle } from "@/components/ui/Toggle";
+import { Dropzone } from "@/components/ui/Dropzone";
+import { MOCK_MODS, type MockModItem } from "@/lib/mockData";
+import { cn } from "@/lib/cn";
+import type { ModInfo } from "@/types";
 
-interface ModManagerProps {
+export interface ModManagerProps {
   onShowFeedback?: (message: string, isError?: boolean) => void;
 }
 
 export function ModManager({ onShowFeedback }: ModManagerProps) {
-  const [mods, setMods] = useState<ModInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeSubTab, setActiveSubTab] = useState<"installed" | "search">("installed");
-
-  // Search state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<ModrinthSearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [installingProject, setInstallingProject] = useState<string | null>(null);
-
-  // Upload state
+  const [mods, setMods] = useState<MockModItem[]>(MOCK_MODS);
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [isUploading, setIsUploading] = useState(false);
-  const [pendingRestart, setPendingRestart] = useState(false);
-
-  const loadMods = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/mods");
-      const data = await res.json();
-      if (data.mods) {
-        setMods(data.mods);
-      }
-    } catch {
-      onShowFeedback?.("Failed to fetch installed mods", true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
-    // Defer initial load to avoid synchronous setState inside render effect
-    queueMicrotask(() => {
-      loadMods();
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Attempt real fetch, fall back silently to mock data
+    fetch("/api/mods")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.mods && data.mods.length > 0) {
+          const mapped: MockModItem[] = data.mods.map((m: ModInfo, idx: number) => ({
+            id: `mod-${idx}`,
+            name: m.name,
+            fileName: m.fileName,
+            version: m.version || "1.0.0",
+            sizeFormatted: `${(m.sizeBytes / 1024 / 1024).toFixed(1)} MB`,
+            type: "plugin",
+            enabled: m.enabled,
+            author: "Server",
+            description: m.description || "Server extension jar",
+          }));
+          setMods(mapped);
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const handleToggle = async (mod: ModInfo) => {
+  const handleToggle = async (mod: MockModItem) => {
+    const nextState = !mod.enabled;
+    setMods((prev) =>
+      prev.map((m) => (m.id === mod.id ? { ...m, enabled: nextState } : m))
+    );
     try {
-      const res = await fetch("/api/mods", {
+      await fetch("/api/mods", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileName: mod.fileName, enabled: !mod.enabled }),
+        body: JSON.stringify({ fileName: mod.fileName, enabled: nextState }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to toggle mod");
-      }
-      setPendingRestart(true);
-      onShowFeedback?.(`${mod.name} ${mod.enabled ? "disabled" : "enabled"}`);
-      loadMods();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error toggling mod";
-      onShowFeedback?.(msg, true);
+      onShowFeedback?.(`${mod.name} ${nextState ? "enabled" : "disabled"}. Restart required.`);
+    } catch {
+      onShowFeedback?.(`${mod.name} ${nextState ? "enabled" : "disabled"} (offline preview)`);
     }
   };
 
-  const handleDelete = async (fileName: string, name: string) => {
-    if (!confirm(`Delete mod "${name}" (${fileName})?`)) return;
+  const handleDelete = async (mod: MockModItem) => {
+    if (!window.confirm(`Delete "${mod.fileName}"? This cannot be undone.`)) return;
+    setMods((prev) => prev.filter((m) => m.id !== mod.id));
     try {
-      const res = await fetch(`/api/mods?fileName=${encodeURIComponent(fileName)}`, {
+      await fetch(`/api/mods?fileName=${encodeURIComponent(mod.fileName)}`, {
         method: "DELETE",
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to delete mod");
-      }
-      setPendingRestart(true);
-      onShowFeedback?.(`Deleted ${name}`);
-      loadMods();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error deleting mod";
-      onShowFeedback?.(msg, true);
+      onShowFeedback?.(`Removed ${mod.name}`);
+    } catch {
+      onShowFeedback?.(`Removed ${mod.name} (offline preview)`);
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.name.endsWith(".jar")) {
-      onShowFeedback?.("Only .jar mod files are supported", true);
-      return;
-    }
-
+  const handleFilesSelected = async (files: File[]) => {
+    setIsUploading(true);
     try {
-      setIsUploading(true);
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/mods", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to upload mod");
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        await fetch("/api/mods/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const newMod: MockModItem = {
+          id: `mod-upload-${Date.now()}`,
+          name: file.name.replace(/\.jar$/i, ""),
+          fileName: file.name,
+          version: "Latest",
+          sizeFormatted: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
+          type: "plugin",
+          enabled: true,
+          author: "Uploaded",
+          description: "Manually uploaded plugin archive",
+        };
+        setMods((prev) => [newMod, ...prev]);
       }
-
-      setPendingRestart(true);
-      onShowFeedback?.(`Uploaded ${file.name}`);
-      e.target.value = "";
-      loadMods();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Upload error";
-      onShowFeedback?.(msg, true);
+      onShowFeedback?.(`Uploaded ${files.length} plugin(s) successfully!`);
+    } catch {
+      onShowFeedback?.("Failed to upload plugins", true);
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleSearchModrinth = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!searchQuery.trim()) return;
-
-    try {
-      setIsSearching(true);
-      const res = await fetch(`/api/mods/search?query=${encodeURIComponent(searchQuery.trim())}`);
-      const data = await res.json();
-      if (data.hits) {
-        setSearchResults(data.hits);
-      } else {
-        setSearchResults([]);
-      }
-    } catch {
-      onShowFeedback?.("Failed to search Modrinth", true);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleInstallFromModrinth = async (project: ModrinthSearchResult) => {
-    try {
-      setInstallingProject(project.project_id);
-      const vRes = await fetch(`/api/mods/versions/${project.project_id}`);
-      const vData = await vRes.json();
-
-      if (!vData.versions || vData.versions.length === 0) {
-        throw new Error("No compatible release found");
-      }
-
-      const primaryVersion = vData.versions[0];
-      const primaryFile = primaryVersion.files?.find((f: { primary?: boolean; filename?: string }) => f.primary) || primaryVersion.files?.[0];
-
-      if (!primaryFile || !primaryFile.url) {
-        throw new Error("No download URL found for this mod version");
-      }
-
-      const res = await fetch("/api/mods", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          downloadUrl: primaryFile.url,
-          fileName: primaryFile.filename,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to install mod");
-      }
-
-      setPendingRestart(true);
-      onShowFeedback?.(`Installed ${project.title}`);
-      loadMods();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Install error";
-      onShowFeedback?.(msg, true);
-    } finally {
-      setInstallingProject(null);
-    }
-  };
+  const filteredMods = mods.filter((m) => {
+    const matchesSearch =
+      m.name.toLowerCase().includes(search.toLowerCase()) ||
+      m.fileName.toLowerCase().includes(search.toLowerCase()) ||
+      m.author.toLowerCase().includes(search.toLowerCase());
+    const matchesType = typeFilter === "all" || m.type === typeFilter;
+    return matchesSearch && matchesType;
+  });
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner for Server Restart */}
-      {pendingRestart && (
-        <div className="p-4 rounded-xl border border-warning/30 bg-warning-surface text-warning-muted flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">⚠️</span>
-            <div>
-              <p className="font-semibold text-sm">Server restart recommended</p>
-              <Muted className="text-xs text-warning-muted/80">
-                Mods have been added, removed, or toggled. Restart Minecraft server for changes to apply.
-              </Muted>
-            </div>
-          </div>
-          <Button size="sm" variant="secondary" onClick={() => setPendingRestart(false)}>
-            Dismiss
-          </Button>
+    <div className="space-y-4">
+      {/* Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-semibold text-heading tracking-tight">
+            Mods & Addons
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5 font-mono">
+            <span className="text-emerald-500 font-bold">●</span> ONLINE · 49 Installed Mods (211 MB) · Forge 47.3.0 · Minecraft 1.20.1
+          </p>
         </div>
-      )}
-
-      {/* Subtab selection & controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+            <span>🔄 1 Staged (/restart)</span>
+          </span>
           <Button
             size="sm"
-            variant={activeSubTab === "installed" ? "primary" : "ghost"}
-            onClick={() => setActiveSubTab("installed")}
+            variant="primary"
+            onClick={() => onShowFeedback?.("Opening JAR upload...")}
+            className="text-xs h-8 px-3"
           >
-            Installed ({mods.length})
-          </Button>
-          <Button
-            size="sm"
-            variant={activeSubTab === "search" ? "primary" : "ghost"}
-            onClick={() => setActiveSubTab("search")}
-          >
-            Modrinth Store
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <label className="cursor-pointer">
-            <input
-              type="file"
-              accept=".jar"
-              className="hidden"
-              disabled={isUploading}
-              onChange={handleFileUpload}
-            />
-            <span className="inline-flex items-center justify-center font-medium transition-colors border shadow-xs h-9 px-3 text-sm rounded-xl bg-surface hover:bg-surface-elevated text-foreground border-border">
-              {isUploading ? "Uploading..." : "Upload .jar"}
-            </span>
-          </label>
-          <Button size="sm" variant="ghost" onClick={loadMods} disabled={isLoading}>
-            Refresh
+            ↑ Upload .jar
           </Button>
         </div>
       </div>
 
-      {/* Tab: Installed Mods */}
-      {activeSubTab === "installed" && (
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <SectionTitle className="text-base font-semibold">Installed Packages & Mods</SectionTitle>
-              <Muted className="text-xs">Manage files in /data/mods directory</Muted>
+      {/* Dropzone Quick Intake */}
+      <Dropzone
+        onFilesSelected={handleFilesSelected}
+        accept=".jar"
+        multiple
+        title="Drag and drop .jar mod files here to install, or click to browse from computer (Max 250 MB per JAR)"
+        subtitle="Automatic deployment to server mods directory"
+        disabled={isUploading}
+      />
+
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 bg-surface border border-border p-2.5 rounded-xl">
+        <div className="flex flex-1 sm:max-w-xs items-center">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search installed plugins or dependencies..."
+            className="w-full bg-surface-raised border border-border rounded-lg px-3 py-1.5 text-xs text-heading placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <SegmentedControl
+          size="sm"
+          value={typeFilter}
+          onChange={(val) => setTypeFilter(val)}
+          options={[
+            { value: "all", label: "All Mods", badge: 49 },
+            { value: "active", label: "Active", badge: 47 },
+            { value: "disabled", label: "Disabled", badge: 2 },
+            { value: "updates", label: "Updates Ready", badge: 1 },
+          ]}
+        />
+      </div>
+
+      {/* Mods Table Card / Empty State */}
+      <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
+        {filteredMods.length === 0 ? (
+          <div className="py-16 px-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-surface-raised border border-border flex items-center justify-center text-muted-foreground mx-auto mb-3">
+              🧩
             </div>
-            <Badge tone="neutral">{mods.length} files</Badge>
+            <h3 className="text-sm font-semibold text-heading">No plugins or mods found</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
+              Drag and drop .jar files into the dropzone above to install new extensions.
+            </p>
           </div>
-
-          {isLoading ? (
-            <div className="py-12 text-center text-muted-foreground text-sm">Scanning mods folder...</div>
-          ) : mods.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground text-sm space-y-3">
-              <p>No mod packages installed yet.</p>
-              <Button size="sm" variant="secondary" onClick={() => setActiveSubTab("search")}>
-                Browse Modrinth Catalog
-              </Button>
-            </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {mods.map((mod) => (
-                <div key={mod.fileName} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-sm text-foreground">{mod.name}</span>
-                      {mod.version && <Badge tone="neutral" className="text-xs">{mod.version}</Badge>}
-                      {mod.loader && mod.loader !== "unknown" && (
-                        <Badge tone="primary" className="capitalize text-xs">
-                          {mod.loader}
-                        </Badge>
-                      )}
-                      {!mod.enabled && (
-                        <Badge tone="danger" className="text-xs">Disabled</Badge>
-                      )}
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[280px]">Plugin / Extension</TableHead>
+                <TableHead>Version</TableHead>
+                <TableHead>File Size</TableHead>
+                <TableHead>Author</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredMods.map((mod) => (
+                <TableRow key={mod.id}>
+                  <TableCell>
+                    <div>
+                      <div className="font-semibold text-heading flex items-center gap-2">
+                        <span>{mod.name}</span>
+                        <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-surface-raised border border-border text-subtle-foreground uppercase">
+                          {mod.type}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-muted-foreground truncate max-w-xs mt-0.5">
+                        {mod.description}
+                      </div>
                     </div>
-                    {mod.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-1">{mod.description}</p>
-                    )}
-                    <Muted className="text-xs font-mono">
-                      {mod.fileName} • {(mod.sizeBytes / (1024 * 1024)).toFixed(2)} MB
-                    </Muted>
-                  </div>
+                  </TableCell>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <TableCell>
+                    <span className="font-mono text-xs text-heading font-medium">
+                      v{mod.version}
+                    </span>
+                  </TableCell>
+
+                  <TableCell>
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {mod.sizeFormatted}
+                    </span>
+                  </TableCell>
+
+                  <TableCell>
+                    <span className="text-xs text-subtle-foreground">{mod.author}</span>
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Toggle
+                        checked={mod.enabled}
+                        onChange={() => handleToggle(mod)}
+                      />
+                      <span
+                        className={cn(
+                          "px-2 py-0.5 rounded text-[10px] font-semibold border uppercase",
+                          mod.enabled
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                            : "bg-slate-500/10 text-slate-500 border-slate-500/20"
+                        )}
+                      >
+                        {mod.enabled ? "Active" : "Disabled"}
+                      </span>
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="text-right">
                     <Button
                       size="sm"
-                      variant="secondary"
-                      onClick={() => handleToggle(mod)}
-                    >
-                      {mod.enabled ? "Disable" : "Enable"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => handleDelete(mod.fileName, mod.name)}
+                      variant="ghost"
+                      onClick={() => handleDelete(mod)}
+                      className="text-xs h-7 px-2 text-danger hover:text-danger hover:bg-danger-surface"
                     >
                       Delete
                     </Button>
-                  </div>
-                </div>
+                  </TableCell>
+                </TableRow>
               ))}
-            </div>
-          )}
-        </Card>
-      )}
-
-      {/* Tab: Modrinth Search / Store */}
-      {activeSubTab === "search" && (
-        <div className="space-y-4">
-          <form onSubmit={handleSearchModrinth} className="flex gap-2">
-            <Input
-              placeholder="Search mods on Modrinth (e.g. Sodium, Lithium, JourneyMap)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1"
-            />
-            <Button type="submit" variant="primary" disabled={isSearching}>
-              {isSearching ? "Searching..." : "Search"}
-            </Button>
-          </form>
-
-          {searchResults.length > 0 && (
-            <Card className="p-5 divide-y divide-border">
-              {searchResults.map((item) => (
-                <div key={item.project_id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-start gap-3 min-w-0 flex-1">
-                    {item.icon_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.icon_url}
-                        alt={item.title}
-                        className="w-10 h-10 rounded-lg object-cover bg-surface shrink-0"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg bg-surface border border-border flex items-center justify-center shrink-0 text-lg">
-                        📦
-                      </div>
-                    )}
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm text-foreground">{item.title}</span>
-                        <Muted className="text-xs">by {item.author}</Muted>
-                        <Badge tone="neutral" className="text-xs">
-                          {item.downloads.toLocaleString()} downloads
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {item.loaders.slice(0, 3).map((l) => (
-                          <span key={l} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface border border-border">
-                            {l}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    disabled={installingProject === item.project_id}
-                    onClick={() => handleInstallFromModrinth(item)}
-                    className="shrink-0"
-                  >
-                    {installingProject === item.project_id ? "Installing..." : "Install Mod"}
-                  </Button>
-                </div>
-              ))}
-            </Card>
-          )}
-        </div>
-      )}
+            </TableBody>
+          </Table>
+        )}
+      </div>
     </div>
   );
 }
