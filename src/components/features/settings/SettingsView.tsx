@@ -25,6 +25,7 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
   const [restartHour, setRestartHour] = useState("04");
   const [restartMinute, setRestartMinute] = useState("00");
   const [restartWarning] = useState("60s Warning");
+  const [nextRestartText, setNextRestartText] = useState("Calculating...");
 
   // Security
   const [masterPassword, setMasterPassword] = useState("••••••••••••");
@@ -45,7 +46,7 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
   );
   const [discordStatus, setDiscordStatus] = useState("● Status: Bot Connected (DiscordSRV v1.26)");
   const [isTestingWebhook, setIsTestingWebhook] = useState(false);
-
+  const [showBotToken, setShowBotToken] = useState(false);
   // Feedback notifications
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -81,6 +82,26 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
               ? "● Status: Bot Connected (DiscordSRV Active)"
               : "○ Status: Discord Relay Disabled"
           );
+        }
+      })
+      .catch(() => {});
+
+    // 4. Fetch Restart Schedule
+    fetch("/api/settings/restart")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.config) {
+          setRestartHour(String(data.config.hour).padStart(2, "0"));
+          setRestartMinute(String(data.config.minute).padStart(2, "0"));
+          if (data.secondsUntilNext !== null && data.secondsUntilNext !== undefined) {
+            const h = Math.floor(data.secondsUntilNext / 3600);
+            const m = Math.floor((data.secondsUntilNext % 3600) / 60);
+            setNextRestartText(
+              `Next Auto-Restart: Daily at ${String(data.config.hour).padStart(2, "0")}:${String(data.config.minute).padStart(2, "0")} UTC (in ${h}h ${m}m)`
+            );
+          } else {
+            setNextRestartText("Next Auto-Restart: Disabled");
+          }
         }
       })
       .catch(() => {});
@@ -157,6 +178,16 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ webhookUrl, botToken, enabled: true }),
         }),
+        fetch("/api/settings/restart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            enabled: true,
+            hour: parseInt(restartHour, 10) || 4,
+            minute: parseInt(restartMinute, 10) || 0,
+            warningSeconds: 60,
+          }),
+        }),
       ]);
       setNotice("All settings and configuration saved successfully.");
     } catch (err: unknown) {
@@ -169,15 +200,14 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
   const handleRestartNow = async () => {
     setNotice("Restart signal dispatched (60s countdown initiated).");
     try {
-      await fetch("/api/commands", {
+      const res = await fetch("/api/settings/restart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          command: 'tellraw @a {"text":"[Server] Scheduled restart in 60 seconds!","color":"gold"}',
-        }),
+        body: JSON.stringify({ action: "restart_now", warningSeconds: 60 }),
       });
-    } catch {
-      // offline preview
+      if (!res.ok) throw new Error("Restart request failed");
+    } catch (err) {
+      setNotice(`Restart error: ${err instanceof Error ? err.message : "Failed"}`);
     }
     setTimeout(() => setNotice(null), 4000);
   };
@@ -341,8 +371,7 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
           {/* Action Row */}
           <div className="pt-2 border-t border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <span className="font-mono text-muted-foreground">
-              <span className="text-success font-bold">●</span> Next Auto-Restart: Today at 04:00
-              UTC (in 19h 36m)
+              <span className="text-success font-bold">●</span> {nextRestartText}
             </span>
             <Button
               size="sm"
@@ -530,15 +559,27 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
 
             {/* Bot Token */}
             <div>
-              <label className="text-xs text-muted-foreground block mb-1">
-                Discord Bot Application Token
-              </label>
-              <input
-                type="text"
-                value={botToken}
-                onChange={(e) => setBotToken(e.target.value)}
-                className="w-full bg-surface-raised border border-border rounded-lg px-3 py-1.5 text-xs text-heading font-mono focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-              />
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs text-muted-foreground">
+                  Discord Bot Application Token
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowBotToken((prev) => !prev)}
+                  className="text-[11px] text-primary hover:underline cursor-pointer"
+                >
+                  {showBotToken ? "Hide" : "Show"}
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type={showBotToken ? "text" : "password"}
+                  value={botToken}
+                  onChange={(e) => setBotToken(e.target.value)}
+                  placeholder="Bot token"
+                  className="w-full bg-surface-raised border border-border rounded-lg px-3 py-1.5 text-xs text-heading font-mono focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary pr-12"
+                />
+              </div>
             </div>
 
             {/* Webhook URL */}

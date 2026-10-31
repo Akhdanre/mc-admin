@@ -10,10 +10,12 @@ export async function register() {
     globalThis.__mcInstrumentationStarted = true;
 
     // Dynamic import required by Next.js instrumentation to isolate Node.js runtime APIs
-    const { startChatTailer, subscribeToChatStream, subscribeToServerEvents } = await import("@/server/chat");
-    const { startDiscordBot, sendDiscordChatMessage, sendDiscordEvent } = await import("@/server/discord");
+    const { startChatTailer, subscribeToChatStream, subscribeToServerEvents } =
+      await import("@/server/chat");
+    const { startDiscordBot, sendDiscordChatMessage, sendDiscordEvent } =
+      await import("@/server/discord");
     const { startBackupScheduler } = await import("@/server/backup");
-
+    const { startRestartScheduler } = await import("@/server/restart");
     startChatTailer();
     subscribeToChatStream((chat) => {
       sendDiscordChatMessage(chat.sender, chat.message, chat.isServer).catch((err) => {
@@ -28,5 +30,6 @@ export async function register() {
 
     startDiscordBot();
     startBackupScheduler();
+    startRestartScheduler();
   }
 }

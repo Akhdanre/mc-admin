@@ -434,3 +434,16 @@ export interface TelemetryData {
   }>;
   updatedAt: string;
 }
+export interface RestartConfig {
+  enabled: boolean;
+  hour: number;
+  minute: number;
+  warningSeconds: number;
+  timezone: string;
+}
+
+export interface RestartStatusResponse {
+  config: RestartConfig;
+  nextRestartIso: string | null;
+  secondsUntilNext: number | null;
+}
