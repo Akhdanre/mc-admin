@@ -141,19 +141,60 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
       </div>
 
       {/* Console Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 bg-surface border border-border p-2.5 rounded-xl">
-        <SegmentedControl
-          size="sm"
-          value={levelFilter}
-          onChange={(val) => setLevelFilter(val as typeof levelFilter)}
-          options={[
-            { value: "ALL", label: "ALL", badge: logs.length },
-            { value: "INFO", label: "INFO" },
-            { value: "WARN", label: "WARN" },
-            { value: "ERROR", label: "ERROR" },
-          ]}
-        />
-
+      <div className="flex flex-wrap items-center justify-between gap-2.5 bg-surface border border-border p-2 rounded-xl">
+        <div className="inline-flex items-center gap-1.5 select-none">
+          {(
+            [
+              {
+                id: "ALL",
+                label: "All Logs",
+                count: logs.length,
+              },
+              {
+                id: "INFO",
+                label: "Info",
+                count: logs.filter((l) => l.level === "INFO").length,
+              },
+              {
+                id: "WARN",
+                label: "Warnings",
+                count: logs.filter((l) => l.level === "WARN").length,
+              },
+              {
+                id: "ERROR",
+                label: "Errors",
+                count: logs.filter((l) => l.level === "ERROR").length,
+              },
+            ] as const
+          ).map((tab) => {
+            const isSelected = levelFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setLevelFilter(tab.id)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-normal transition-colors cursor-pointer",
+                  isSelected
+                    ? "bg-[#1e293b] text-white font-medium"
+                    : "bg-[#f1f5f9] dark:bg-surface-raised text-[#475569] dark:text-muted-foreground hover:text-heading hover:bg-[#e2e8f0]"
+                )}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={cn(
+                    "text-overline font-mono leading-none",
+                    isSelected
+                      ? "text-white/70"
+                      : "text-[#6b778a] dark:text-subtle-foreground"
+                  )}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
         <div className="flex items-center gap-2 ml-auto">
           <Button
             size="sm"
