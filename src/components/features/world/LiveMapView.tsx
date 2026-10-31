@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Toggle } from "@/components/ui/Toggle";
@@ -9,9 +9,11 @@ export interface LiveMapViewProps {
   mapUrl?: string;
   players?: string[];
 }
+
 export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: LiveMapViewProps) {
   const [customUrl, setCustomUrl] = useState<string | null>(null);
   const [dimension, setDimension] = useState<string>("surface");
+  const [viewMode, setViewMode] = useState<"2.5d" | "2d">("2.5d");
   const [followedPlayer, setFollowedPlayer] = useState<string | null>(null);
   const [trackPlayers, setTrackPlayers] = useState(true);
   const [isEditingUrl, setIsEditingUrl] = useState(false);
@@ -33,24 +35,31 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
   const iframeSrc = useMemo(() => {
     try {
       const parsed = new URL(baseUrl);
+      let worldName = "world";
+      let mapName = "surface";
+
       switch (dimension) {
         case "surface":
-          parsed.searchParams.set("worldname", "world");
-          parsed.searchParams.set("mapname", "surface");
+          worldName = "world";
+          mapName = viewMode === "2d" ? "flat" : "surface";
           break;
         case "caves":
-          parsed.searchParams.set("worldname", "world");
-          parsed.searchParams.set("mapname", "cave");
+          worldName = "world";
+          mapName = viewMode === "2d" ? "flat" : "cave";
           break;
         case "nether":
-          parsed.searchParams.set("worldname", "DIM-1");
-          parsed.searchParams.set("mapname", "nether");
+          worldName = "DIM-1";
+          mapName = viewMode === "2d" ? "flat" : "nether";
           break;
         case "end":
-          parsed.searchParams.set("worldname", "DIM1");
-          parsed.searchParams.set("mapname", "the_end");
+          worldName = "DIM1";
+          mapName = viewMode === "2d" ? "flat" : "the_end";
           break;
       }
+
+      parsed.searchParams.set("worldname", worldName);
+      parsed.searchParams.set("mapname", mapName);
+
       if (followedPlayer) {
         parsed.searchParams.set("playername", followedPlayer);
       } else {
@@ -59,13 +68,21 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
       return parsed.toString();
     } catch {
       const sep = baseUrl.includes("?") ? "&" : "?";
-      let params = "worldname=world&mapname=surface";
-      if (dimension === "caves") params = "worldname=world&mapname=cave";
-      else if (dimension === "nether") params = "worldname=DIM-1&mapname=nether";
-      else if (dimension === "end") params = "worldname=DIM1&mapname=the_end";
-      return `${baseUrl}${sep}${params}${followedPlayer ? `&playername=${encodeURIComponent(followedPlayer)}` : ""}`;
+      let worldName = "world";
+      let mapName = viewMode === "2d" ? "flat" : "surface";
+      if (dimension === "caves") {
+        worldName = "world";
+        mapName = viewMode === "2d" ? "flat" : "cave";
+      } else if (dimension === "nether") {
+        worldName = "DIM-1";
+        mapName = viewMode === "2d" ? "flat" : "nether";
+      } else if (dimension === "end") {
+        worldName = "DIM1";
+        mapName = viewMode === "2d" ? "flat" : "the_end";
+      }
+      return `${baseUrl}${sep}worldname=${worldName}&mapname=${mapName}${followedPlayer ? `&playername=${encodeURIComponent(followedPlayer)}` : ""}`;
     }
-  }, [baseUrl, dimension, followedPlayer]);
+  }, [baseUrl, dimension, viewMode, followedPlayer]);
 
   const dimensionInfo = useMemo(() => {
     switch (dimension) {
@@ -92,7 +109,7 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
             <span className="text-success font-bold">●</span> ONLINE · Dynmap 3.7 · Port 8123 ·{" "}
-            {dimension.toUpperCase()}
+            {dimension.toUpperCase()} ({viewMode.toUpperCase()})
           </p>
         </div>
 
@@ -147,24 +164,41 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
 
       {/* Map Control Strip */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-surface border border-border p-2.5 rounded-xl shrink-0">
-        <SegmentedControl
-          size="sm"
-          value={dimension}
-          onChange={(val) => {
-            setDimension(val);
-            setLoadError(false);
-          }}
-          options={[
-            { value: "surface", label: "Surface (Overworld)" },
-            { value: "caves", label: "Caves" },
-            { value: "nether", label: "Nether" },
-            { value: "end", label: "The End" },
-          ]}
-        />
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Dimension Selector */}
+          <SegmentedControl
+            size="sm"
+            value={dimension}
+            onChange={(val) => {
+              setDimension(val);
+              setLoadError(false);
+            }}
+            options={[
+              { value: "surface", label: "Surface (Overworld)" },
+              { value: "caves", label: "Caves" },
+              { value: "nether", label: "Nether" },
+              { value: "end", label: "The End" },
+            ]}
+          />
+
+          {/* Projection View Mode: 2.5D Isometric vs 2D Flat */}
+          <SegmentedControl
+            size="sm"
+            value={viewMode}
+            onChange={(val) => {
+              setViewMode(val as "2.5d" | "2d");
+              setLoadError(false);
+            }}
+            options={[
+              { value: "2.5d", label: "2.5D Isometric" },
+              { value: "2d", label: "2D Flat" },
+            ]}
+          />
+        </div>
 
         <div className="flex items-center gap-4">
-          <div className="text-xs font-mono text-muted-foreground hidden sm:block">
-            {dimensionInfo}
+          <div className="text-xs font-mono text-muted-foreground hidden lg:block">
+            {dimensionInfo} · {viewMode === "2.5d" ? "Isometric 3D" : "Top-Down Ortho"}
           </div>
           <Toggle
             checked={trackPlayers}
