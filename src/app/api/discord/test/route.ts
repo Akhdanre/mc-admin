@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { testDiscordWebhook } from "@/server/data/discord";
+import { testDiscordWebhook } from "@/server/discord";
 import type { TestDiscordWebhookResponse } from "@/types";
 
 export async function POST(req: NextRequest) {

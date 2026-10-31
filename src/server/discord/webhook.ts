@@ -2,7 +2,7 @@ import "server-only";
 import fs from "fs/promises";
 import path from "path";
 import { config } from "@/server/config";
-import { restartDiscordBot } from "@/server/integrations/discordBot";
+import { restartDiscordBot } from "./bot";
 import type { DiscordConfig } from "@/types";
 
 const CONFIG_FILE = "discord_config.json";

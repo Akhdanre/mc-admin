@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDiscordConfig, saveDiscordConfig } from "@/server/data/discord";
+import { getDiscordConfig, saveDiscordConfig } from "@/server/discord";
 import type { DiscordSettingsResponse, DiscordConfig } from "@/types";
 
 export async function GET() {
