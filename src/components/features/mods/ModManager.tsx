@@ -186,12 +186,12 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
     <div className="space-y-6">
       {/* Top Banner for Server Restart */}
       {pendingRestart && (
-        <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 flex items-center justify-between">
+        <div className="p-4 rounded-xl border border-warning/30 bg-warning-surface text-warning-muted flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xl">⚠️</span>
             <div>
               <p className="font-semibold text-sm">Server restart recommended</p>
-              <Muted className="text-xs text-amber-200/80">
+              <Muted className="text-xs text-warning-muted/80">
                 Mods have been added, removed, or toggled. Restart Minecraft server for changes to apply.
               </Muted>
             </div>

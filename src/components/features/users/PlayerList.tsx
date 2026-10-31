@@ -18,7 +18,7 @@ export function PlayerList({
   return (
     <Card className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-heading flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-heading flex items-center gap-2">
           <span>Active Players</span>
         </h2>
         <Button
@@ -31,7 +31,7 @@ export function PlayerList({
       </div>
 
       {errorMessage ? (
-        <Card tone="muted" padding="none" className="text-center py-10 border-rose-900/50">
+        <Card tone="muted" padding="none" className="text-center py-10 border-danger-border/50">
           <p className="text-danger-muted text-sm">Failed to connect: {errorMessage}</p>
         </Card>
       ) : players.length === 0 ? (

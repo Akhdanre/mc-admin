@@ -50,7 +50,7 @@ interface CardLabelProps extends HTMLAttributes<HTMLParagraphElement> {
 export function CardLabel({ className, children, ...props }: CardLabelProps) {
   return (
     <p
-      className={cn("text-xs font-semibold uppercase tracking-wider text-muted-foreground", className)}
+      className={cn("text-overline uppercase text-muted-foreground", className)}
       {...props}
     >
       {children}

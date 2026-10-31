@@ -89,19 +89,19 @@ export function WorldControls({
         <Badge tone="warning" className="mb-2">
           <span>Environment &amp; Server State</span>
         </Badge>
-        <h2 className="text-xl font-bold text-heading tracking-tight">World &amp; Environment Controls</h2>
+        <h2 className="text-xl font-semibold text-heading">World &amp; Environment Controls</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
           Control day/night cycles, weather patterns, gamerules, and perform server maintenance.
         </p>
       </Card>
 
       {pendingRestart && (
-        <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 flex items-center justify-between">
+        <div className="p-4 rounded-xl border border-warning/30 bg-warning-surface text-warning-muted flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xl">⚠️</span>
             <div>
               <p className="font-semibold text-sm">Server restart required</p>
-              <p className="text-xs text-amber-200/80">
+              <p className="text-xs text-warning-muted/80">
                 New world map files have been extracted. Restart Minecraft server container to load the new map.
               </p>
             </div>
@@ -145,7 +145,7 @@ export function WorldControls({
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-heading text-base">Time of Day</h3>
+              <h3 className="font-semibold text-heading text-base">Time of Day</h3>
               <p className="text-xs text-muted-foreground">Set the in-game world clock</p>
             </div>
             <span className="text-2xl">☀️</span>
@@ -156,7 +156,7 @@ export function WorldControls({
               variant="secondary"
               onClick={() => runCommand("time set day")}
               disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-amber-500/40"
+              className="flex-col gap-0 p-3 hover:border-warning/40"
             >
               <div className="text-lg">🌅</div>
               <div className="text-xs font-semibold text-heading mt-1">Day</div>
@@ -166,7 +166,7 @@ export function WorldControls({
               variant="secondary"
               onClick={() => runCommand("time set noon")}
               disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-amber-500/40"
+              className="flex-col gap-0 p-3 hover:border-warning/40"
             >
               <div className="text-lg">☀️</div>
               <div className="text-xs font-semibold text-heading mt-1">Noon</div>
@@ -199,7 +199,7 @@ export function WorldControls({
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-heading text-base">Weather Machine</h3>
+              <h3 className="font-semibold text-heading text-base">Weather Machine</h3>
               <p className="text-xs text-muted-foreground">Control rain, clouds, and storms</p>
             </div>
             <span className="text-2xl">🌦️</span>
@@ -210,7 +210,7 @@ export function WorldControls({
               variant="secondary"
               onClick={() => runCommand("weather clear")}
               disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-sky-500/40"
+              className="flex-col gap-0 p-3 hover:border-info/40"
             >
               <div className="text-lg">☀️</div>
               <div className="text-xs font-semibold text-heading mt-1">Clear</div>
@@ -220,7 +220,7 @@ export function WorldControls({
               variant="secondary"
               onClick={() => runCommand("weather rain")}
               disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-sky-500/40"
+              className="flex-col gap-0 p-3 hover:border-info/40"
             >
               <div className="text-lg">🌧️</div>
               <div className="text-xs font-semibold text-heading mt-1">Rain</div>
@@ -230,7 +230,7 @@ export function WorldControls({
               variant="secondary"
               onClick={() => runCommand("weather thunder")}
               disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-sky-500/40"
+              className="flex-col gap-0 p-3 hover:border-info/40"
             >
               <div className="text-lg">⚡</div>
               <div className="text-xs font-semibold text-heading mt-1">Thunder</div>
@@ -243,7 +243,7 @@ export function WorldControls({
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-heading text-base">Broadcast Announcement</h3>
+              <h3 className="font-semibold text-heading text-base">Broadcast Announcement</h3>
               <p className="text-xs text-muted-foreground">Send server-wide chat message to all players</p>
             </div>
             <span className="text-2xl">📢</span>
@@ -274,7 +274,7 @@ export function WorldControls({
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-heading text-base">Server Maintenance</h3>
+              <h3 className="font-semibold text-heading text-base">Server Maintenance</h3>
               <p className="text-xs text-muted-foreground">World saves and difficulty adjustments</p>
             </div>
             <span className="text-2xl">⚙️</span>

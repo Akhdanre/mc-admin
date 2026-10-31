@@ -107,14 +107,14 @@ export function ChatPage() {
       <div className="flex items-center justify-between shrink-0">
         <div>
           <div className="flex items-center gap-3">
-            <SectionTitle className="text-lg font-bold">In-Game Chat</SectionTitle>
+            <SectionTitle className="text-lg font-semibold">In-Game Chat</SectionTitle>
             <Badge
               tone={isLive ? "success" : "neutral"}
               className="px-2 py-0.5 text-[11px] font-medium"
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                  isLive ? "bg-emerald-400 animate-pulse" : "bg-slate-400"
+                  isLive ? "bg-success animate-pulse" : "bg-slate-400"
                 }`}
               />
               {isLive ? "Realtime (SSE)" : "Polling"}
@@ -154,7 +154,7 @@ export function ChatPage() {
                 key={msg.id}
                 className={`flex items-start gap-2.5 p-1.5 rounded-lg transition-colors ${
                   msg.isServer
-                    ? "bg-amber-500/10 border border-amber-500/20 text-amber-200"
+                    ? "bg-warning-surface border border-warning-border text-warning-muted"
                     : "hover:bg-slate-900/60"
                 }`}
               >
@@ -206,7 +206,7 @@ export function ChatPage() {
       </Card>
 
       {error && (
-        <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+        <div className="p-2.5 rounded-lg bg-danger-surface border border-danger-border text-danger-muted text-xs">
           {error}
         </div>
       )}

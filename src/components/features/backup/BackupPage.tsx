@@ -80,7 +80,7 @@ export function BackupPage({
           <Badge tone="success" className="mb-2">
             <span>World Snapshot &amp; Retention Control</span>
           </Badge>
-          <h2 className="text-xl font-bold text-heading tracking-tight">Backup Management</h2>
+          <h2 className="text-xl font-semibold text-heading">Backup Management</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Trigger archives, prune old snapshots, and configure the automatic retention policy.
           </p>
@@ -125,16 +125,16 @@ export function BackupPage({
             <CardLabel>Total Backups</CardLabel>
             <span className="p-2 bg-indigo-500/10 text-primary-muted rounded-lg text-sm">🗃️</span>
           </div>
-          <p className="text-3xl font-extrabold text-heading mt-3">{backupStatus?.totalCount ?? 0}</p>
+          <p className="text-3xl font-semibold text-heading mt-3">{backupStatus?.totalCount ?? 0}</p>
           <p className="text-xs text-subtle-foreground mt-1">Archived snapshots on disk</p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between">
             <CardLabel>Storage Used</CardLabel>
-            <span className="p-2 bg-amber-500/10 text-warning-muted rounded-lg text-sm">💾</span>
+            <span className="p-2 bg-warning-surface text-warning-muted rounded-lg text-sm">💾</span>
           </div>
-          <p className="text-3xl font-extrabold text-warning-muted mt-3">
+          <p className="text-3xl font-semibold text-warning-muted mt-3">
             {backupStatus?.totalSizeFormatted ?? "0 MB"}
           </p>
           <p className="text-xs text-subtle-foreground mt-1">Combined archive size</p>
@@ -143,9 +143,9 @@ export function BackupPage({
         <Card>
           <div className="flex items-center justify-between">
             <CardLabel>Latest Snapshot</CardLabel>
-            <span className="p-2 bg-emerald-500/10 text-success-muted rounded-lg text-sm">✅</span>
+            <span className="p-2 bg-success-surface text-success-muted rounded-lg text-sm">✅</span>
           </div>
-          <p className="text-lg font-bold text-success-muted mt-3">
+          <p className="text-lg font-semibold text-success-muted mt-3">
             {latest ? latest.sizeFormatted : "None"}
           </p>
           <p className="text-xs text-subtle-foreground mt-1">
@@ -158,14 +158,14 @@ export function BackupPage({
             <CardLabel>Retention Policy</CardLabel>
             <span className="p-2 bg-purple-500/10 text-purple-400 rounded-lg text-sm">⏳</span>
           </div>
-          <p className="text-3xl font-extrabold text-purple-400 mt-3">{currentRetention}</p>
+          <p className="text-3xl font-semibold text-purple-400 mt-3">{currentRetention}</p>
           <p className="text-xs text-subtle-foreground mt-1">Days before auto-prune</p>
         </Card>
       </div>
 
       {/* Retention Policy Editor */}
       <Card padding="lg">
-        <h3 className="font-bold text-heading text-base mb-1">Retention Policy</h3>
+        <h3 className="font-semibold text-heading text-base mb-1">Retention Policy</h3>
         <p className="text-xs text-muted-foreground mb-4">
           Snapshots older than this window are pruned automatically by the backup service.
         </p>
@@ -216,7 +216,7 @@ export function BackupPage({
       <Card padding="lg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h3 className="font-bold text-heading text-base">Backup Archives</h3>
+            <h3 className="font-semibold text-heading text-base">Backup Archives</h3>
             <p className="text-xs text-muted-foreground">{filtered.length} of {backups.length} snapshots</p>
           </div>
 
@@ -242,7 +242,7 @@ export function BackupPage({
         </div>
 
         {backupStatus?.error ? (
-          <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-danger-muted rounded-xl text-xs font-mono">
+          <div className="p-4 bg-danger-surface border border-danger-border text-danger-muted rounded-xl text-xs font-mono">
             Failed to load backups: {backupStatus.error}
           </div>
         ) : filtered.length === 0 ? (
@@ -316,7 +316,7 @@ export function BackupPage({
                         }}
                         disabled={isBusy || isBackingUp}
                         title="Rollback world to this snapshot"
-                        className="px-2.5 py-1.5 text-xs text-amber-400 hover:bg-amber-500/10 border-amber-500/20"
+                        className="px-2.5 py-1.5 text-xs text-warning-muted hover:bg-warning-surface border-warning-border"
                       >
                         Rollback
                       </Button>

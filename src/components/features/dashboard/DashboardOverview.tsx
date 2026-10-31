@@ -33,7 +33,7 @@ export function DashboardOverview({
             <Badge tone="primary" className="mb-3">
               <span>Server Overview</span>
             </Badge>
-            <h2 className="text-2xl font-bold text-heading tracking-tight">
+            <h2 className="text-2xl font-semibold text-heading">
               Minecraft Server Management Hub
             </h2>
             <Body className="mt-1">
@@ -90,7 +90,7 @@ export function DashboardOverview({
             </Badge>
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-3xl font-extrabold text-heading">{playerStatus.onlineCount}</span>
+            <span className="text-3xl font-semibold text-heading">{playerStatus.onlineCount}</span>
             <span className="text-sm text-subtle-foreground font-medium">
               / {playerStatus.maxCount} max
             </span>
@@ -117,7 +117,7 @@ export function DashboardOverview({
             </Badge>
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-3xl font-extrabold text-primary-muted">
+            <span className="text-3xl font-semibold text-primary-muted">
               {whitelistStatus.players.length}
             </span>
             <span className="text-sm text-subtle-foreground font-medium">registered</span>
@@ -142,7 +142,7 @@ export function DashboardOverview({
           </div>
           {playerHistory?.lastLoginPlayer ? (
             <div className="mt-3">
-              <p className="text-base font-bold text-primary-muted truncate">
+              <p className="text-base font-semibold text-primary-muted truncate">
                 {playerHistory.lastLoginPlayer.username}
               </p>
               <Caption className="mt-1">
@@ -198,7 +198,7 @@ export function DashboardOverview({
         <Card className="lg:col-span-2" padding="lg">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold text-heading text-base">Active In-Game Players</h3>
+              <h3 className="font-semibold text-heading text-base">Active In-Game Players</h3>
               <Caption>Currently logged into the server right now</Caption>
             </div>
             <Button
@@ -212,7 +212,7 @@ export function DashboardOverview({
           </div>
 
           {!isOnline ? (
-            <div className="py-12 text-center border border-dashed border-rose-900/40 rounded-xl bg-rose-500/5">
+            <div className="py-12 text-center border border-dashed border-danger-border/40 rounded-xl bg-danger/5">
               <span className="text-3xl">⚠️</span>
               <p className="text-danger-muted text-sm font-semibold mt-2">Cannot Connect to RCON</p>
               <Muted className="max-w-sm mx-auto mt-1 font-mono">{playerStatus.error}</Muted>
@@ -253,7 +253,7 @@ export function DashboardOverview({
         {/* Server Quick Info Card */}
         <Card padding="lg" className="flex flex-col justify-between">
           <div>
-            <h3 className="font-bold text-heading text-base mb-1">Server Information</h3>
+            <h3 className="font-semibold text-heading text-base mb-1">Server Information</h3>
             <Caption className="mb-4">Configuration details</Caption>
 
             <div className="space-y-3">

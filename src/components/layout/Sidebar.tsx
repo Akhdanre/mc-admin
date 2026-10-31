@@ -268,7 +268,7 @@ export function Sidebar({
         <Button
           variant="secondary"
           size="sm"
-          className="w-full justify-center text-xs text-muted-foreground hover:text-red-400 hover:border-red-500/30"
+          className="w-full justify-center text-xs text-muted-foreground hover:text-danger-muted hover:border-danger-border/50"
           onClick={async () => {
             try {
               await fetch("/api/auth/logout", { method: "POST" });

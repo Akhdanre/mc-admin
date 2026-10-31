@@ -123,7 +123,7 @@ export function UserManagement({
           <Badge tone="primary" className="mb-2">
             <span>Player Administration & Teleportation</span>
           </Badge>
-          <h2 className="text-xl font-bold text-heading tracking-tight">User Management</h2>
+          <h2 className="text-xl font-semibold text-heading">User Management</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Monitor real-time player locations, teleport users, toggle gamemodes, and manage whitelist access.
           </p>
@@ -251,7 +251,7 @@ export function UserManagement({
                 onClick={() => setHistoryFilter("online")}
                 className={cn(
                   "px-2.5 py-1 rounded-lg font-medium",
-                  historyFilter === "online" && "bg-emerald-600"
+                  historyFilter === "online" && "bg-success"
                 )}
               >
                 Online
@@ -313,9 +313,9 @@ export function UserManagement({
                             }}
                           />
                           <div>
-                            <h4 className="font-bold text-heading text-sm">{name}</h4>
+                            <h4 className="font-semibold text-heading text-sm">{name}</h4>
                             <span className="inline-flex items-center gap-1 text-[11px] text-success-muted font-medium mt-0.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                               Online
                             </span>
                           </div>
@@ -337,7 +337,7 @@ export function UserManagement({
                             onClick={() => handleKickPlayer(name)}
                             disabled={isBusy}
                             title="Kick player"
-                            className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-danger-muted border border-rose-500/20 rounded-lg"
+                            className="px-2.5 py-1 bg-danger-surface hover:bg-danger/20 text-danger-muted border border-danger-border rounded-lg"
                           >
                             Kick
                           </Button>
@@ -431,7 +431,7 @@ export function UserManagement({
                 variant="success"
                 size="md"
                 disabled={isBusy || !whitelistInput.trim()}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium gap-1.5 shadow-sm"
+                className="bg-success hover:bg-success text-white font-medium gap-1.5 shadow-sm"
               >
                 <span>+ Add to Whitelist</span>
               </Button>
@@ -439,7 +439,7 @@ export function UserManagement({
           </Card>
 
           {whitelistError ? (
-            <div className="bg-rose-500/10 border border-rose-500/20 text-danger-muted p-4 rounded-xl text-xs font-mono">
+            <div className="bg-danger-surface border border-danger-border text-danger-muted p-4 rounded-xl text-xs font-mono">
               {whitelistError}
             </div>
           ) : filteredWhitelist.length === 0 ? (
@@ -486,7 +486,7 @@ export function UserManagement({
                     }}
                     disabled={isBusy}
                     title="Remove user"
-                    className="p-1.5 text-muted-foreground hover:text-danger-muted hover:bg-rose-500/10 rounded-lg border border-transparent hover:border-rose-500/20 bg-transparent"
+                    className="p-1.5 text-muted-foreground hover:text-danger-muted hover:bg-danger-surface rounded-lg border border-transparent hover:border-danger-border bg-transparent"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -538,10 +538,10 @@ export function UserManagement({
                         }}
                       />
                       <div>
-                        <h4 className="font-bold text-heading text-sm">{player.username}</h4>
+                        <h4 className="font-semibold text-heading text-sm">{player.username}</h4>
                         {player.online ? (
                           <span className="inline-flex items-center gap-1 text-[11px] text-success-muted font-medium mt-0.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                             Online Now
                           </span>
                         ) : (

@@ -340,8 +340,8 @@ export function SettingsPage({
             <div
               className={`p-3 rounded-lg text-xs border ${
                 appSettingsStatus.success
-                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
-                  : "bg-red-500/10 border-red-500/20 text-red-500"
+                  ? "bg-success-surface border-success-border text-success-muted"
+                  : "bg-danger-surface border-danger-border text-danger-muted"
               }`}
             >
               {appSettingsStatus.message}
@@ -352,8 +352,8 @@ export function SettingsPage({
             <div
               className={`p-3 rounded-lg text-xs border ${
                 rconTestStatus.success
-                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
-                  : "bg-red-500/10 border-red-500/20 text-red-500"
+                  ? "bg-success-surface border-success-border text-success-muted"
+                  : "bg-danger-surface border-danger-border text-danger-muted"
               }`}
             >
               {rconTestStatus.message}
@@ -448,8 +448,8 @@ export function SettingsPage({
             <div
               className={`p-3 rounded-lg text-xs border ${
                 passwordStatus.success
-                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
-                  : "bg-red-500/10 border-red-500/20 text-red-500"
+                  ? "bg-success-surface border-success-border text-success-muted"
+                  : "bg-danger-surface border-danger-border text-danger-muted"
               }`}
             >
               {passwordStatus.message}
@@ -648,8 +648,8 @@ export function SettingsPage({
             <div
               className={`p-3 rounded-lg text-xs border ${
                 discordStatus.success
-                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
-                  : "bg-red-500/10 border-red-500/20 text-red-500"
+                  ? "bg-success-surface border-success-border text-success-muted"
+                  : "bg-danger-surface border-danger-border text-danger-muted"
               }`}
             >
               {discordStatus.message}

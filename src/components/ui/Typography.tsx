@@ -4,15 +4,17 @@ import { cn } from "@/lib/cn";
 /**
  * Typography scale mapping the legacy text classes.
  *
- *   <PageTitle>   text-xl font-bold text-white tracking-tight
- *   <SectionTitle> text-lg font-semibold text-white
- *   <Body>        text-sm text-slate-300
- *   <Muted>       text-xs text-slate-400
- *   <Caption>     text-xs text-slate-500
+ *   <PageTitle>   text-xl (22/30) font-semibold text-heading
+ *   <SectionTitle> text-lg (18/26) font-semibold text-heading
+ *   <Body>        text-sm (14/20) text-foreground
+ *   <Muted>       text-xs (12/16) text-muted-foreground
+ *   <Caption>     text-xs (12/16) text-subtle-foreground
+ *
+ * Sizes come from the Penpot `typography.*` tokens (see globals.css).
  */
 export function PageTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h2 className={cn("text-xl font-bold text-heading tracking-tight", className)} {...props}>
+    <h2 className={cn("text-xl font-semibold text-heading", className)} {...props}>
       {children}
     </h2>
   );

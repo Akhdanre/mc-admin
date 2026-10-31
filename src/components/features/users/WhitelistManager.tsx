@@ -36,7 +36,7 @@ export function WhitelistManager({
     <Card className="mb-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold text-heading flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-heading flex items-center gap-2">
             <span>Whitelist Access Management</span>
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">Control player access and grant entry to whitelisted users.</p>
@@ -88,7 +88,7 @@ export function WhitelistManager({
       </form>
 
       {errorMessage ? (
-        <Card tone="muted" padding="none" className="text-center py-10 border-rose-900/50">
+        <Card tone="muted" padding="none" className="text-center py-10 border-danger-border/50">
           <p className="text-danger-muted text-sm">{errorMessage}</p>
         </Card>
       ) : players.length === 0 ? (
@@ -125,7 +125,7 @@ export function WhitelistManager({
                 onClick={() => handleRemove(name)}
                 disabled={isLoading}
                 title="Remove user"
-                className="p-1.5 rounded hover:text-danger-muted hover:bg-rose-500/10 hover:border-rose-500/20 border border-transparent"
+                className="p-1.5 rounded hover:text-danger-muted hover:bg-danger-surface hover:border-danger-border border border-transparent"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

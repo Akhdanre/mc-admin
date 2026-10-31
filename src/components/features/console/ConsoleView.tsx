@@ -100,7 +100,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
           <Badge tone="success" className="mb-2">
             <span>Direct Console Terminal</span>
           </Badge>
-          <h2 className="text-xl font-bold text-heading tracking-tight">RCON Command Center</h2>
+          <h2 className="text-xl font-semibold text-heading">RCON Command Center</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Execute raw server commands with instant operator privileges.
           </p>
@@ -139,9 +139,9 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
         {/* Terminal Titlebar */}
         <div className="bg-surface/80 px-4 py-2.5 border-b border-border/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-            <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-            <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+            <div className="w-3 h-3 rounded-full bg-danger/80" />
+            <div className="w-3 h-3 rounded-full bg-warning/80" />
+            <div className="w-3 h-3 rounded-full bg-success/80" />
             <span className="text-xs font-mono text-muted-foreground ml-2">minecraft-server: rcon-cli</span>
           </div>
           <span className="text-[11px] text-subtle-foreground font-mono">session: active</span>

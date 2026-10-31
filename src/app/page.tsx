@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Sidebar, type AdminTab } from "@/components/layout/Sidebar";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { DashboardOverview } from "@/components/features/dashboard/DashboardOverview";
 import { UserManagement } from "@/components/features/users/UserManagement";
 import { WorldControls } from "@/components/features/world/WorldControls";
@@ -86,10 +85,10 @@ export default function Home() {
               </svg>
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase font-mono font-semibold tracking-wider text-muted-foreground">
+              <span className="text-overline uppercase font-mono text-muted-foreground">
                 Active View:
               </span>
-              <span className="text-sm font-bold text-heading capitalize">{TAB_LABELS[currentTab]}</span>
+              <span className="text-sm font-semibold text-heading capitalize">{TAB_LABELS[currentTab]}</span>
             </div>
           </div>
 
@@ -122,7 +121,6 @@ export default function Home() {
               </svg>
             </button>
 
-            <ThemeToggle />
           </div>
         </header>
 
@@ -133,8 +131,8 @@ export default function Home() {
             <div
               className={`mb-6 p-3.5 rounded-xl text-xs font-mono border shadow-lg flex items-center justify-between ${
                 feedback.isError
-                  ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
-                  : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                  ? "bg-danger-surface border-danger-border text-danger-muted"
+                  : "bg-success-surface border-success-border text-success-muted"
               }`}
             >
               <div className="flex items-center gap-2">
