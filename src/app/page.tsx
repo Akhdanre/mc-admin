@@ -16,14 +16,16 @@ import { useServerActions } from "@/hooks/useServerActions";
 import { useFeedback } from "@/hooks/useFeedback";
 
 const TAB_LABELS: Record<AdminTab, string> = {
-  dashboard: "dashboard",
-  users: "users",
-  world: "World Controls",
-  mods: "Mods & Packages",
-  backups: "Backup Management",
+  dashboard: "Dashboard",
+  commands: "Console & Logs",
+  chat: "Live Chat",
+  users: "Online Players",
+  whitelist: "Whitelist",
   map: "Live Web Map",
-  commands: "RCON Console",
-  chat: "In-Game Chat",
+  world: "World & Environment",
+  mods: "Mods & Addons",
+  backups: "Backups & Restore",
+  telemetry: "Host Telemetry",
   settings: "Settings",
 };
 
@@ -69,6 +71,7 @@ export default function Home() {
         isConnected={isConnected}
         isOpenMobile={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
+        serverVersion="Paper 1.21.4"
       />
 
       {/* Main Content Area */}
@@ -161,8 +164,9 @@ export default function Home() {
             />
           )}
 
-          {currentTab === "users" && (
+          {(currentTab === "users" || currentTab === "whitelist") && (
             <UserManagement
+              key={currentTab}
               onlinePlayers={playerStatus.players}
               playerLocations={playerLocations}
               whitelistedPlayers={whitelistStatus.players}
@@ -172,6 +176,19 @@ export default function Home() {
               onExecuteCommand={handleExecuteCommand}
               onTeleport={handleTeleport}
               isBusy={isBusy}
+              initialTab={currentTab === "whitelist" ? "whitelist" : "online"}
+            />
+          )}
+
+          {currentTab === "telemetry" && (
+            <DashboardOverview
+              playerStatus={playerStatus}
+              whitelistStatus={whitelistStatus}
+              serverInfo={serverInfo}
+              playerHistory={playerHistory}
+              onRefresh={refresh}
+              isRefreshing={isRefreshing}
+              onNavigateTab={(tab) => setCurrentTab(tab)}
             />
           )}
 

@@ -15,6 +15,7 @@ interface UserManagementProps {
   onExecuteCommand: (command: string) => Promise<string>;
   onTeleport: (player: string, target?: string, x?: number, y?: number, z?: number) => Promise<void>;
   isBusy: boolean;
+  initialTab?: "online" | "whitelist" | "history";
 }
 
 export function UserManagement({
@@ -27,8 +28,9 @@ export function UserManagement({
   onExecuteCommand,
   onTeleport,
   isBusy,
+  initialTab = "online",
 }: UserManagementProps) {
-  const [activeTab, setActiveTab] = useState<"online" | "whitelist" | "history">("online");
+  const [activeTab, setActiveTab] = useState<"online" | "whitelist" | "history">(initialTab);
   const [whitelistInput, setWhitelistInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [historyFilter, setHistoryFilter] = useState<"all" | "today" | "online">("all");
