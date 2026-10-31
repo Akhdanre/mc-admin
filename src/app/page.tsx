@@ -120,7 +120,7 @@ export default function Home() {
 
         {/* Dynamic Main Body Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0">
-          <div className="max-w-[1160px] mx-auto w-full">
+          {/* Notification Feedback Toast */}
           {feedback && (
             <div
               className={`mb-6 p-3.5 rounded-xl text-xs font-mono border shadow-lg flex items-center justify-between ${
@@ -217,7 +217,6 @@ export default function Home() {
               isBusy={isBusy}
             />
           )}
-          </div>
         </main>
       </div>
     </div>
