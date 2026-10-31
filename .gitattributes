@@ -1,0 +1,20 @@
+# Normalize line endings: store and check out LF regardless of platform.
+# Prevents CRLF noise when working across Windows and Linux.
+* text=auto eol=lf
+
+# Binary files must never be converted.
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.gz binary
+*.pdf binary
+*.db binary
+*.sqlite binary
