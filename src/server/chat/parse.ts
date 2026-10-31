@@ -75,10 +75,15 @@ export function parseChatLine(line: string, index: number): ChatMessage | null {
 
   const playerMatch = line.match(PLAYER_CHAT_REGEX);
   if (playerMatch && playerMatch[1] && playerMatch[2]) {
+    const message = playerMatch[2].trim();
+    if (message.toLowerCase().includes("dashboard connected")) {
+      return null;
+    }
+    const sender = playerMatch[1];
     return {
-      id: `chat-${index}-${Date.now()}`,
-      sender: playerMatch[1],
-      message: playerMatch[2].trim(),
+      id: `chat-${index}-${timestamp}-${sender}`,
+      sender,
+      message,
       timestamp,
       isServer: false,
     };
@@ -86,15 +91,21 @@ export function parseChatLine(line: string, index: number): ChatMessage | null {
 
   const serverMatch = line.match(SERVER_CHAT_REGEX);
   if (serverMatch && serverMatch[2]) {
+    const message = serverMatch[2].trim();
+    if (
+      message.toLowerCase().includes("dashboard connected") ||
+      message.toLowerCase().includes("pulse mc dashboard")
+    ) {
+      return null;
+    }
     return {
-      id: `chat-${index}-${Date.now()}`,
+      id: `chat-${index}-${timestamp}-server`,
       sender: "Server",
-      message: serverMatch[2].trim(),
+      message,
       timestamp,
       isServer: true,
     };
   }
-
   return null;
 }
 

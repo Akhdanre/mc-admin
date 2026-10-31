@@ -38,16 +38,29 @@ export function ChatView({ livePlayers = [], onExecuteCommand }: ChatViewProps) 
       const data = await apiGet<ChatResponse>("/api/chat");
       if (data.messages && data.messages.length > 0) {
         setMessages((prev) => {
-          const incoming: DisplayMessage[] = data.messages.map((m: ChatMessage) => ({
-            id: m.id || `${m.timestamp}-${m.sender}`,
-            sender: m.sender,
-            role: m.sender.toLowerCase().includes("admin") ? "admin" : "member",
-            text: m.message,
-            timestamp: m.timestamp,
-            channel: "in-game",
-          }));
-          const existingIds = new Set(prev.map((p) => p.id));
-          const newItems = incoming.filter((item) => !existingIds.has(item.id));
+          const incoming: DisplayMessage[] = data.messages
+            .filter((m) => {
+              const lower = (m.message || "").toLowerCase();
+              return (
+                !lower.includes("dashboard connected") && !lower.includes("pulse mc dashboard")
+              );
+            })
+            .map((m: ChatMessage) => ({
+              id: m.id || `${m.timestamp}-${m.sender}-${m.message}`,
+              sender: m.sender,
+              role: m.isServer
+                ? "server"
+                : m.sender.toLowerCase().includes("admin")
+                  ? "admin"
+                  : "member",
+              text: m.message,
+              timestamp: m.timestamp,
+              channel: "in-game",
+            }));
+          const existingKeys = new Set(prev.map((p) => `${p.timestamp}-${p.sender}-${p.text}`));
+          const newItems = incoming.filter(
+            (item) => !existingKeys.has(`${item.timestamp}-${item.sender}-${item.text}`)
+          );
           return newItems.length > 0 ? [...prev, ...newItems] : prev;
         });
       }
@@ -67,16 +80,26 @@ export function ChatView({ livePlayers = [], onExecuteCommand }: ChatViewProps) 
         if (!event.data || event.data.startsWith(":")) return;
         try {
           const msg = JSON.parse(event.data) as ChatMessage;
+          const lower = (msg.message || "").toLowerCase();
+          if (lower.includes("dashboard connected") || lower.includes("pulse mc dashboard")) {
+            return;
+          }
           const displayMsg: DisplayMessage = {
-            id: msg.id || `${msg.timestamp}-${msg.sender}`,
+            id: msg.id || `${msg.timestamp}-${msg.sender}-${msg.message}`,
             sender: msg.sender,
-            role: "member",
+            role: msg.isServer ? "server" : "member",
             text: msg.message,
             timestamp: msg.timestamp,
             channel: "in-game",
           };
           setMessages((prev) =>
-            prev.some((m) => m.id === displayMsg.id) ? prev : [...prev, displayMsg]
+            prev.some(
+              (m) =>
+                `${m.timestamp}-${m.sender}-${m.text}` ===
+                `${displayMsg.timestamp}-${displayMsg.sender}-${displayMsg.text}`
+            )
+              ? prev
+              : [...prev, displayMsg]
           );
         } catch {
           // ignore
@@ -282,8 +305,8 @@ export function ChatView({ livePlayers = [], onExecuteCommand }: ChatViewProps) 
                   className="flex items-center gap-2.5 py-1.5 px-1 hover:bg-surface-raised/40 rounded transition-colors group"
                 >
                   {/* Timestamp */}
-                  <span className="text-xs font-mono text-muted-foreground shrink-0 w-11 select-none">
-                    {msg.timestamp}
+                  <span className="text-xs font-mono text-muted-foreground shrink-0 tabular-nums select-none min-w-[54px]">
+                    {msg.timestamp.match(/\d{2}:\d{2}(?::\d{2})?/)?.[0] || msg.timestamp}
                   </span>
 
                   {/* Author Tag */}
