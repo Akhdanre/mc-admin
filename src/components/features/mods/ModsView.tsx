@@ -9,6 +9,10 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/Table";
+function formatModSize(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Toggle } from "@/components/ui/Toggle";
@@ -39,7 +43,7 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
             name: m.name,
             fileName: m.fileName,
             version: m.version || "1.0.0",
-            sizeFormatted: `${(m.sizeBytes / 1024 / 1024).toFixed(1)} MB`,
+            sizeFormatted: formatModSize(m.sizeBytes),
             type: m.loader === "forge" ? "forge" : "plugin",
             enabled: m.enabled,
             author: m.loader === "forge" ? "Forge" : "Server",
@@ -64,7 +68,7 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
             name: m.name,
             fileName: m.fileName,
             version: m.version || "1.0.0",
-            sizeFormatted: `${(m.sizeBytes / 1024 / 1024).toFixed(1)} MB`,
+            sizeFormatted: formatModSize(m.sizeBytes),
             type: m.loader === "forge" ? "forge" : "plugin",
             enabled: m.enabled,
             author: m.loader === "forge" ? "Forge" : "Server",
@@ -129,7 +133,7 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
           name: file.name.replace(/\.jar$/i, ""),
           fileName: file.name,
           version: "Latest",
-          sizeFormatted: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
+          sizeFormatted: formatModSize(file.size),
           type: "forge",
           enabled: true,
           author: "Uploaded",
