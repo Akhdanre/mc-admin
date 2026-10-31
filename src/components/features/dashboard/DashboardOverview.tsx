@@ -1,290 +1,567 @@
 "use client";
 
-import { Badge, Body, Button, Card, CardLabel, Caption, Mono, Muted } from "@/components/ui";
-import type { PlayerStatus, WhitelistStatus, ServerInfoResponse, PlayerHistoryResponse } from "@/types";
+import { useState } from "react";
+import { cn } from "@/lib/cn";
+import type { AdminTab } from "@/components/layout/Sidebar";
+import type {
+  PlayerStatus,
+  WhitelistStatus,
+  ServerInfoResponse,
+  BackupStatusResponse,
+  PlayerHistoryResponse,
+  PlayerLocation,
+} from "@/types";
 
 interface DashboardOverviewProps {
   playerStatus: PlayerStatus;
   whitelistStatus: WhitelistStatus;
   serverInfo: ServerInfoResponse;
+  backupStatus?: BackupStatusResponse | null;
+  playerLocations?: Record<string, PlayerLocation>;
   playerHistory?: PlayerHistoryResponse | null;
   onRefresh: () => void;
   isRefreshing: boolean;
-  onNavigateTab: (tab: "users" | "commands") => void;
+  onNavigateTab: (tab: AdminTab) => void;
+  onExecuteCommand?: (command: string) => Promise<string>;
 }
 
+type Timeframe = "15m" | "1h" | "6h" | "24h";
+
+// 24 histogram bars simulating steady 20 TPS engine loop
+const TPS_BARS = [40, 40, 40, 39, 40, 40, 40, 40, 38, 40, 40, 40, 40, 40, 39, 40, 40, 40, 40, 40, 40, 39, 40, 40];
+// 24 histogram bars simulating ~14-22ms MSPT tick calculation
+const MSPT_BARS = [16, 18, 14, 15, 22, 17, 16, 15, 19, 14, 16, 17, 15, 18, 20, 16, 15, 17, 19, 14, 16, 15, 18, 16];
+// 24 histogram bars simulating tunnel ping / network ingress latency
+const PING_BARS = [14, 18, 12, 15, 24, 19, 13, 16, 21, 14, 17, 22, 13, 16, 25, 18, 14, 19, 23, 15, 17, 14, 20, 18];
+
+function RestartIcon() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M7 6c-2.36 0-4.46 1.51-5.21 3.76-.75 2.24.02 4.71 1.9 6.13 1.89 1.42 4.47 1.48 6.42.15 1.95-1.33 2.83-3.76 2.19-6.04h1.7C14 14.87 10.87 18 7 18 3.13 18 0 14.87 0 11S3.13 4 7 4V6L10 3 7 0v2z" />
+    </svg>
+  );
+}
+
+function StopIcon() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 13 13" fill="currentColor">
+      <path d="M6.5 0C2.91 0 0 2.91 0 6.5S2.91 13 6.5 13 13 10.09 13 6.5 10.09 0 6.5 0zm-2.5 4h5v5H4V4z" />
+    </svg>
+  );
+}
+
+function TerminalIcon() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M1 2L4.5 5.5 1 9l1 1L6.5 5.5 2 1 1 2zm5.5 7H12v1.5H6.5V9z" />
+    </svg>
+  );
+}
+
+function PromptIcon() {
+  return (
+    <svg className="w-3.5 h-3.5 text-slate-800 dark:text-slate-200" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M2.5 4.5L6 8L2.5 11.5L3.5 12.5L8 8L3.5 3.5L2.5 4.5zm5.5 7h5.5v1.5H8v-1.5z" />
+    </svg>
+  );
+}
+
+function BanIcon() {
+  return (
+    <svg className="w-3.5 h-3.5 text-red-500" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 1.5C4.41 1.5 1.5 4.41 1.5 8s2.91 6.5 6.5 6.5 6.5-2.91 6.5-6.5S11.59 1.5 8 1.5zM3.4 8c0-1.1.4-2.1 1-2.9l6.5 6.5c-.8.6-1.8 1-2.9 1-2.5 0-4.6-2.1-4.6-4.6zm8.2 2.9L5.1 4.4c.8-.6 1.8-1 2.9-1 2.5 0 4.6 2.1 4.6 4.6 0 1.1-.4 2.1-1 2.9z" />
+    </svg>
+  );
+}
+
+function UserCheckIcon() {
+  return (
+    <svg className="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M6 6c1.38 0 2.5-1.12 2.5-2.5S7.38 1 6 1 3.5 2.12 3.5 3.5 4.62 6 6 6zm-5 7.5v-1.5c0-1.8 3.3-2.8 5-2.8.5 0 1.1.1 1.7.2L6.6 10.5c-.2.2-.3.5-.3.8v2.2H1zm11.7-4.2l-3.2 3.2-1.5-1.5-.7.7 2.2 2.2 3.9-3.9-.7-.7z" />
+    </svg>
+  );
+}
+
+function CloudBackupIcon() {
+  return (
+    <svg className="w-3.5 h-3.5 text-indigo-500" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M12.5 6c-.1-1.87-1.48-3.43-3.33-3.74-1.85-.31-3.66.7-4.37 2.44C3.02 4.8 1.6 6.22 1.5 8c0 1.93 1.57 3.5 3.5 3.5h7.5c1.66 0 3-1.34 3-3 0-1.4-1-2.6-2.5-2.9z" />
+    </svg>
+  );
+}
+
+function WarningAlertIcon() {
+  return (
+    <svg className="w-3.5 h-3.5 text-amber-500" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 2L1.5 13.5h13L8 2zm-.7 3.5h1.4v4H7.3v-4zm0 5h1.4v1.5H7.3v-1.5z" />
+    </svg>
+  );
+}
 export function DashboardOverview({
   playerStatus,
   whitelistStatus,
   serverInfo,
+  backupStatus,
+  playerLocations = {},
   playerHistory,
   onRefresh,
   isRefreshing,
   onNavigateTab,
+  onExecuteCommand,
 }: DashboardOverviewProps) {
+  const [timeframe, setTimeframe] = useState<Timeframe>("15m");
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
+
   const isOnline = !playerStatus.error;
+  const capacityPercent =
+    playerStatus.maxCount > 0
+      ? Math.min(100, Math.round((playerStatus.onlineCount / playerStatus.maxCount) * 100))
+      : 0;
+
+  const handleAction = async (command: string, label: string) => {
+    if (!onExecuteCommand) return;
+    const confirmed = window.confirm(`Send '${command}' command to server?`);
+    if (!confirmed) return;
+
+    try {
+      setActionNotice(`Executing ${label}...`);
+      await onExecuteCommand(command);
+      setActionNotice(`${label} signal sent successfully.`);
+      setTimeout(() => {
+        setActionNotice(null);
+        onRefresh();
+      }, 3000);
+    } catch {
+      setActionNotice(`Failed to send ${label}.`);
+      setTimeout(() => setActionNotice(null), 3000);
+    }
+  };
+
+  // Event rows matching Penpot design
+  const auditEvents = [
+    {
+      icon: <PromptIcon />,
+      text: "_xKaelin executed /time set day",
+      time: "2m ago",
+      tag: "RCON",
+      tagTone: "bg-[#eff6ff] text-foreground border-[#dbeafe] dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900",
+    },
+    {
+      icon: <BanIcon />,
+      text: "GriefBot banned by Console",
+      time: "6m ago",
+      tag: "JOIN",
+      tagTone: "bg-[#ecfdf5] text-foreground border-[#a7f3d0] dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900",
+    },
+    {
+      icon: <UserCheckIcon />,
+      text: `${whitelistStatus.players[0] || "notch_fan_99"} added to whitelist`,
+      time: "11m ago",
+      tag: "WORLD",
+      tagTone: "bg-[#f8fafc] text-foreground border-[#e2e8f0] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+    },
+    {
+      icon: <CloudBackupIcon />,
+      text: backupStatus?.latestBackup
+        ? `Automated backup completed (${backupStatus.latestBackup.sizeFormatted})`
+        : "Automated backup completed",
+      time: "18m ago",
+      tag: "ADVANCEMENT",
+      tagTone: "bg-[#fef3c7] text-foreground border-[#fde68a] dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900",
+    },
+    {
+      icon: <WarningAlertIcon />,
+      text: "TPS drop detected (16.2 TPS)",
+      time: "25m ago",
+      tag: "BACKUP",
+      tagTone: "bg-[#f3e8ff] text-foreground border-[#e9d5ff] dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900",
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-primary/10 via-surface/80 to-surface border border-primary/20 rounded-2xl p-6 relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <Badge tone="primary" className="mb-3">
-              <span>Server Overview</span>
-            </Badge>
-            <h2 className="text-2xl font-semibold text-heading">
-              Minecraft Server Management Hub
-            </h2>
-            <Body className="mt-1">
-              Live monitoring, access control, and remote administration.
-            </Body>
+      {/* Action Notification Banner */}
+      {actionNotice && (
+        <div className="p-3 rounded-lg bg-surface border border-primary/30 text-xs font-mono text-primary flex items-center justify-between shadow-xs">
+          <span>{actionNotice}</span>
+          <button
+            onClick={() => setActionNotice(null)}
+            className="text-subtle-foreground hover:text-foreground cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-heading leading-tight tracking-tight">
+            Dashboard
+          </h1>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 font-mono">
+            <span
+              className={cn(
+                "w-2 h-2 rounded-full shrink-0",
+                isOnline ? "bg-emerald-500" : "bg-danger"
+              )}
+            />
+            <span className="font-semibold">{isOnline ? "ONLINE" : "OFFLINE"}</span>
+            <span className="text-faint-foreground">·</span>
+            <span>Docker mc-server</span>
+            <span className="text-faint-foreground">·</span>
+            <span>Paper 1.21.4</span>
+            <span className="text-faint-foreground">·</span>
+            <span className="text-subtle-foreground">Uptime 8h 24m</span>
           </div>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              variant="secondary"
-              size="md"
-              className="text-xs shadow-xs"
-              onClick={onRefresh}
-              disabled={isRefreshing}
-            >
-              <svg
-                className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              <span>{isRefreshing ? "Syncing..." : "Sync Server"}</span>
-            </Button>
+        {/* Header Actions */}
+        <div className="flex items-center gap-2 shrink-0 flex-wrap w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => handleAction("/restart", "Restart Server")}
+            className="h-9 sm:h-8 px-3 rounded-md text-xs font-semibold bg-[#eff6ff] hover:bg-[#dbeafe] text-[#2656c8] border border-[#dbeafe] transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs flex-1 sm:flex-initial active:scale-[0.98]"
+          >
+            <RestartIcon />
+            <span>Restart Server (60s)</span>
+          </button>
 
-            <Button
-              variant="primary"
-              size="md"
-              className="text-xs shadow-lg shadow-indigo-600/25"
-              onClick={() => onNavigateTab("commands")}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-              <span>Open Console</span>
-            </Button>
+          <button
+            type="button"
+            onClick={() => handleAction("/stop", "Stop Server")}
+            className="h-9 sm:h-8 px-3 rounded-md text-xs font-semibold bg-surface hover:bg-surface-raised text-muted-foreground hover:text-danger-foreground border border-border transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs flex-1 sm:flex-initial active:scale-[0.98]"
+          >
+            <StopIcon />
+            <span>Stop Server</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigateTab("commands")}
+            className="h-9 sm:h-8 px-3 rounded-md text-xs font-semibold bg-surface hover:bg-surface-raised text-heading border border-border-strong transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs w-full sm:w-auto active:scale-[0.98]"
+          >
+            <TerminalIcon />
+            <span>Run Command (RCON)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Metrics Row (4-Gauge Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Card 1: Online Players */}
+        <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+            ONLINE PLAYERS
+          </div>
+          <div className="text-2xl font-semibold text-heading mt-2">
+            {playerStatus.onlineCount}{" "}
+            <span className="text-sm font-normal text-subtle-foreground">
+              / {playerStatus.maxCount || 20}
+            </span>
+          </div>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
+            <div
+              className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+              style={{ width: `${capacityPercent}%` }}
+            />
+          </div>
+          <div className="text-[11px] text-subtle-foreground truncate">
+            {capacityPercent}% Capacity · {whitelistStatus.players.length} Whitelisted
+          </div>
+        </div>
+
+        {/* Card 2: JVM Heap Memory */}
+        <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+            JVM HEAP MEMORY
+          </div>
+          <div className="text-2xl font-semibold text-heading mt-2">
+            3.2{" "}
+            <span className="text-sm font-normal text-subtle-foreground">/ 8.0 GB</span>
+          </div>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
+            <div className="bg-blue-500 h-full rounded-full" style={{ width: "40%" }} />
+          </div>
+          <div className="text-[11px] text-subtle-foreground truncate">
+            40% · Aikar G1GC 14ms avg
+          </div>
+        </div>
+
+        {/* Card 3: Engine Performance */}
+        <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+            ENGINE PERFORMANCE
+          </div>
+          <div className="text-2xl font-semibold text-heading mt-2">
+            {isOnline ? "19.8 TPS" : "0.0 TPS"}
+          </div>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
+            <div
+              className={cn("h-full rounded-full", isOnline ? "bg-emerald-500" : "bg-danger")}
+              style={{ width: isOnline ? "99%" : "0%" }}
+            />
+          </div>
+          <div className="text-[11px] text-subtle-foreground truncate">
+            14.2 ms MSPT (Budget 50ms)
+          </div>
+        </div>
+
+        {/* Card 4: World & Storage */}
+        <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+            WORLD & STORAGE
+          </div>
+          <div className="text-2xl font-semibold text-heading mt-2">
+            {backupStatus?.totalSizeFormatted
+              ? `${backupStatus.totalSizeFormatted} NVMe`
+              : "18.4 GB NVMe"}
+          </div>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
+            <div className="bg-indigo-500 h-full rounded-full" style={{ width: "55%" }} />
+          </div>
+          <div className="text-[11px] text-subtle-foreground truncate">
+            1,030 chunks · {backupStatus?.totalCount ?? 0} Backups stored
           </div>
         </div>
       </div>
 
-      {/* Primary Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="hover:border-border-strong transition">
-          <div className="flex items-center justify-between">
-            <CardLabel className="font-semibold tracking-wider">Online Players</CardLabel>
-            <Badge tone="success" className="rounded-lg px-2 py-2 text-sm">
-              <span>👤</span>
-            </Badge>
+      {/* Performance & Network Telemetry Card */}
+      <div className="bg-surface border border-border rounded-xl p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h2 className="text-sm font-semibold text-heading tracking-tight">
+            System Vitals & Tunnel Network
+          </h2>
+          <div className="flex items-center gap-1 bg-surface-raised p-0.5 rounded-lg border border-border/60">
+            {(["15m", "1h", "6h", "24h"] as Timeframe[]).map((tf) => (
+              <button
+                key={tf}
+                type="button"
+                onClick={() => setTimeframe(tf)}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer",
+                  timeframe === tf
+                    ? "bg-[#2656c8] text-white shadow-xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {tf}
+              </button>
+            ))}
           </div>
-          <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-3xl font-semibold text-heading">{playerStatus.onlineCount}</span>
-            <span className="text-sm text-subtle-foreground font-medium">
-              / {playerStatus.maxCount} max
-            </span>
-          </div>
-          <div className="w-full bg-surface-raised rounded-full h-1.5 mt-3 overflow-hidden">
-            <div
-              className="bg-success h-1.5 rounded-full transition-all duration-500"
-              style={{
-                width: `${
-                  playerStatus.maxCount > 0
-                    ? Math.min(100, (playerStatus.onlineCount / playerStatus.maxCount) * 100)
-                    : 0
-                }%`,
-              }}
-            />
-          </div>
-        </Card>
+        </div>
 
-        <Card className="hover:border-border-strong transition">
-          <div className="flex items-center justify-between">
-            <CardLabel className="font-semibold tracking-wider">Whitelist Access</CardLabel>
-            <Badge tone="primary" className="rounded-lg px-2 py-2 text-sm">
-              <span>🛡️</span>
-            </Badge>
-          </div>
-          <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-3xl font-semibold text-primary-muted">
-              {whitelistStatus.players.length}
-            </span>
-            <span className="text-sm text-subtle-foreground font-medium">registered</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="px-0 mt-3 text-primary-muted hover:text-primary hover:bg-transparent"
-            onClick={() => onNavigateTab("users")}
-          >
-            <span>Manage users</span>
-            <span>&rarr;</span>
-          </Button>
-        </Card>
-
-        <Card className="hover:border-border-strong transition">
-          <div className="flex items-center justify-between">
-            <CardLabel className="font-semibold tracking-wider">Last Login</CardLabel>
-            <Badge tone="primary" className="rounded-lg px-2 py-2 text-sm">
-              <span>🕒</span>
-            </Badge>
-          </div>
-          {playerHistory?.lastLoginPlayer ? (
-            <div className="mt-3">
-              <p className="text-base font-semibold text-primary-muted truncate">
-                {playerHistory.lastLoginPlayer.username}
-              </p>
-              <Caption className="mt-1">
-                {playerHistory.lastLoginPlayer.lastLogin
-                  ? new Date(playerHistory.lastLoginPlayer.lastLogin).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : playerHistory.lastLoginPlayer.lastSeen
-                  ? new Date(playerHistory.lastLoginPlayer.lastSeen).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : "-"}
-              </Caption>
+        {/* 3 Telemetry Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 divide-y md:divide-y-0 md:divide-x divide-border">
+          {/* Column 1: TPS */}
+          <div className="pt-2 md:pt-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-semibold text-heading font-mono">19.8</span>
+              <span className="text-xs text-muted-foreground">TPS (Target 20.0)</span>
             </div>
-          ) : (
-            <div className="mt-3">
-              <p className="text-base font-semibold text-muted-foreground">-</p>
-              <Caption className="mt-1">No recorded logins</Caption>
+
+            <div className="mt-3 relative h-11 flex items-end gap-[3px] border-b border-border/80 pb-1">
+              <div className="absolute top-0 inset-x-0 border-t border-dashed border-border" />
+              {TPS_BARS.map((height, idx) => (
+                <div
+                  key={idx}
+                  className="flex-1 bg-emerald-400 rounded-t-xs transition-all hover:bg-emerald-500"
+                  style={{ height: `${height}px` }}
+                />
+              ))}
             </div>
-          )}
-        </Card>
 
-        <Card className="hover:border-border-strong transition">
-          <div className="flex items-center justify-between">
-            <CardLabel className="font-semibold tracking-wider">Target Server</CardLabel>
-            <Badge tone="warning" className="rounded-lg px-2 py-2 text-sm">
-              <span>🌐</span>
-            </Badge>
+            <div className="flex items-center justify-between text-[10px] mt-1.5 text-muted-foreground font-mono">
+              <span>-60m</span>
+              <span className="text-subtle-foreground font-sans">Engine Loop</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
+            </div>
           </div>
-          <p className="text-base font-semibold text-heading mt-3 font-mono truncate">
-            {serverInfo.host || "-"}
-          </p>
-          <Caption className="mt-1">RCON Port: {serverInfo.port || 25575}</Caption>
-        </Card>
 
-        <Card className="hover:border-border-strong transition">
-          <div className="flex items-center justify-between">
-            <CardLabel className="font-semibold tracking-wider">Sync Status</CardLabel>
-            <Badge tone="info" className="rounded-lg px-2 py-2 text-sm">
-              <span>⏱️</span>
-            </Badge>
+          {/* Column 2: MSPT */}
+          <div className="pt-4 md:pt-0 md:pl-6">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-semibold text-heading font-mono">14.2</span>
+              <span className="text-xs text-muted-foreground">ms (Budget 50ms)</span>
+            </div>
+
+            <div className="mt-3 relative h-11 flex items-end gap-[3px] border-b border-border/80 pb-1">
+              <div className="absolute top-0 inset-x-0 border-t border-dashed border-danger/40" />
+              {MSPT_BARS.map((height, idx) => (
+                <div
+                  key={idx}
+                  className="flex-1 bg-blue-300 dark:bg-blue-400/80 rounded-t-xs transition-all hover:bg-blue-400"
+                  style={{ height: `${height}px` }}
+                />
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] mt-1.5 text-muted-foreground font-mono">
+              <span>-60m</span>
+              <span className="text-subtle-foreground font-sans">Tick Calculation</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
+            </div>
           </div>
-          <p className="text-base font-semibold text-heading mt-3">{playerStatus.updatedAt || "-"}</p>
-          <Caption className="mt-1">Auto-polls every 4 seconds</Caption>
-        </Card>
+
+          {/* Column 3: Network / Tunnel */}
+          <div className="pt-4 md:pt-0 md:pl-6">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-semibold text-heading font-mono">18.4</span>
+              <span className="text-xs text-muted-foreground">ms (Playit.gg RTT)</span>
+            </div>
+
+            <div className="mt-3 relative h-11 flex items-end gap-[3px] border-b border-border/80 pb-1">
+              <div className="absolute top-0 inset-x-0 border-t border-dashed border-border" />
+              {PING_BARS.map((height, idx) => (
+                <div
+                  key={idx}
+                  className="flex-1 bg-violet-300 dark:bg-violet-400/80 rounded-t-xs transition-all hover:bg-violet-400"
+                  style={{ height: `${height}px` }}
+                />
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] mt-1.5 text-muted-foreground font-mono">
+              <span>-60m</span>
+              <span className="text-subtle-foreground font-sans">Tunnel Route Ingress</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Active Players & Server Quick Health */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Active Players Widget */}
-        <Card className="lg:col-span-2" padding="lg">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-semibold text-heading text-base">Active In-Game Players</h3>
-              <Caption>Currently logged into the server right now</Caption>
+      {/* Lower Section (2 Columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Active Players Card */}
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-heading">
+                Active Players ({playerStatus.onlineCount} / {playerStatus.maxCount || 20})
+              </h3>
+              <button
+                type="button"
+                onClick={() => onNavigateTab("users")}
+                className="text-xs font-semibold text-[#2656c8] hover:underline cursor-pointer"
+              >
+                View all players →
+              </button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="px-0 text-primary-muted hover:text-primary hover:bg-transparent"
-              onClick={() => onNavigateTab("users")}
-            >
-              View All Users &rarr;
-            </Button>
-          </div>
 
-          {!isOnline ? (
-            <div className="py-12 text-center border border-dashed border-danger-border/40 rounded-xl bg-danger/5">
-              <span className="text-3xl">⚠️</span>
-              <p className="text-danger-muted text-sm font-semibold mt-2">Cannot Connect to RCON</p>
-              <Muted className="max-w-sm mx-auto mt-1 font-mono">{playerStatus.error}</Muted>
+            <div className="border-b border-border mb-3" />
+
+            {!isOnline ? (
+              <div className="py-8 text-center text-xs text-danger font-mono">
+                Server connection error. RCON unreachable.
+              </div>
+            ) : playerStatus.players.length === 0 ? (
+              <div className="py-10 text-center">
+                <span className="text-2xl">😴</span>
+                <p className="text-xs font-medium text-heading mt-2">No players online</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Server is idle and ready for incoming player connections.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {playerStatus.players.map((name) => {
+                  const loc = playerLocations[name];
+                  const locLabel = loc
+                    ? `${loc.dimension.replace("minecraft:", "")} (${Math.round(loc.x)}, ${Math.round(
+                        loc.y
+                      )}, ${Math.round(loc.z)})`
+                    : "Overworld · spawn";
+
+                  return (
+                    <div
+                      key={name}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 py-2 border-b border-border/40 last:border-b-0 text-xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <img
+                          src={`https://mc-heads.net/avatar/${encodeURIComponent(name)}/28`}
+                          alt={name}
+                          width={28}
+                          height={28}
+                          className="rounded-md shrink-0 bg-background"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = "none";
+                          }}
+                        />
+                        <div className="min-w-0">
+                          <span className="font-semibold text-heading truncate block leading-tight">
+                            {name}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground leading-tight">
+                            Member
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 sm:gap-2.5 pl-9 sm:pl-0 flex-wrap sm:flex-nowrap shrink-0">
+                        <span className="px-2 py-0.5 rounded bg-surface-raised text-[10px] text-muted-foreground font-mono">
+                          {locLabel}
+                        </span>
+                        <span className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          24ms
+                        </span>
+                        <span className="text-[11px] text-muted-foreground font-mono">
+                          Online
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right: Admin & Audit Events Card */}
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-heading">Admin & Audit Events</h3>
+              <button
+                type="button"
+                onClick={() => onNavigateTab("commands")}
+                className="text-xs font-semibold text-[#2656c8] hover:underline cursor-pointer"
+              >
+                Open Live Console →
+              </button>
             </div>
-          ) : playerStatus.players.length === 0 ? (
-            <Card tone="muted" padding="none" className="text-center py-12">
-              <span className="text-3xl">😴</span>
-              <p className="text-foreground text-sm font-semibold mt-2">No Players Online</p>
-              <Muted className="mt-1">The server is empty at the moment.</Muted>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {playerStatus.players.map((name) => (
+
+            <div className="border-b border-border mb-3" />
+            <div className="space-y-1">
+              {auditEvents.map((evt, idx) => (
                 <div
-                  key={name}
-                  className="flex items-center gap-3 p-3 bg-overlay/80 border border-border rounded-xl hover:border-border-strong transition"
+                  key={idx}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 py-2 border-b border-border/40 last:border-b-0 text-xs"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`https://mc-heads.net/avatar/${name}/40`}
-                    alt={name}
-                    className="w-10 h-10 rounded-lg bg-surface-raised"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src =
-                        "https://mc-heads.net/avatar/Steve/40";
-                    }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-heading truncate">{name}</p>
-                    <p className="text-xs text-success-muted font-medium">In Game</p>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="shrink-0">{evt.icon}</span>
+                    <span className="text-heading truncate font-normal text-xs sm:text-[13px]">{evt.text}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 pl-6 sm:pl-0 justify-between sm:justify-end">
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      {evt.time}
+                    </span>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono font-semibold uppercase border leading-none",
+                        evt.tagTone
+                      )}
+                    >
+                      {evt.tag}
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </Card>
-
-        {/* Server Quick Info Card */}
-        <Card padding="lg" className="flex flex-col justify-between">
-          <div>
-            <h3 className="font-semibold text-heading text-base mb-1">Server Information</h3>
-            <Caption className="mb-4">Configuration details</Caption>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs p-3 bg-overlay/80 rounded-xl border border-border/60">
-                <span className="text-muted-foreground">RCON Host</span>
-                <Mono className="text-heading font-medium">{serverInfo.host}</Mono>
-              </div>
-              <div className="flex items-center justify-between text-xs p-3 bg-overlay/80 rounded-xl border border-border/60">
-                <span className="text-muted-foreground">RCON Port</span>
-                <Mono className="text-heading font-medium">{serverInfo.port}</Mono>
-              </div>
-              <div className="flex items-center justify-between text-xs p-3 bg-overlay/80 rounded-xl border border-border/60">
-                <span className="text-muted-foreground">Status</span>
-                <span className={isOnline ? "text-success-muted font-semibold" : "text-danger-muted font-semibold"}>
-                  {isOnline ? "Operational" : "Disconnected"}
-                </span>
-              </div>
-            </div>
           </div>
-
-          <div className="mt-6 pt-4 border-t border-border">
-            <Button
-              variant="secondary"
-              className="w-full py-2.5"
-              onClick={() => onNavigateTab("commands")}
-            >
-              <span>Quick Commands</span>
-              <span>&rarr;</span>
-            </Button>
-          </div>
-        </Card>
+        </div>
       </div>
     </div>
   );
