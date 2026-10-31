@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listInstalledMods, toggleMod, deleteMod, saveModFile } from "@/server/data/mods";
+import { listInstalledMods, toggleMod, deleteMod, saveModFile } from "@/server/mods";
 
 export async function GET() {
   const mods = await listInstalledMods();

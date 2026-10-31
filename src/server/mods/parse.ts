@@ -102,7 +102,9 @@ export function extractJarMetadata(buffer: Buffer): JarMetadata {
       const modIdMatch = modsTomlContent.match(/modId\s*=\s*["']([^"']+)["']/i);
       const displayNameMatch = modsTomlContent.match(/displayName\s*=\s*["']([^"']+)["']/i);
       const versionMatch = modsTomlContent.match(/version\s*=\s*["']([^"']+)["']/i);
-      const descMatch = modsTomlContent.match(/description\s*=\s*'''([\s\S]*?)'''|description\s*=\s*"""([\s\S]*?)"""|description\s*=\s*["']([^"']+)["']/i);
+      const descMatch = modsTomlContent.match(
+        /description\s*=\s*'''([\s\S]*?)'''|description\s*=\s*"""([\s\S]*?)"""|description\s*=\s*["']([^"']+)["']/i
+      );
 
       return {
         id: modIdMatch ? modIdMatch[1] : undefined,

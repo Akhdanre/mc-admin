@@ -6,7 +6,7 @@ import {
   extractJarMetadata,
   parseFallbackFromFilename,
   type JarMetadata,
-} from "@/server/domain/parse/mods";
+} from "./parse";
 import type { ModInfo } from "@/types";
 
 const modsDir = path.join(config.paths.data, "mods");
