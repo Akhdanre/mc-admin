@@ -1,11 +1,22 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     // Dynamic import required by Next.js instrumentation to isolate Node.js runtime APIs
-    const { startChatTailer } = await import("@/server/data/logs/tailer");
-    const { startDiscordBot } = await import("@/server/discord");
+    const { startChatTailer, subscribeToChatStream, subscribeToServerEvents } = await import("@/server/chat");
+    const { startDiscordBot, sendDiscordChatMessage, sendDiscordEvent } = await import("@/server/discord");
     const { startBackupScheduler } = await import("@/server/backup");
 
     startChatTailer();
+    subscribeToChatStream((chat) => {
+      sendDiscordChatMessage(chat.sender, chat.message, chat.isServer).catch((err) => {
+        console.error("[DiscordRelay] Failed sending chat to Discord:", err);
+      });
+    });
+    subscribeToServerEvents((event) => {
+      sendDiscordEvent(event.title, event.description, event.color).catch((err) => {
+        console.error("[DiscordRelay] Failed sending event to Discord:", err);
+      });
+    });
+
     startDiscordBot();
     startBackupScheduler();
   }

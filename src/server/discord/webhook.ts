@@ -1,7 +1,7 @@
 import "server-only";
 import fs from "fs/promises";
 import path from "path";
-import { config } from "@/server/config";
+import { config } from "@/server/core";
 import { restartDiscordBot } from "./bot";
 import type { DiscordConfig } from "@/types";
 

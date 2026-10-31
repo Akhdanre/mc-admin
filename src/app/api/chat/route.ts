@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRecentChatMessages, sendChatMessage } from "@/server/data/chat";
+import { getRecentChatMessages, sendChatMessage } from "@/server/chat";
 import type { SendChatRequestBody, ChatResponse } from "@/types";
 
 export async function GET() {

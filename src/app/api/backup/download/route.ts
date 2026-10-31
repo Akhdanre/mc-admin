@@ -2,7 +2,7 @@ import fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
-import { config } from "@/server/config";
+import { config } from "@/server/core";
 
 export async function GET(request: Request) {
   try {

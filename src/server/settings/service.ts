@@ -1,7 +1,7 @@
 import "server-only";
 import fs from "fs/promises";
 import path from "path";
-import { config } from "@/server/config";
+import { config } from "@/server/core";
 import type { AppSettings } from "@/types";
 
 const SETTINGS_FILE = "app_settings.json";

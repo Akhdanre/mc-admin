@@ -3,7 +3,7 @@ import crypto from "crypto";
 import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
-import { config } from "@/server/config";
+import { config } from "@/server/core";
 import {
   SESSION_COOKIE_NAME,
   createSessionToken as buildSessionToken,

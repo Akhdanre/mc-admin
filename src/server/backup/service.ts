@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { config } from "@/server/config";
+import { config } from "@/server/core";
 import { executeRconCommand } from "@/server/rcon";
 import {
   BACKUP_CONFIG_FILE,

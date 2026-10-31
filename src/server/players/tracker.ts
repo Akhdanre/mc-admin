@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import readline from "readline";
 import { createReadStream } from "fs";
-import { config } from "@/server/config";
+import { config } from "@/server/core";
 import type { PlayerHistory, PlayerHistoryResponse } from "@/types";
 
 interface UserCacheEntry {

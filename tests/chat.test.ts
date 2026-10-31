@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseChatLine, parseServerEvent } from "@/server/domain/parse/chat";
+import { parseChatLine, parseServerEvent } from "@/server/chat";
 
 describe("Chat Log Parser", () => {
   it("parses Forge/Modded player chat lines with [Not Secure] prefix", () => {
