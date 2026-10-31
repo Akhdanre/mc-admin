@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Toggle } from "@/components/ui/Toggle";
@@ -19,21 +26,23 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [isUploading, setIsUploading] = useState(false);
+  const [stagedCount, setStagedCount] = useState(0);
 
-  useEffect(() => {
-    // Attempt real fetch, fall back silently to mock data
+  const fetchMods = () => {
+    setIsLoading(true);
     fetch("/api/mods")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.mods && data.mods.length > 0) {
-          const mapped: ModItem[] = data.mods.map((m: ModInfo, idx: number) => ({
+          const mapped: ModItem[] = data.mods.map((m: ModInfo) => ({
+            id: m.id || m.fileName,
             name: m.name,
             fileName: m.fileName,
             version: m.version || "1.0.0",
             sizeFormatted: `${(m.sizeBytes / 1024 / 1024).toFixed(1)} MB`,
-            type: "plugin",
+            type: m.loader === "forge" ? "forge" : "plugin",
             enabled: m.enabled,
-            author: "Server",
+            author: m.loader === "forge" ? "Forge" : "Server",
             description: m.description || "Server extension jar",
           }));
           setMods(mapped);
@@ -41,20 +50,51 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
-  }, []);
+  };
 
+  useEffect(() => {
+    let mounted = true;
+    fetch("/api/mods")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!mounted) return;
+        if (data?.mods && data.mods.length > 0) {
+          const mapped: ModItem[] = data.mods.map((m: ModInfo) => ({
+            id: m.id || m.fileName,
+            name: m.name,
+            fileName: m.fileName,
+            version: m.version || "1.0.0",
+            sizeFormatted: `${(m.sizeBytes / 1024 / 1024).toFixed(1)} MB`,
+            type: m.loader === "forge" ? "forge" : "plugin",
+            enabled: m.enabled,
+            author: m.loader === "forge" ? "Forge" : "Server",
+            description: m.description || "Server extension jar",
+          }));
+          setMods(mapped);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
   const handleToggle = async (mod: ModItem) => {
     const nextState = !mod.enabled;
-    setMods((prev) =>
-      prev.map((m) => (m.id === mod.id ? { ...m, enabled: nextState } : m))
-    );
+    setMods((prev) => prev.map((m) => (m.id === mod.id ? { ...m, enabled: nextState } : m)));
+    setStagedCount((c) => c + 1);
     try {
       await fetch("/api/mods", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fileName: mod.fileName, enabled: nextState }),
       });
-      onShowFeedback?.(`${mod.name} ${nextState ? "enabled" : "disabled"}. Restart required.`);
+      onShowFeedback?.(
+        `${mod.name} ${nextState ? "enabled" : "disabled"}. Server restart required.`
+      );
     } catch {
       onShowFeedback?.(`${mod.name} ${nextState ? "enabled" : "disabled"} (offline preview)`);
     }
@@ -79,26 +119,31 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
       for (const file of files) {
         const formData = new FormData();
         formData.append("file", file);
-        await fetch("/api/mods/upload", {
+        const res = await fetch("/api/mods", {
           method: "POST",
           body: formData,
         });
+        if (!res.ok) throw new Error("Upload failed");
         const newMod: ModItem = {
-          id: `mod-upload-${Date.now()}`,
+          id: `mod-upload-${Date.now()}-${file.name}`,
           name: file.name.replace(/\.jar$/i, ""),
           fileName: file.name,
           version: "Latest",
           sizeFormatted: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-          type: "plugin",
+          type: "forge",
           enabled: true,
           author: "Uploaded",
-          description: "Manually uploaded plugin archive",
+          description: "Uploaded Forge extension archive",
         };
         setMods((prev) => [newMod, ...prev]);
+        setStagedCount((c) => c + 1);
       }
-      onShowFeedback?.(`Uploaded ${files.length} plugin(s) successfully!`);
-    } catch {
-      onShowFeedback?.("Failed to upload plugins", true);
+      onShowFeedback?.(`Uploaded ${files.length} mod(s) successfully! Restart required.`);
+    } catch (err: unknown) {
+      onShowFeedback?.(
+        `Failed to upload: ${err instanceof Error ? err.message : String(err)}`,
+        true
+      );
     } finally {
       setIsUploading(false);
     }
@@ -109,9 +154,20 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.fileName.toLowerCase().includes(search.toLowerCase()) ||
       m.author.toLowerCase().includes(search.toLowerCase());
-    const matchesType = typeFilter === "all" || m.type === typeFilter;
-    return matchesSearch && matchesType;
+
+    let matchesFilter = true;
+    if (typeFilter === "active") matchesFilter = m.enabled;
+    else if (typeFilter === "disabled") matchesFilter = !m.enabled;
+
+    return matchesSearch && matchesFilter;
   });
+
+  const activeCount = mods.filter((m) => m.enabled).length;
+  const disabledCount = mods.filter((m) => !m.enabled).length;
+  const totalMb = mods.reduce((sum, m) => {
+    const val = parseFloat(m.sizeFormatted);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
 
   return (
     <div className="space-y-4">
@@ -122,20 +178,19 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
             Mods & Addons
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-success font-bold">●</span> ONLINE · 49 Installed Mods (211 MB) · Forge 47.3.0 · Minecraft 1.20.1
+            <span className="text-success font-bold">●</span> ONLINE ·{" "}
+            {isLoading ? "Scanning..." : `${mods.length} Installed Mods (${totalMb.toFixed(0)} MB)`}{" "}
+            · Forge 47.3.0 · Minecraft 1.20.1
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-warning-surface text-warning border border-warning-border">
-            <span>🔄 1 Staged (/restart)</span>
-          </span>
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => onShowFeedback?.("Opening JAR upload...")}
-            className="text-xs h-8 px-3"
-          >
-            ↑ Upload .jar
+          {stagedCount > 0 && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-warning-surface text-warning border border-warning-border">
+              <span>🔄 {stagedCount} Staged (/restart)</span>
+            </span>
+          )}
+          <Button size="sm" variant="outline" onClick={fetchMods} className="text-xs h-8 px-3">
+            ↻ Refresh
           </Button>
         </div>
       </div>
@@ -167,10 +222,10 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
           value={typeFilter}
           onChange={(val) => setTypeFilter(val)}
           options={[
-            { value: "all", label: "All Mods", badge: 49 },
-            { value: "active", label: "Active", badge: 47 },
-            { value: "disabled", label: "Disabled", badge: 2 },
-            { value: "updates", label: "Updates Ready", badge: 1 },
+            { value: "all", label: "All Mods", badge: mods.length },
+            { value: "active", label: "Active", badge: activeCount },
+            { value: "disabled", label: "Disabled", badge: disabledCount },
+            { value: "updates", label: "Updates Ready", badge: 0 },
           ]}
         />
       </div>
@@ -234,10 +289,7 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
 
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Toggle
-                        checked={mod.enabled}
-                        onChange={() => handleToggle(mod)}
-                      />
+                      <Toggle checked={mod.enabled} onChange={() => handleToggle(mod)} />
                       <span
                         className={cn(
                           "px-2 py-0.5 rounded text-overline font-semibold border uppercase",

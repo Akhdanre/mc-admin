@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseFallbackFromFilename, extractJarMetadata } from "@/server/mods";
+import { parseFallbackFromFilename, extractJarMetadata, listInstalledMods } from "@/server/mods";
 
 describe("mod service", () => {
   it("parses fallback name and version from filename conventions", () => {
@@ -20,5 +20,19 @@ describe("mod service", () => {
     const randomBuffer = Buffer.from("not a real jar file");
     const meta = extractJarMetadata(randomBuffer);
     expect(meta.loader).toBe("unknown");
+  });
+
+  it("lists installed mods without throwing error", async () => {
+    const mods = await listInstalledMods();
+    expect(Array.isArray(mods)).toBe(true);
+    for (const mod of mods) {
+      expect(typeof mod.name).toBe("string");
+      expect(typeof mod.fileName).toBe("string");
+      expect(typeof mod.sizeBytes).toBe("number");
+      expect(typeof mod.enabled).toBe("boolean");
+      expect(
+        ["forge", "fabric", "neoforge", "quilt", "unknown"].includes(mod.loader || "unknown")
+      ).toBe(true);
+    }
   });
 });
