@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Toggle } from "@/components/ui/Toggle";
 import { cn } from "@/lib/cn";
-import { MOCK_PLAYERS } from "@/lib/mockData";
+import { apiGet } from "@/lib/api";
 import type { PlayerLocation } from "@/types";
 
 export interface LiveMapViewProps {
@@ -33,8 +33,9 @@ export function LiveMapView({
   const [urlInput, setUrlInput] = useState("");
   const [loadError, setLoadError] = useState(false);
 
-  // Dynmap Engine State
+  // Dynmap Real Engine State
   const [isPaused, setIsPaused] = useState(false);
+  const [tilesRendered, setTilesRendered] = useState<number | null>(null);
   const [isCommandBusy, setIsCommandBusy] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
@@ -44,6 +45,25 @@ export function LiveMapView({
     setStatusMessage(msg);
     setTimeout(() => setStatusMessage(null), 3500);
   };
+
+  // Fetch real Dynmap tile statistics and pause state from server
+  useEffect(() => {
+    let ignore = false;
+    apiGet<{ tilesRendered: number | null; isPaused: boolean }>("/api/map/stats")
+      .then((data) => {
+        if (!ignore && data) {
+          if (typeof data.tilesRendered === "number") {
+            setTilesRendered(data.tilesRendered);
+          }
+          setIsPaused(Boolean(data.isPaused));
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const handleSaveUrl = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +119,7 @@ export function LiveMapView({
     }
   };
 
-  // Option 1: Merged Player List with Real-time GPS Coordinates
+  // Option 1: Merged Player List with Real-time GPS Coordinates (real players only)
   const locationsMap = useMemo(() => {
     if (!playerLocations) return new Map<string, PlayerLocation>();
     if (Array.isArray(playerLocations)) {
@@ -109,23 +129,14 @@ export function LiveMapView({
   }, [playerLocations]);
 
   const displayPlayers = useMemo(() => {
-    if (players.length > 0) {
-      return players.map((name) => {
-        const loc = locationsMap.get(name.toLowerCase());
-        return {
-          name,
-          dimension: loc?.dimension || "overworld",
-          coords: loc ? { x: Math.round(loc.x), y: Math.round(loc.y), z: Math.round(loc.z) } : null,
-        };
-      });
-    }
-
-    // Fallback to rich mock players when offline/no players online
-    return MOCK_PLAYERS.map((p) => ({
-      name: p.username,
-      dimension: p.dimension,
-      coords: { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) },
-    }));
+    return players.map((name) => {
+      const loc = locationsMap.get(name.toLowerCase());
+      return {
+        name,
+        dimension: loc?.dimension || "overworld",
+        coords: loc ? { x: Math.round(loc.x), y: Math.round(loc.y), z: Math.round(loc.z) } : null,
+      };
+    });
   }, [players, locationsMap]);
 
   const handleSelectPlayer = (player: {
@@ -246,8 +257,9 @@ export function LiveMapView({
             <span className={isPaused ? "text-warning font-bold" : "text-success font-bold"}>
               ●
             </span>{" "}
-            {isPaused ? "PAUSED" : "ONLINE"} · Dynmap 3.7 · 201,134 Tiles · Port 8123 ·{" "}
-            {dimension.toUpperCase()} ({viewMode.toUpperCase()})
+            {isPaused ? "PAUSED" : "ONLINE"} · Dynmap 3.7 ·{" "}
+            {tilesRendered !== null ? `${tilesRendered.toLocaleString()} Tiles` : "Tiles Loaded"} ·{" "}
+            Port 8123 · {dimension.toUpperCase()} ({viewMode.toUpperCase()})
           </p>
         </div>
 
@@ -412,19 +424,24 @@ export function LiveMapView({
           </div>
         )}
 
-        {/* Option 1: Floating Player Markers HUD with Real-time GPS Coordinates */}
+        {/* Option 1: Floating Player Markers HUD with Real-time GPS Coordinates (Live Online Players Only) */}
         {trackPlayers && (
           <div className="absolute bottom-4 left-4 z-10 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-3 shadow-lg w-72 sm:w-80 space-y-2 select-none">
             <div className="flex items-center justify-between text-overline text-muted-foreground uppercase">
               <span>GPS Tracked Players</span>
-              <span className="text-success font-mono font-bold">
+              <span
+                className={cn(
+                  "font-mono font-bold",
+                  displayPlayers.length > 0 ? "text-success" : "text-muted-foreground"
+                )}
+              >
                 {displayPlayers.length} Online
               </span>
             </div>
             <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
               {displayPlayers.length === 0 ? (
-                <div className="text-xs text-muted-foreground py-2 text-center">
-                  No players currently online
+                <div className="text-xs text-muted-foreground py-3 text-center">
+                  No players currently online on this server
                 </div>
               ) : (
                 displayPlayers.map((player) => {
