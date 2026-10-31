@@ -136,7 +136,11 @@ export default function Home() {
             >
               <div className="flex items-center gap-2">
                 <span>{feedback.isError ? "⚠️" : "✓"}</span>
-                <span>{feedback.message}</span>
+                <span>
+                  {typeof feedback.message === "string"
+                    ? feedback.message
+                    : (feedback.message as { message?: string })?.message || "Operation completed"}
+                </span>
               </div>
               <button
                 onClick={clearFeedback}
