@@ -342,6 +342,27 @@ export interface GameruleItem {
   unit?: string;
 }
 
+export interface WorldDimensionStats {
+  id: string;
+  name: string;
+  icon: string;
+  chunksLoaded: number;
+  diskSizeFormatted: string;
+  directory: string;
+  detail: string;
+  actionLabel: string;
+  actionVariant: "default" | "danger";
+}
+
+export interface WorldStatsResponse {
+  seed: string;
+  daytime: number;
+  difficulty: string;
+  dimensions: WorldDimensionStats[];
+  gamerules: GameruleItem[];
+  updatedAt?: string;
+}
+
 export interface ModItem {
   id: string;
   name: string;

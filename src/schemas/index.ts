@@ -68,6 +68,11 @@ export const accessControlActionSchema = z.object({
   ip: z.string().max(64).optional(),
 });
 
+export const gameruleActionSchema = z.object({
+  rule: z.string().min(1).max(64),
+  value: z.union([z.boolean(), z.number()]),
+});
+
 export const sendChatSchema = z.object({
   message: z.string().trim().min(1, "Message cannot be empty").max(500, "Message too long"),
 });

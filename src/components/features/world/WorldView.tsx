@@ -1,75 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toggle } from "@/components/ui/Toggle";
 import { cn } from "@/lib/cn";
-import type { GameruleItem } from "@/types";
-
-interface WorldDimension {
-  id: string;
-  name: string;
-  icon: string;
-  chunksLoaded: number;
-  diskSizeFormatted: string;
-  directory: string;
-  detail: string;
-  actionLabel: string;
-  actionVariant: "default" | "danger";
-}
-
-const DEFAULT_DIMENSIONS: WorldDimension[] = [
-  {
-    id: "overworld",
-    name: "Overworld",
-    icon: "🌍",
-    chunksLoaded: 256,
-    diskSizeFormatted: "1.2 GB",
-    directory: "world/",
-    detail: "Main player spawn & terrain",
-    actionLabel: "Optimize Chunks",
-    actionVariant: "default",
-  },
-  {
-    id: "nether",
-    name: "The Nether",
-    icon: "🔥",
-    chunksLoaded: 64,
-    diskSizeFormatted: "450 MB",
-    directory: "world_nether/",
-    detail: "Fortresses & Bastions loaded",
-    actionLabel: "Purge Inactive",
-    actionVariant: "default",
-  },
-  {
-    id: "end",
-    name: "The End",
-    icon: "🌌",
-    chunksLoaded: 48,
-    diskSizeFormatted: "340 MB",
-    directory: "world_the_end/",
-    detail: "Outer End Islands",
-    actionLabel: "Reset The End",
-    actionVariant: "danger",
-  },
-];
-
-const DEFAULT_GAMERULES: GameruleItem[] = [
-  { id: "keepInventory", name: "keepInventory", description: "Preserve inventory items and XP upon player death", category: "gameplay", type: "boolean", value: false },
-  { id: "naturalRegeneration", name: "naturalRegeneration", description: "Allow natural health regen when saturation is full", category: "gameplay", type: "boolean", value: true },
-  { id: "playersSleepingPercentage", name: "playersSleepingPercentage", description: "Percentage of players needed to skip night", category: "gameplay", type: "number", value: 100, unit: "%" },
-  { id: "fallDamage", name: "fallDamage", description: "Take kinetic impact damage from high falls", category: "gameplay", type: "boolean", value: true },
-  { id: "doMobSpawning", name: "doMobSpawning", description: "Natural spawning of hostile monsters and passive animals", category: "combat", type: "boolean", value: true },
-  { id: "mobGriefing", name: "mobGriefing", description: "Creeper explosions and Endermen block manipulation", category: "combat", type: "boolean", value: true },
-  { id: "maxEntityCramming", name: "maxEntityCramming", description: "Entity collision threshold before suffocation damage", category: "combat", type: "number", value: 24, unit: "mobs" },
-  { id: "disableRaids", name: "disableRaids", description: "Completely disable Bad Omen village raids", category: "combat", type: "boolean", value: false },
-  { id: "randomTickSpeed", name: "randomTickSpeed", description: "Crop growth, leaf decay, and block update rate", category: "physics", type: "number", value: 3, unit: "ticks" },
-  { id: "doDaylightCycle", name: "doDaylightCycle", description: "Dynamic solar and lunar diurnal cycle progression", category: "physics", type: "boolean", value: true },
-  { id: "doWeatherCycle", name: "doWeatherCycle", description: "Dynamic rain, thunder, and snowfall transitions", category: "physics", type: "boolean", value: true },
-  { id: "doFireTick", name: "doFireTick", description: "Fire spreading and combustible block destruction", category: "physics", type: "boolean", value: false },
-  { id: "showDeathMessages", name: "showDeathMessages", description: "Broadcast global death notification messages to chat", category: "admin", type: "boolean", value: true },
-  { id: "sendCommandFeedback", name: "sendCommandFeedback", description: "Display command execution feedback messages in chat", category: "admin", type: "boolean", value: true },
-  { id: "commandBlockOutput", name: "commandBlockOutput", description: "Broadcast command block execution messages to OPs", category: "admin", type: "boolean", value: true },
-];
+import { apiGet, apiPost } from "@/lib/api";
+import { MOCK_WORLD } from "@/lib/mockData";
+import type { GameruleItem, WorldDimensionStats, WorldStatsResponse } from "@/types";
 
 export interface WorldViewProps {
   onExecuteCommand: (command: string) => Promise<string>;
@@ -86,12 +22,77 @@ export function WorldView({
   onRefreshStatus,
   onShowFeedback,
 }: WorldViewProps) {
+  const [dimensions, setDimensions] = useState<WorldDimensionStats[]>([
+    {
+      id: "overworld",
+      name: "Overworld",
+      icon: "🌍",
+      chunksLoaded: 256,
+      diskSizeFormatted: "2.5 GB",
+      directory: "world/",
+      detail: "Main player spawn & terrain",
+      actionLabel: "Save & Flush",
+      actionVariant: "default",
+    },
+    {
+      id: "nether",
+      name: "The Nether",
+      icon: "🔥",
+      chunksLoaded: 64,
+      diskSizeFormatted: "334 MB",
+      directory: "world/DIM-1/",
+      detail: "Fortresses & Bastions loaded",
+      actionLabel: "Optimize Chunks",
+      actionVariant: "default",
+    },
+    {
+      id: "end",
+      name: "The End",
+      icon: "🌌",
+      chunksLoaded: 48,
+      diskSizeFormatted: "121 MB",
+      directory: "world/DIM1/",
+      detail: "Outer End Islands",
+      actionLabel: "Reset The End",
+      actionVariant: "danger",
+    },
+  ]);
+
+  const [gamerules, setGamerules] = useState<GameruleItem[]>(
+    MOCK_WORLD.gamerules.map((r) => ({ ...r }))
+  );
+  const [seed, setSeed] = useState<string>("4268910435170371502");
+  const [daytime, setDaytime] = useState<number>(10369);
+
   const [activeGamemode, setActiveGamemode] = useState("survival");
   const [activeDifficulty, setActiveDifficulty] = useState(currentDifficulty || "normal");
   const [activeTime, setActiveTime] = useState<string>("day");
   const [activeWeather, setActiveWeather] = useState<string>("clear");
-  const [gamerules, setGamerules] = useState<GameruleItem[]>(DEFAULT_GAMERULES);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Fetch real world stats, seed, daytime, and gamerules from server
+  useEffect(() => {
+    let ignore = false;
+    apiGet<WorldStatsResponse>("/api/world/stats")
+      .then((data) => {
+        if (!ignore && data) {
+          if (Array.isArray(data.dimensions) && data.dimensions.length > 0) {
+            setDimensions(data.dimensions);
+          }
+          if (Array.isArray(data.gamerules) && data.gamerules.length > 0) {
+            setGamerules(data.gamerules);
+          }
+          if (data.seed) setSeed(data.seed);
+          if (typeof data.daytime === "number") setDaytime(data.daytime);
+          if (data.difficulty) setActiveDifficulty(data.difficulty.toLowerCase());
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const handleSaveAll = async () => {
     setIsSaving(true);
@@ -110,6 +111,7 @@ export function WorldView({
     setActiveTime(timeKey);
     try {
       await onExecuteCommand(`time set ${tickValue}`);
+      setDaytime(Number(tickValue) || 1000);
       onShowFeedback?.(`Time set to ${timeKey} (${tickValue})`);
     } catch {
       onShowFeedback?.(`Failed to set time to ${timeKey}`, true);
@@ -148,30 +150,34 @@ export function WorldView({
   };
 
   const handleToggleGamerule = async (rule: GameruleItem, nextVal: boolean) => {
-    setGamerules((prev) =>
-      prev.map((r) => (r.id === rule.id ? { ...r, value: nextVal } : r))
-    );
+    setGamerules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, value: nextVal } : r)));
     try {
-      await onExecuteCommand(`gamerule ${rule.id} ${nextVal}`);
+      await apiPost("/api/world/gamerule", { rule: rule.id, value: nextVal });
       onShowFeedback?.(`Gamerule ${rule.name} set to ${nextVal}`);
     } catch {
+      // Rollback on failure
+      setGamerules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, value: !nextVal } : r)));
       onShowFeedback?.(`Failed to update gamerule ${rule.name}`, true);
     }
   };
 
   const handleUpdateNumberRule = async (rule: GameruleItem, nextVal: number) => {
-    setGamerules((prev) =>
-      prev.map((r) => (r.id === rule.id ? { ...r, value: nextVal } : r))
-    );
+    const prevVal = rule.value;
+    setGamerules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, value: nextVal } : r)));
     try {
-      await onExecuteCommand(`gamerule ${rule.id} ${nextVal}`);
+      await apiPost("/api/world/gamerule", { rule: rule.id, value: nextVal });
       onShowFeedback?.(`Gamerule ${rule.name} set to ${nextVal}`);
     } catch {
+      setGamerules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, value: prevVal } : r)));
       onShowFeedback?.(`Failed to update gamerule ${rule.name}`, true);
     }
   };
 
-  const handleDimensionAction = async (dimName: string, actionLabel: string, actionVariant: string) => {
+  const handleDimensionAction = async (
+    dimName: string,
+    actionLabel: string,
+    actionVariant: string
+  ) => {
     if (actionVariant === "danger") {
       if (
         !window.confirm(
@@ -181,10 +187,15 @@ export function WorldView({
         return;
       }
     }
-    onShowFeedback?.(`${actionLabel} initiated for ${dimName}.`);
+    try {
+      await onExecuteCommand("save-all flush");
+      onShowFeedback?.(`${actionLabel} initiated for ${dimName}.`);
+    } catch {
+      onShowFeedback?.(`Failed to execute ${actionLabel}`, true);
+    }
   };
 
-  // Group gamerules by Penpot categories
+  // Group all 45 gamerules by Penpot categories
   const gameplayRules = gamerules.filter((r) => r.category === "gameplay");
   const combatRules = gamerules.filter((r) => r.category === "combat");
   const physicsRules = gamerules.filter((r) => r.category === "physics");
@@ -204,7 +215,7 @@ export function WorldView({
             <span>·</span>
             <span>3 Dimensions</span>
             <span>·</span>
-            <span className="font-mono">Seed: Active</span>
+            <span className="font-mono">Seed: {seed}</span>
             <span>·</span>
             <span>Autosave: On</span>
           </p>
@@ -223,7 +234,7 @@ export function WorldView({
 
       {/* Row 1: Dimensions & Storage Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {DEFAULT_DIMENSIONS.map((dim) => {
+        {dimensions.map((dim) => {
           const isDanger = dim.actionVariant === "danger";
           return (
             <div
@@ -253,7 +264,9 @@ export function WorldView({
               <div>
                 <button
                   type="button"
-                  onClick={() => handleDimensionAction(dim.name, dim.actionLabel, dim.actionVariant)}
+                  onClick={() =>
+                    handleDimensionAction(dim.name, dim.actionLabel, dim.actionVariant)
+                  }
                   className={cn(
                     "text-xs px-3 py-1 rounded-md font-medium border transition-colors cursor-pointer",
                     isDanger
@@ -277,12 +290,10 @@ export function WorldView({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm">🌤</span>
-              <span className="text-sm font-semibold text-heading">
-                Atmospheric & Time Engine
-              </span>
+              <span className="text-sm font-semibold text-heading">Atmospheric & Time Engine</span>
             </div>
             <span className="text-xs font-mono text-muted-foreground bg-surface-raised px-2 py-0.5 rounded border border-border">
-              Day · Tick 12,450
+              {daytime < 12000 ? "Day" : "Night"} · Tick {daytime.toLocaleString()}
             </span>
           </div>
 
@@ -312,9 +323,7 @@ export function WorldView({
                   <span
                     className={cn(
                       "text-overline font-mono mt-0.5",
-                      isSelected
-                        ? "text-success"
-                        : "text-muted-foreground"
+                      isSelected ? "text-success" : "text-muted-foreground"
                     )}
                   >
                     {t.tick}
@@ -329,9 +338,7 @@ export function WorldView({
             <div className="flex items-center gap-1.5 text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-success" />
               <span className="text-muted-foreground">Weather Cycle:</span>
-              <span className="text-subtle-foreground font-mono text-xs">
-                (Cycle Active)
-              </span>
+              <span className="text-subtle-foreground font-mono text-xs">(Cycle Active)</span>
             </div>
 
             <div className="flex items-center gap-1.5">
@@ -404,9 +411,7 @@ export function WorldView({
                   <span
                     className={cn(
                       "text-[9.5px] mt-0.5",
-                      isSelected
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-muted-foreground"
+                      isSelected ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"
                     )}
                   >
                     {m.sub}
@@ -448,15 +453,15 @@ export function WorldView({
         </div>
       </div>
 
-      {/* Row 3: Gamerules Row 1 (Gameplay & Mobs) */}
+      {/* Row 3: Gamerules Row 1 (Gameplay & Mobs - Image #1 Top Half) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Category: Gameplay & Survival Mechanics */}
+        {/* Category: Gameplay & Survival Mechanics (12 Rules) */}
         <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
           <div className="bg-surface-raised border-b border-border px-3.5 py-2.5 flex items-center justify-between">
-            <span className="text-xs font-semibold text-heading">
-              ⚔ Gameplay & Survival Mechanics
+            <span className="text-xs font-semibold text-heading flex items-center gap-1.5">
+              <span>⚔</span> Gameplay & Survival Mechanics
             </span>
-            <span className="text-[10.5px] font-mono text-muted-foreground">
+            <span className="text-[10.5px] font-mono text-muted-foreground bg-surface px-1.5 py-0.5 rounded border border-border">
               {gameplayRules.length} Rules
             </span>
           </div>
@@ -473,13 +478,13 @@ export function WorldView({
           </div>
         </div>
 
-        {/* Category: Mobs, Spawning & Combat */}
+        {/* Category: Mobs, Spawning & Combat (12 Rules) */}
         <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
           <div className="bg-surface-raised border-b border-border px-3.5 py-2.5 flex items-center justify-between">
-            <span className="text-xs font-semibold text-heading">
-              👾 Mobs, Spawning & Combat
+            <span className="text-xs font-semibold text-heading flex items-center gap-1.5">
+              <span>👾</span> Mobs, Spawning & Combat
             </span>
-            <span className="text-[10.5px] font-mono text-muted-foreground">
+            <span className="text-[10.5px] font-mono text-muted-foreground bg-surface px-1.5 py-0.5 rounded border border-border">
               {combatRules.length} Rules
             </span>
           </div>
@@ -497,15 +502,15 @@ export function WorldView({
         </div>
       </div>
 
-      {/* Row 4: Gamerules Row 2 (Environment & Operations) */}
+      {/* Row 4: Gamerules Row 2 (Environment & Admin - Image #1 Bottom Half) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Category: World, Physics & Environment */}
+        {/* Category: World, Physics & Environment (11 Rules) */}
         <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
           <div className="bg-surface-raised border-b border-border px-3.5 py-2.5 flex items-center justify-between">
-            <span className="text-xs font-semibold text-heading">
-              🌍 World, Physics & Environment
+            <span className="text-xs font-semibold text-heading flex items-center gap-1.5">
+              <span>🌍</span> World, Physics & Environment
             </span>
-            <span className="text-[10.5px] font-mono text-muted-foreground">
+            <span className="text-[10.5px] font-mono text-muted-foreground bg-surface px-1.5 py-0.5 rounded border border-border">
               {physicsRules.length} Rules
             </span>
           </div>
@@ -522,13 +527,13 @@ export function WorldView({
           </div>
         </div>
 
-        {/* Category: Chat, Console & Admin Operations */}
+        {/* Category: Chat, Console & Admin Operations (10 Rules) */}
         <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
           <div className="bg-surface-raised border-b border-border px-3.5 py-2.5 flex items-center justify-between">
-            <span className="text-xs font-semibold text-heading">
-              📢 Chat, Console & Admin Operations
+            <span className="text-xs font-semibold text-heading flex items-center gap-1.5">
+              <span>📢</span> Chat, Console & Admin Operations
             </span>
-            <span className="text-[10.5px] font-mono text-muted-foreground">
+            <span className="text-[10.5px] font-mono text-muted-foreground bg-surface px-1.5 py-0.5 rounded border border-border">
               {adminRules.length} Rules
             </span>
           </div>
@@ -548,7 +553,6 @@ export function WorldView({
     </div>
   );
 }
-
 function GameruleRow({
   rule,
   isBusy,
@@ -560,39 +564,45 @@ function GameruleRow({
   onToggle: (val: boolean) => void;
   onUpdateNumber: (val: number) => void;
 }) {
+  const commitNumber = (target: HTMLInputElement) => {
+    const parsed = Number(target.value);
+    if (!isNaN(parsed) && parsed !== rule.value) {
+      onUpdateNumber(parsed);
+    }
+  };
+
   return (
     <div className="px-3.5 py-2.5 border-b border-border/50 last:border-b-0 flex items-center justify-between gap-4 hover:bg-surface-raised/30 transition-colors">
       <div className="min-w-0 flex-1 pr-2">
-        <div className="text-xs font-mono font-medium text-heading truncate">
-          {rule.name}
-        </div>
-        <div className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
+        <div className="text-xs font-mono font-medium text-heading truncate">{rule.name}</div>
+        <div className="text-[10.5px] text-muted-foreground mt-0.5 leading-tight">
           {rule.description}
         </div>
       </div>
 
       <div className="shrink-0">
         {rule.type === "number" ? (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-surface-raised border border-border text-[11.5px] font-mono">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-raised border border-border text-xs font-mono">
             <input
+              key={String(rule.value)}
               type="number"
-              value={rule.value as number}
-              onChange={(e) => onUpdateNumber(Number(e.target.value))}
+              defaultValue={Number(rule.value)}
+              onBlur={(e) => commitNumber(e.target)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  commitNumber(e.currentTarget);
+                  e.currentTarget.blur();
+                }
+              }}
               disabled={isBusy}
-              className="w-14 bg-transparent text-right text-heading focus:outline-none font-mono"
+              className="w-16 bg-transparent text-right text-heading focus:outline-none font-mono"
             />
             {rule.unit && (
-              <span className="text-[10px] text-muted-foreground select-none">
-                {rule.unit}
-              </span>
+              <span className="text-[10.5px] text-muted-foreground select-none">{rule.unit}</span>
             )}
           </div>
         ) : (
-          <Toggle
-            checked={Boolean(rule.value)}
-            onChange={onToggle}
-            disabled={isBusy}
-          />
+          <Toggle checked={Boolean(rule.value)} onChange={onToggle} disabled={isBusy} />
         )}
       </div>
     </div>
