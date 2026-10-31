@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseDifficulty, parsePlayerList, parseWhitelist } from "@/server/domain/parse/players";
+import { parseDifficulty, parsePlayerList, parseWhitelist } from "@/server/rcon";
 import {
   parsePosition,
   parseDimension,

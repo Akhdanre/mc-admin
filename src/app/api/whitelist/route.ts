@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { executeRconCommand, getWhitelistStatus } from "@/server/integrations/rcon";
+import { executeRconCommand, getWhitelistStatus } from "@/server/rcon";
 import type { WhitelistAction, WhitelistRequestBody } from "@/types";
 
 const ALLOWED_WHITELIST_ACTIONS: Record<WhitelistAction, true> = {

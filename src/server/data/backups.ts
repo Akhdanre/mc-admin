@@ -4,7 +4,7 @@ import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { config } from "@/server/config";
-import { executeRconCommand } from "@/server/integrations/rcon";
+import { executeRconCommand } from "@/server/rcon";
 import {
   BACKUP_CONFIG_FILE,
   DEFAULT_RETENTION_DAYS,

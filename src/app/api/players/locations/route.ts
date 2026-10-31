@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPlayerStatus } from "@/server/integrations/rcon";
+import { getPlayerStatus } from "@/server/rcon";
 import { getPlayerLocation } from "@/server/data/location";
 
 export async function GET() {

@@ -4,7 +4,7 @@ import path from "path";
 import readline from "readline";
 import { config } from "@/server/config";
 import { parseChatLine } from "@/server/domain/parse/chat";
-import { executeRconCommand } from "@/server/integrations/rcon";
+import { executeRconCommand } from "@/server/rcon";
 import type { ChatMessage, ChatResponse } from "@/types";
 
 const MAX_CHAT_MESSAGES = 150;

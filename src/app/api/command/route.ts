@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { executeRconCommand } from "@/server/integrations/rcon";
+import { executeRconCommand } from "@/server/rcon";
 import type { CommandRequestBody } from "@/types";
 
 export async function POST(req: Request) {

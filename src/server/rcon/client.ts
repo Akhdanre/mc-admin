@@ -1,7 +1,7 @@
 import "server-only";
 import { Rcon } from "rcon-client";
 import { getAppSettings } from "@/server/settings";
-import { parseDifficulty, parsePlayerList, parseWhitelist } from "@/server/domain/parse/players";
+import { parseDifficulty, parsePlayerList, parseWhitelist } from "./parse";
 import type { PlayerStatus, WhitelistStatus } from "@/types";
 
 export async function executeRconCommand(command: string): Promise<string> {

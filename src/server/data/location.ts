@@ -1,5 +1,5 @@
 import "server-only";
-import { executeRconCommand } from "@/server/integrations/rcon";
+import { executeRconCommand } from "@/server/rcon";
 import { buildPlayerLocation, isValidUsername } from "@/server/domain/parse/location";
 import type { PlayerLocation } from "@/types";
 

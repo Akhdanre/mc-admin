@@ -1,6 +1,6 @@
 import "server-only";
 import { getDiscordConfig } from "@/server/data/discord";
-import { executeRconCommand } from "@/server/integrations/rcon";
+import { executeRconCommand } from "@/server/rcon";
 
 // Discord Gateway OpCodes
 const OP_DISPATCH = 0;
