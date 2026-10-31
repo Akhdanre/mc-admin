@@ -209,6 +209,8 @@ export default function Home() {
             <LiveMapView
               mapUrl={serverInfo.mapUrl || "http://localhost:8123"}
               players={playerStatus.players}
+              playerLocations={playerLocations}
+              onExecuteCommand={handleExecuteCommand}
             />
           )}
 

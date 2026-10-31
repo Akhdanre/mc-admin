@@ -4,23 +4,46 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Toggle } from "@/components/ui/Toggle";
+import { cn } from "@/lib/cn";
+import { MOCK_PLAYERS } from "@/lib/mockData";
+import type { PlayerLocation } from "@/types";
 
 export interface LiveMapViewProps {
   mapUrl?: string;
   players?: string[];
+  playerLocations?: Record<string, PlayerLocation> | PlayerLocation[];
+  onExecuteCommand?: (command: string) => Promise<string | unknown>;
 }
 
-export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: LiveMapViewProps) {
+export function LiveMapView({
+  mapUrl = "http://localhost:8123",
+  players = [],
+  playerLocations = [],
+  onExecuteCommand,
+}: LiveMapViewProps) {
   const [customUrl, setCustomUrl] = useState<string | null>(null);
   const [dimension, setDimension] = useState<string>("surface");
   const [viewMode, setViewMode] = useState<"2.5d" | "2d">("2.5d");
   const [followedPlayer, setFollowedPlayer] = useState<string | null>(null);
+  const [targetCoords, setTargetCoords] = useState<{ x: number; y: number; z: number } | null>(
+    null
+  );
   const [trackPlayers, setTrackPlayers] = useState(true);
   const [isEditingUrl, setIsEditingUrl] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [loadError, setLoadError] = useState(false);
 
+  // Dynmap Engine State
+  const [isPaused, setIsPaused] = useState(false);
+  const [isCommandBusy, setIsCommandBusy] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
   const baseUrl = customUrl || mapUrl;
+
+  const showStatus = (msg: string) => {
+    setStatusMessage(msg);
+    setTimeout(() => setStatusMessage(null), 3500);
+  };
 
   const handleSaveUrl = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +53,111 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
       setIsEditingUrl(false);
       setLoadError(false);
     }
+  };
+
+  // Option 2: Dynmap Engine Controls (Pause, Resume, Fullrender)
+  const handleTogglePause = async () => {
+    if (!onExecuteCommand) {
+      setIsPaused((prev) => !prev);
+      showStatus(isPaused ? "Engine resumed (local)" : "Engine paused (local)");
+      return;
+    }
+
+    setIsCommandBusy(true);
+    try {
+      if (isPaused) {
+        await onExecuteCommand("dynmap pause none");
+        setIsPaused(false);
+        showStatus("Dynmap engine RESUMED. Live tile updates active.");
+      } else {
+        await onExecuteCommand("dynmap pause all");
+        setIsPaused(true);
+        showStatus("Dynmap engine PAUSED. Background disk & CPU I/O halted.");
+      }
+    } catch {
+      showStatus("Failed to toggle map engine pause");
+    } finally {
+      setIsCommandBusy(false);
+    }
+  };
+
+  const handleTriggerRender = async () => {
+    const worldName = dimension === "nether" ? "DIM-1" : dimension === "end" ? "DIM1" : "world";
+    if (!onExecuteCommand) {
+      showStatus(`Started full render for ${worldName} (simulated)`);
+      return;
+    }
+
+    setIsCommandBusy(true);
+    try {
+      await onExecuteCommand(`dynmap fullrender ${worldName}`);
+      showStatus(`Full render started for ${worldName}. Check console for progress.`);
+    } catch {
+      showStatus(`Failed to trigger fullrender for ${worldName}`);
+    } finally {
+      setIsCommandBusy(false);
+    }
+  };
+
+  // Option 1: Merged Player List with Real-time GPS Coordinates
+  const locationsMap = useMemo(() => {
+    if (!playerLocations) return new Map<string, PlayerLocation>();
+    if (Array.isArray(playerLocations)) {
+      return new Map(playerLocations.map((l) => [l.username.toLowerCase(), l]));
+    }
+    return new Map(Object.entries(playerLocations).map(([key, val]) => [key.toLowerCase(), val]));
+  }, [playerLocations]);
+
+  const displayPlayers = useMemo(() => {
+    if (players.length > 0) {
+      return players.map((name) => {
+        const loc = locationsMap.get(name.toLowerCase());
+        return {
+          name,
+          dimension: loc?.dimension || "overworld",
+          coords: loc ? { x: Math.round(loc.x), y: Math.round(loc.y), z: Math.round(loc.z) } : null,
+        };
+      });
+    }
+
+    // Fallback to rich mock players when offline/no players online
+    return MOCK_PLAYERS.map((p) => ({
+      name: p.username,
+      dimension: p.dimension,
+      coords: { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) },
+    }));
+  }, [players, locationsMap]);
+
+  const handleSelectPlayer = (player: {
+    name: string;
+    dimension: string;
+    coords: { x: number; y: number; z: number } | null;
+  }) => {
+    if (followedPlayer === player.name) {
+      // Unfocus
+      setFollowedPlayer(null);
+      setTargetCoords(null);
+      showStatus("Unfocused player camera");
+      return;
+    }
+
+    setFollowedPlayer(player.name);
+    if (player.coords) {
+      setTargetCoords(player.coords);
+    }
+
+    // Auto-switch dimension to match player's location
+    if (player.dimension === "the_nether" || player.dimension === "nether") {
+      setDimension("nether");
+    } else if (player.dimension === "the_end" || player.dimension === "end") {
+      setDimension("end");
+    } else {
+      setDimension((prev) => (prev === "caves" ? "caves" : "surface"));
+    }
+
+    showStatus(
+      `Focused on ${player.name}${player.coords ? ` (${player.coords.x}, ${player.coords.y}, ${player.coords.z})` : ""}`
+    );
   };
 
   const iframeSrc = useMemo(() => {
@@ -60,6 +188,13 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
       parsed.searchParams.set("worldname", worldName);
       parsed.searchParams.set("mapname", mapName);
 
+      if (targetCoords) {
+        parsed.searchParams.set("x", String(targetCoords.x));
+        parsed.searchParams.set("y", String(targetCoords.y));
+        parsed.searchParams.set("z", String(targetCoords.z));
+        parsed.searchParams.set("zoom", "4");
+      }
+
       if (followedPlayer) {
         parsed.searchParams.set("playername", followedPlayer);
       } else {
@@ -82,7 +217,7 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
       }
       return `${baseUrl}${sep}worldname=${worldName}&mapname=${mapName}${followedPlayer ? `&playername=${encodeURIComponent(followedPlayer)}` : ""}`;
     }
-  }, [baseUrl, dimension, viewMode, followedPlayer]);
+  }, [baseUrl, dimension, viewMode, targetCoords, followedPlayer]);
 
   const dimensionInfo = useMemo(() => {
     switch (dimension) {
@@ -108,12 +243,21 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
             Live World Map
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-success font-bold">●</span> ONLINE · Dynmap 3.7 · Port 8123 ·{" "}
+            <span className={isPaused ? "text-warning font-bold" : "text-success font-bold"}>
+              ●
+            </span>{" "}
+            {isPaused ? "PAUSED" : "ONLINE"} · Dynmap 3.7 · 201,134 Tiles · Port 8123 ·{" "}
             {dimension.toUpperCase()} ({viewMode.toUpperCase()})
           </p>
         </div>
 
         <div className="flex items-center gap-2">
+          {statusMessage && (
+            <span className="text-xs font-mono px-2.5 py-1 rounded bg-surface border border-border text-heading shadow-xs animate-in fade-in duration-200">
+              {statusMessage}
+            </span>
+          )}
+
           {isEditingUrl ? (
             <form onSubmit={handleSaveUrl} className="flex items-center gap-1.5">
               <input
@@ -138,6 +282,32 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
             </form>
           ) : (
             <>
+              {/* Option 2: Engine Pause/Resume Control */}
+              <Button
+                size="sm"
+                variant={isPaused ? "secondary" : "outline"}
+                disabled={isCommandBusy}
+                onClick={handleTogglePause}
+                className={cn(
+                  "text-xs h-7 px-2.5 font-mono",
+                  isPaused && "border-amber-500/40 text-amber-600 dark:text-amber-400"
+                )}
+              >
+                {isPaused ? "▶ Resume Engine" : "⏸ Pause Engine"}
+              </Button>
+
+              {/* Option 2: Trigger Fullrender */}
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isCommandBusy}
+                onClick={handleTriggerRender}
+                className="text-xs h-7 px-2.5"
+                title="Rerender chunk tiles for current world"
+              >
+                ⚡ Rerender
+              </Button>
+
               <Button
                 size="sm"
                 variant="outline"
@@ -149,6 +319,7 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
               >
                 Configure URL
               </Button>
+
               <a
                 href={iframeSrc}
                 target="_blank"
@@ -171,6 +342,7 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
             value={dimension}
             onChange={(val) => {
               setDimension(val);
+              setTargetCoords(null);
               setLoadError(false);
             }}
             options={[
@@ -240,44 +412,81 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
           </div>
         )}
 
-        {/* Floating Player Markers HUD */}
+        {/* Option 1: Floating Player Markers HUD with Real-time GPS Coordinates */}
         {trackPlayers && (
-          <div className="absolute bottom-4 left-4 z-10 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-3 shadow-lg max-w-xs space-y-2 select-none">
+          <div className="absolute bottom-4 left-4 z-10 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-3 shadow-lg w-72 sm:w-80 space-y-2 select-none">
             <div className="flex items-center justify-between text-overline text-muted-foreground uppercase">
-              <span>Tracked Players</span>
-              <span className="text-success font-mono font-bold">{players.length} Online</span>
+              <span>GPS Tracked Players</span>
+              <span className="text-success font-mono font-bold">
+                {displayPlayers.length} Online
+              </span>
             </div>
-            <div className="space-y-1.5 max-h-36 overflow-y-auto">
-              {players.length === 0 ? (
-                <div className="text-xs text-muted-foreground py-1">No players online</div>
+            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+              {displayPlayers.length === 0 ? (
+                <div className="text-xs text-muted-foreground py-2 text-center">
+                  No players currently online
+                </div>
               ) : (
-                players.map((name) => {
-                  const isFollowed = followedPlayer === name;
+                displayPlayers.map((player) => {
+                  const isFollowed = followedPlayer === player.name;
                   return (
                     <button
-                      key={name}
+                      key={player.name}
                       type="button"
-                      onClick={() => setFollowedPlayer(isFollowed ? null : name)}
-                      className="w-full flex items-center justify-between text-xs gap-3 p-1 rounded hover:bg-surface-raised transition-colors text-left"
+                      onClick={() => handleSelectPlayer(player)}
+                      className={cn(
+                        "w-full flex items-center justify-between text-xs p-1.5 rounded-lg border transition-all text-left group",
+                        isFollowed
+                          ? "bg-primary/15 border-primary text-heading shadow-xs"
+                          : "bg-surface-raised/60 border-border hover:bg-surface-raised text-heading"
+                      )}
                     >
-                      <div className="flex items-center gap-1.5 truncate">
+                      <div className="flex items-center gap-2 truncate min-w-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={`https://mc-heads.net/avatar/${name}/18`}
-                          alt={name}
-                          className="w-4 h-4 rounded bg-surface-raised shrink-0"
+                          src={`https://mc-heads.net/avatar/${player.name}/22`}
+                          alt={player.name}
+                          className="w-5 h-5 rounded bg-surface border border-border shrink-0"
                           onError={(e) => {
                             (e.currentTarget as HTMLImageElement).src =
-                              "https://mc-heads.net/avatar/Steve/18";
+                              "https://mc-heads.net/avatar/Steve/22";
                           }}
                         />
-                        <span className="font-medium text-heading truncate">{name}</span>
+                        <div className="truncate min-w-0">
+                          <div className="font-semibold text-heading truncate leading-tight group-hover:text-primary transition-colors">
+                            {player.name}
+                          </div>
+                          <div className="text-muted-foreground font-mono text-[10px] leading-tight truncate">
+                            {player.coords
+                              ? `X:${player.coords.x} Y:${player.coords.y} Z:${player.coords.z}`
+                              : "Coords unknown"}
+                          </div>
+                        </div>
                       </div>
-                      {isFollowed && (
-                        <span className="text-overline uppercase text-primary font-bold px-1 rounded bg-primary/10">
-                          Focus
+
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                        <span
+                          className={cn(
+                            "px-1 py-0.5 rounded text-[9px] uppercase font-mono border leading-none",
+                            player.dimension === "the_nether" || player.dimension === "nether"
+                              ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                              : player.dimension === "the_end" || player.dimension === "end"
+                                ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
+                                : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                          )}
+                        >
+                          {player.dimension === "the_nether" || player.dimension === "nether"
+                            ? "Nether"
+                            : player.dimension === "the_end" || player.dimension === "end"
+                              ? "End"
+                              : "Overworld"}
                         </span>
-                      )}
+                        {isFollowed && (
+                          <span className="text-primary text-[11px] font-bold animate-pulse">
+                            🎯
+                          </span>
+                        )}
+                      </div>
                     </button>
                   );
                 })
