@@ -1,16 +1,22 @@
 import "server-only";
 import { Rcon } from "rcon-client";
 import { getAppSettings } from "@/server/settings";
-import { parseDifficulty, parsePlayerList, parseWhitelist } from "./parse";
+import { parseDifficulty, parsePerformance, parsePlayerList, parseWhitelist } from "./parse";
 import type { PlayerStatus, WhitelistStatus } from "@/types";
 
 export async function executeRconCommand(command: string): Promise<string> {
   const settings = await getAppSettings();
+  const host = process.env.RCON_HOST || settings.rconHost;
+  const port = process.env.RCON_PORT ? Number(process.env.RCON_PORT) : settings.rconPort;
+  const password = process.env.RCON_PASSWORD || settings.rconPassword;
+  const timeout = process.env.RCON_TIMEOUT_MS
+    ? Number(process.env.RCON_TIMEOUT_MS)
+    : settings.rconTimeoutMs;
   const rcon = await Rcon.connect({
-    host: settings.rconHost,
-    port: settings.rconPort,
-    password: settings.rconPassword,
-    timeout: settings.rconTimeoutMs,
+    host,
+    port,
+    password,
+    timeout,
   });
 
   try {
@@ -23,17 +29,21 @@ export async function executeRconCommand(command: string): Promise<string> {
 export async function getPlayerStatus(): Promise<PlayerStatus> {
   const updatedAt = new Date().toLocaleTimeString();
   try {
-    const [listRaw, diffRaw] = await Promise.all([
+    const [listRaw, diffRaw, perfRaw] = await Promise.all([
       executeRconCommand("list"),
       executeRconCommand("difficulty").catch(() => ""),
+      executeRconCommand("forge tps").catch(() => executeRconCommand("tps").catch(() => "")),
     ]);
     const parsed = parsePlayerList(listRaw);
     const difficulty = parseDifficulty(diffRaw) ?? undefined;
+    const perf = parsePerformance(perfRaw);
     return {
       onlineCount: parsed.onlineCount,
       maxCount: parsed.maxCount,
       players: parsed.players,
       difficulty,
+      tps: perf.tps,
+      mspt: perf.mspt,
       raw: parsed.raw,
       updatedAt,
     };

@@ -3,6 +3,8 @@ export interface PlayerStatus {
   maxCount: number;
   players: string[];
   difficulty?: string;
+  tps?: number;
+  mspt?: number;
   raw: string;
   error?: string;
   updatedAt: string;
@@ -92,6 +94,7 @@ export interface ServerInfoResponse {
   host: string;
   port: number;
   mapUrl?: string;
+  version?: string;
 }
 
 export interface PlayerLocation {

@@ -28,11 +28,17 @@ interface DashboardOverviewProps {
 type Timeframe = "15m" | "1h" | "6h" | "24h";
 
 // 24 histogram bars simulating steady 20 TPS engine loop
-const TPS_BARS = [40, 40, 40, 39, 40, 40, 40, 40, 38, 40, 40, 40, 40, 40, 39, 40, 40, 40, 40, 40, 40, 39, 40, 40];
+const TPS_BARS = [
+  40, 40, 40, 39, 40, 40, 40, 40, 38, 40, 40, 40, 40, 40, 39, 40, 40, 40, 40, 40, 40, 39, 40, 40,
+];
 // 24 histogram bars simulating ~14-22ms MSPT tick calculation
-const MSPT_BARS = [16, 18, 14, 15, 22, 17, 16, 15, 19, 14, 16, 17, 15, 18, 20, 16, 15, 17, 19, 14, 16, 15, 18, 16];
+const MSPT_BARS = [
+  16, 18, 14, 15, 22, 17, 16, 15, 19, 14, 16, 17, 15, 18, 20, 16, 15, 17, 19, 14, 16, 15, 18, 16,
+];
 // 24 histogram bars simulating tunnel ping / network ingress latency
-const PING_BARS = [14, 18, 12, 15, 24, 19, 13, 16, 21, 14, 17, 22, 13, 16, 25, 18, 14, 19, 23, 15, 17, 14, 20, 18];
+const PING_BARS = [
+  14, 18, 12, 15, 24, 19, 13, 16, 21, 14, 17, 22, 13, 16, 25, 18, 14, 19, 23, 15, 17, 14, 20, 18,
+];
 
 function RestartIcon() {
   return (
@@ -66,14 +72,6 @@ function PromptIcon() {
   );
 }
 
-function BanIcon() {
-  return (
-    <svg className="w-3.5 h-3.5 text-danger" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M8 1.5C4.41 1.5 1.5 4.41 1.5 8s2.91 6.5 6.5 6.5 6.5-2.91 6.5-6.5S11.59 1.5 8 1.5zM3.4 8c0-1.1.4-2.1 1-2.9l6.5 6.5c-.8.6-1.8 1-2.9 1-2.5 0-4.6-2.1-4.6-4.6zm8.2 2.9L5.1 4.4c.8-.6 1.8-1 2.9-1 2.5 0 4.6 2.1 4.6 4.6 0 1.1-.4 2.1-1 2.9z" />
-    </svg>
-  );
-}
-
 function UserCheckIcon() {
   return (
     <svg className="w-3.5 h-3.5 text-success" viewBox="0 0 16 16" fill="currentColor">
@@ -90,13 +88,6 @@ function CloudBackupIcon() {
   );
 }
 
-function WarningAlertIcon() {
-  return (
-    <svg className="w-3.5 h-3.5 text-warning" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M8 2L1.5 13.5h13L8 2zm-.7 3.5h1.4v4H7.3v-4zm0 5h1.4v1.5H7.3v-1.5z" />
-    </svg>
-  );
-}
 export function DashboardView({
   playerStatus,
   whitelistStatus,
@@ -137,46 +128,54 @@ export function DashboardView({
     }
   };
 
-  // Event rows matching Penpot design
+  // Dynamic system events based on real live server status
   const auditEvents = [
-    {
-      icon: <PromptIcon />,
-      text: "_xKaelin executed /time set day",
-      time: "2m ago",
-      tag: "RCON",
-      tagTone: "bg-info-surface text-foreground border-info-border",
-    },
-    {
-      icon: <BanIcon />,
-      text: "GriefBot banned by Console",
-      time: "6m ago",
-      tag: "JOIN",
-      tagTone: "bg-success-surface text-foreground border-success-border",
-    },
-    {
-      icon: <UserCheckIcon />,
-      text: `${whitelistStatus.players[0] || "notch_fan_99"} added to whitelist`,
-      time: "11m ago",
-      tag: "WORLD",
-      tagTone: "bg-surface-raised text-foreground border-border",
-    },
-    {
-      icon: <CloudBackupIcon />,
-      text: backupStatus?.latestBackup
-        ? `Automated backup completed (${backupStatus.latestBackup.sizeFormatted})`
-        : "Automated backup completed",
-      time: "18m ago",
-      tag: "ADVANCEMENT",
-      tagTone: "bg-warning-surface text-foreground border-warning-border",
-    },
-    {
-      icon: <WarningAlertIcon />,
-      text: "TPS drop detected (16.2 TPS)",
-      time: "25m ago",
-      tag: "BACKUP",
-      tagTone: "bg-primary/10 text-foreground border-primary/20",
-    },
-  ];
+    serverInfo.host && serverInfo.host !== "-"
+      ? {
+          icon: <PromptIcon />,
+          text: `RCON endpoint active at ${serverInfo.host}:${serverInfo.port}`,
+          time: "Connected",
+          tag: "RCON",
+          tagTone: "bg-info-surface text-foreground border-info-border",
+        }
+      : null,
+    playerStatus.difficulty
+      ? {
+          icon: <PromptIcon />,
+          text: `Engine difficulty is ${playerStatus.difficulty.toUpperCase()} (${(playerStatus.tps ?? 20.0).toFixed(1)} TPS)`,
+          time: "Live",
+          tag: "ENGINE",
+          tagTone: "bg-success-surface text-foreground border-success-border",
+        }
+      : null,
+    whitelistStatus.players.length > 0
+      ? {
+          icon: <UserCheckIcon />,
+          text: `${whitelistStatus.players.length} players registered in whitelist`,
+          time: "Enforced",
+          tag: "WHITELIST",
+          tagTone: "bg-surface-raised text-foreground border-border",
+        }
+      : null,
+    backupStatus?.latestBackup
+      ? {
+          icon: <CloudBackupIcon />,
+          text: `Snapshot ${backupStatus.latestBackup.filename} (${backupStatus.latestBackup.sizeFormatted})`,
+          time: backupStatus.latestBackup.createdAt || "Stored",
+          tag: "BACKUP",
+          tagTone: "bg-warning-surface text-foreground border-warning-border",
+        }
+      : null,
+    playerHistory?.lastLoginPlayer
+      ? {
+          icon: <UserCheckIcon />,
+          text: `Last active player: ${playerHistory.lastLoginPlayer.username}`,
+          time: playerHistory.lastLoginPlayer.lastLogin || "History",
+          tag: "AUTH",
+          tagTone: "bg-primary/10 text-foreground border-primary/20",
+        }
+      : null,
+  ].filter((item): item is NonNullable<typeof item> => Boolean(item));
 
   return (
     <div className="space-y-6">
@@ -199,25 +198,53 @@ export function DashboardView({
           <h1 className="text-xl font-semibold text-heading leading-tight tracking-tight">
             Dashboard
           </h1>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 font-mono">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 font-mono flex-wrap">
             <span
               className={cn(
                 "w-2 h-2 rounded-full shrink-0",
-                isOnline ? "bg-success" : "bg-danger"
+                isOnline ? "bg-success animate-pulse" : "bg-danger"
               )}
             />
             <span className="font-semibold">{isOnline ? "ONLINE" : "OFFLINE"}</span>
             <span className="text-faint-foreground">·</span>
-            <span>Docker mc-server</span>
+            <span>
+              {serverInfo.host !== "-" ? `${serverInfo.host}:${serverInfo.port}` : "mc-server"}
+            </span>
             <span className="text-faint-foreground">·</span>
-            <span>Paper 1.21.4</span>
+            <span>{serverInfo.version || "Forge 1.20.1"}</span>
             <span className="text-faint-foreground">·</span>
-            <span className="text-subtle-foreground">Uptime 8h 24m</span>
+            <span className="text-subtle-foreground">
+              Difficulty:{" "}
+              {playerStatus.difficulty ? playerStatus.difficulty.toUpperCase() : "NORMAL"}
+            </span>
           </div>
         </div>
 
         {/* Header Actions */}
         <div className="flex items-center gap-2 shrink-0 flex-wrap w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="h-8 px-2.5 rounded-md bg-surface hover:bg-surface-raised text-muted-foreground hover:text-heading border border-border text-xs font-medium flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+            title="Refresh status"
+          >
+            <svg
+              className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin")}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => handleAction("/restart", "Restart Server")}
@@ -251,9 +278,7 @@ export function DashboardView({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Online Players */}
         <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-overline text-muted-foreground uppercase">
-            ONLINE PLAYERS
-          </div>
+          <div className="text-overline text-muted-foreground uppercase">ONLINE PLAYERS</div>
           <div className="text-2xl font-semibold text-heading font-mono mt-2">
             {playerStatus.onlineCount}{" "}
             <span className="text-sm font-normal text-subtle-foreground font-sans">
@@ -273,9 +298,7 @@ export function DashboardView({
 
         {/* Card 2: JVM Heap Memory */}
         <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-overline text-muted-foreground uppercase">
-            JVM HEAP MEMORY
-          </div>
+          <div className="text-overline text-muted-foreground uppercase">JVM HEAP MEMORY</div>
           <div className="text-2xl font-semibold text-heading font-mono mt-2">
             3.2{" "}
             <span className="text-sm font-normal text-subtle-foreground font-sans">/ 8.0 GB</span>
@@ -283,35 +306,42 @@ export function DashboardView({
           <div className="w-full bg-surface-raised rounded-full h-1.5 my-2.5 overflow-hidden">
             <div className="bg-primary h-full rounded-full" style={{ width: "40%" }} />
           </div>
-          <div className="text-xs text-subtle-foreground truncate">
-            40% · Aikar G1GC 14ms avg
-          </div>
+          <div className="text-xs text-subtle-foreground truncate">40% · Aikar G1GC 14ms avg</div>
         </div>
 
         {/* Card 3: Engine Performance */}
         <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-overline text-muted-foreground uppercase">
-            ENGINE PERFORMANCE
-          </div>
+          <div className="text-overline text-muted-foreground uppercase">ENGINE PERFORMANCE</div>
           <div className="text-2xl font-semibold text-heading font-mono mt-2">
-            {isOnline ? "19.8 TPS" : "0.0 TPS"}
+            {isOnline ? `${(playerStatus.tps ?? 20.0).toFixed(1)} TPS` : "0.0 TPS"}
           </div>
           <div className="w-full bg-surface-raised rounded-full h-1.5 my-2.5 overflow-hidden">
             <div
-              className={cn("h-full rounded-full", isOnline ? "bg-success" : "bg-danger")}
-              style={{ width: isOnline ? "99%" : "0%" }}
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                (playerStatus.tps ?? 20) >= 19
+                  ? "bg-success"
+                  : (playerStatus.tps ?? 20) >= 15
+                    ? "bg-warning"
+                    : "bg-danger"
+              )}
+              style={{
+                width: isOnline
+                  ? `${Math.min(100, Math.round(((playerStatus.tps ?? 20) / 20) * 100))}%`
+                  : "0%",
+              }}
             />
           </div>
           <div className="text-xs text-subtle-foreground truncate">
-            14.2 ms MSPT (Budget 50ms)
+            {playerStatus.mspt !== undefined
+              ? `${playerStatus.mspt.toFixed(1)} ms MSPT (Budget 50ms)`
+              : "14.2 ms MSPT (Budget 50ms)"}
           </div>
         </div>
 
         {/* Card 4: World & Storage */}
         <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-overline text-muted-foreground uppercase">
-            WORLD & STORAGE
-          </div>
+          <div className="text-overline text-muted-foreground uppercase">WORLD & STORAGE</div>
           <div className="text-2xl font-semibold text-heading font-mono mt-2">
             {backupStatus?.totalSizeFormatted
               ? `${backupStatus.totalSizeFormatted} NVMe`
@@ -356,10 +386,11 @@ export function DashboardView({
           {/* Column 1: TPS */}
           <div className="pt-2 md:pt-0">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-semibold text-heading font-mono">19.8</span>
+              <span className="text-2xl font-semibold text-heading font-mono">
+                {(playerStatus.tps ?? 20.0).toFixed(1)}
+              </span>
               <span className="text-xs text-muted-foreground">TPS (Target 20.0)</span>
             </div>
-
             <div className="mt-3 relative h-11 flex items-end gap-[3px] border-b border-border/80 pb-1">
               <div className="absolute top-0 inset-x-0 border-t border-dashed border-border" />
               {TPS_BARS.map((height, idx) => (
@@ -381,10 +412,11 @@ export function DashboardView({
           {/* Column 2: MSPT */}
           <div className="pt-4 md:pt-0 md:pl-6">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-semibold text-heading font-mono">14.2</span>
+              <span className="text-2xl font-semibold text-heading font-mono">
+                {playerStatus.mspt !== undefined ? playerStatus.mspt.toFixed(1) : "2.4"}
+              </span>
               <span className="text-xs text-muted-foreground">ms (Budget 50ms)</span>
             </div>
-
             <div className="mt-3 relative h-11 flex items-end gap-[3px] border-b border-border/80 pb-1">
               <div className="absolute top-0 inset-x-0 border-t border-dashed border-danger/40" />
               {MSPT_BARS.map((height, idx) => (
@@ -478,6 +510,7 @@ export function DashboardView({
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 py-2 border-b border-border/40 last:border-b-0 text-xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={`https://mc-heads.net/avatar/${encodeURIComponent(name)}/28`}
                           alt={name}
@@ -506,9 +539,7 @@ export function DashboardView({
                           <span className="w-1.5 h-1.5 rounded-full bg-success" />
                           24ms
                         </span>
-                        <span className="text-xs text-muted-foreground font-mono">
-                          Online
-                        </span>
+                        <span className="text-xs text-muted-foreground font-mono">Online</span>
                       </div>
                     </div>
                   );
@@ -541,13 +572,13 @@ export function DashboardView({
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="shrink-0">{evt.icon}</span>
-                    <span className="text-heading truncate font-normal text-xs sm:text-sm">{evt.text}</span>
+                    <span className="text-heading truncate font-normal text-xs sm:text-sm">
+                      {evt.text}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 pl-6 sm:pl-0 justify-between sm:justify-end">
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {evt.time}
-                    </span>
+                    <span className="text-xs text-muted-foreground font-mono">{evt.time}</span>
                     <span
                       className={cn(
                         "px-1.5 py-0.5 rounded-[3px] text-overline font-mono uppercase border leading-none",

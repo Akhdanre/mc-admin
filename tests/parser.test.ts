@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseDifficulty, parsePlayerList, parseWhitelist } from "@/server/rcon";
+import { parseDifficulty, parsePerformance, parsePlayerList, parseWhitelist } from "@/server/rcon";
 import {
   parsePosition,
   parseDimension,
@@ -57,6 +57,27 @@ describe("parser service", () => {
     expect(parseDifficulty("Unknown command")).toBeNull();
   });
 
+  it("parses Forge engine performance output", () => {
+    const forgeRaw = `Dim minecraft:overworld (minecraft:overworld): Mean tick time: 2.160 ms. Mean TPS: 20.000
+Dim minecraft:the_nether (minecraft:the_nether): Mean tick time: 0.017 ms. Mean TPS: 20.000
+Overall: Mean tick time: 2.426 ms. Mean TPS: 20.000`;
+    const result = parsePerformance(forgeRaw);
+    expect(result.tps).toBe(20);
+    expect(result.mspt).toBe(2.16);
+  });
+
+  it("parses Paper engine performance output", () => {
+    const paperRaw = "TPS from last 1m, 5m, 15m: 19.8, 20.0, 20.0";
+    const result = parsePerformance(paperRaw);
+    expect(result.tps).toBe(19.8);
+    expect(result.mspt).toBeUndefined();
+  });
+
+  it("handles empty or invalid performance output", () => {
+    expect(parsePerformance("")).toEqual({});
+    expect(parsePerformance("Unknown command")).toEqual({});
+  });
+
   it("validates Minecraft usernames", () => {
     expect(isValidUsername("Steve")).toBe(true);
     expect(isValidUsername("notch_fan_99")).toBe(true);
@@ -74,9 +95,13 @@ describe("parser service", () => {
   });
 
   it("parses Minecraft RCON entity dimension output", () => {
-    expect(parseDimension('has the following entity data: "minecraft:the_nether"')).toBe("the_nether");
+    expect(parseDimension('has the following entity data: "minecraft:the_nether"')).toBe(
+      "the_nether"
+    );
     expect(parseDimension('has the following entity data: "minecraft:the_end"')).toBe("the_end");
-    expect(parseDimension('has the following entity data: "minecraft:overworld"')).toBe("overworld");
+    expect(parseDimension('has the following entity data: "minecraft:overworld"')).toBe(
+      "overworld"
+    );
     expect(parseDimension('"overworld"')).toBe("overworld");
     expect(parseDimension("invalid dimension response")).toBe("overworld");
   });
