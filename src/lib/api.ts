@@ -4,7 +4,20 @@
  */
 
 async function parseJson<T>(res: Response): Promise<T> {
-  return (await res.json()) as T;
+  const data = (await res.json().catch(() => null)) as T | { error?: string } | null;
+  if (!res.ok) {
+    if (
+      res.status === 401 &&
+      typeof window !== "undefined" &&
+      window.location.pathname !== "/login"
+    ) {
+      window.location.href = "/login";
+    }
+    const msg =
+      data && typeof data === "object" && "error" in data ? String(data.error) : res.statusText;
+    throw new Error(msg || `Request failed with status ${res.status}`);
+  }
+  return data as T;
 }
 
 export async function apiGet<T>(url: string): Promise<T> {

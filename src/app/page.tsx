@@ -67,13 +67,13 @@ export default function Home() {
       <Sidebar
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
-        onlineCount={playerStatus.onlineCount}
-        whitelistCount={whitelistStatus.players.length}
+        onlineCount={playerStatus?.onlineCount ?? 0}
+        whitelistCount={whitelistStatus?.players?.length ?? 0}
         backupCount={backupStatus?.totalCount ?? 0}
         isConnected={isConnected}
         isOpenMobile={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
-        serverVersion="Paper 1.21.4"
+        serverVersion={serverInfo?.version || "Forge 1.20.1"}
       />
 
       {/* Main Content Area */}
@@ -88,7 +88,12 @@ export default function Home() {
               aria-label="Open navigation menu"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
             <span className="text-sm font-semibold text-heading">Pulse MC</span>
@@ -182,9 +187,7 @@ export default function Home() {
               onShowFeedback={showFeedback}
             />
           )}
-          {currentTab === "mods" && (
-            <ModsView onShowFeedback={showFeedback} />
-          )}
+          {currentTab === "mods" && <ModsView onShowFeedback={showFeedback} />}
 
           {currentTab === "backup" && (
             <BackupView

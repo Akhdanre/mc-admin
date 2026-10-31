@@ -41,17 +41,24 @@ export function useServerStatus() {
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const [statusData, whitelistData, locationsData, historyData, backupData] =
-        await Promise.all([
+      const [statusData, whitelistData, locationsData, historyData, backupData] = await Promise.all(
+        [
           apiGet<PlayerStatus>("/api/status"),
           apiGet<WhitelistStatus>("/api/whitelist"),
           apiGet<{ locations?: PlayerLocation[] }>("/api/players/locations"),
           apiGet<PlayerHistoryResponse>("/api/players/history"),
           apiGet<BackupStatusResponse>("/api/backup"),
-        ]);
+        ]
+      );
 
-      setPlayerStatus(statusData);
-      setWhitelistStatus(whitelistData);
+      setPlayerStatus({
+        ...statusData,
+        players: Array.isArray(statusData?.players) ? statusData.players : [],
+      });
+      setWhitelistStatus({
+        ...whitelistData,
+        players: Array.isArray(whitelistData?.players) ? whitelistData.players : [],
+      });
       setBackupStatus(backupData);
 
       if (locationsData.locations) {
