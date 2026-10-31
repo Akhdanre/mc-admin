@@ -1,6 +1,6 @@
 import "server-only";
 import { Rcon } from "rcon-client";
-import { getAppSettings } from "@/server/data/settings";
+import { getAppSettings } from "@/server/settings";
 import { parseDifficulty, parsePlayerList, parseWhitelist } from "@/server/domain/parse/players";
 import type { PlayerStatus, WhitelistStatus } from "@/types";
 

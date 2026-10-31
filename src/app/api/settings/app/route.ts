@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAppSettings, saveAppSettings } from "@/server/data/settings";
+import { getAppSettings, saveAppSettings } from "@/server/settings";
 import type { AppSettingsResponse, AppSettings } from "@/types";
 
 export async function GET() {

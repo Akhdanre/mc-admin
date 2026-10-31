@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { getAppSettings, saveAppSettings } from "@/server/data/settings";
+import { getAppSettings, saveAppSettings } from "@/server/settings";
 
 describe("app settings service", () => {
   it("loads default settings structure", async () => {
