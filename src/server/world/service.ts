@@ -24,7 +24,7 @@ export async function getActiveLevelName(): Promise<string> {
     const propsPath = path.join(config.paths.data, "server.properties");
     const content = await fs.readFile(propsPath, "utf-8");
     const match = content.match(/^level-name\s*=\s*(.+)$/m);
-    if (match && match[1].trim()) {
+    if (match?.[1]?.trim()) {
       return match[1].trim();
     }
   } catch {

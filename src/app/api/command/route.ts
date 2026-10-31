@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeRconCommand } from "@/server/rcon";
-import { withAuth, checkRateLimit } from "@/server/core";
+import { withAuth } from "@/server/auth";
+import { checkRateLimit } from "@/server/core";
 import { commandSchema } from "@/schemas";
 
 export const POST = withAuth(async (req: NextRequest) => {

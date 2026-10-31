@@ -6,7 +6,8 @@ import {
   setRetention,
   restoreBackup,
 } from "@/server/backup";
-import { withAuth, BadRequestError } from "@/server/core";
+import { withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
 import { backupActionSchema } from "@/schemas";
 
 export const GET = withAuth(async () => {

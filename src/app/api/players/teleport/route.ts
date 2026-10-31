@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeRconCommand } from "@/server/rcon";
-import { withAuth } from "@/server/core";
+import { withAuth } from "@/server/auth";
 import { teleportSchema } from "@/schemas";
 
 export const POST = withAuth(async (req: NextRequest) => {

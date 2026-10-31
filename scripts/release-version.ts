@@ -8,7 +8,9 @@ function bumpVersion(current: string, type: "patch" | "minor" | "major" = "patch
   if (parts.length !== 3 || parts.some(isNaN)) {
     throw new Error(`Invalid semver: ${current}`);
   }
-  let [major, minor, patch] = parts;
+  let major = parts[0] ?? 0;
+  let minor = parts[1] ?? 0;
+  let patch = parts[2] ?? 0;
   if (type === "major") {
     major += 1;
     minor = 0;
@@ -45,7 +47,7 @@ async function main() {
 
   let releaseNotes = "";
   if (match) {
-    const unreleasedContent = match[1].trim();
+    const unreleasedContent = match[1]?.trim() ?? "";
 
     // If there is actual content in unreleased
     if (unreleasedContent.length > 0) {

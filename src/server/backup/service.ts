@@ -85,7 +85,7 @@ export async function getBackupStatus(): Promise<BackupStatusResponse> {
     }
 
     items.sort((a, b) => b.mtime - a.mtime);
-    if (items.length > 0 && !items.some((i) => i.isLatest)) {
+    if (items.length > 0 && !items.some((i) => i.isLatest) && items[0]) {
       items[0].isLatest = true;
     }
 
@@ -144,9 +144,10 @@ export async function deleteBackup(filename: string): Promise<BackupDeleteRespon
         }))
       );
       stats.sort((a, b) => b.mtime - a.mtime);
-      await fs.symlink(stats[0].name, symlinkPath);
+      if (stats[0]) {
+        await fs.symlink(stats[0].name, symlinkPath);
+      }
     }
-
     return { success: true, deleted: filename };
   } catch (err: unknown) {
     return { success: false, error: err instanceof Error ? err.message : String(err) };

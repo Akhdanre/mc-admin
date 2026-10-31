@@ -2,7 +2,8 @@ import fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
 import { NextRequest } from "next/server";
-import { config, withAuth, BadRequestError, NotFoundError } from "@/server/core";
+import { withAuth } from "@/server/auth";
+import { config, BadRequestError, NotFoundError } from "@/server/core";
 import { isSafeFilename } from "@/server/backup";
 
 export const GET = withAuth(async (request: NextRequest) => {

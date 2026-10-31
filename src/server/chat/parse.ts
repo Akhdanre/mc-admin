@@ -23,7 +23,7 @@ export interface ParsedServerEvent {
 
 export function parseServerEvent(line: string): ParsedServerEvent | null {
   const joinMatch = line.match(JOIN_REGEX);
-  if (joinMatch) {
+  if (joinMatch && joinMatch[1]) {
     return {
       type: "join",
       title: "Player Joined",
@@ -33,7 +33,7 @@ export function parseServerEvent(line: string): ParsedServerEvent | null {
   }
 
   const leaveMatch = line.match(LEAVE_REGEX);
-  if (leaveMatch) {
+  if (leaveMatch && leaveMatch[1]) {
     return {
       type: "leave",
       title: "Player Left",
@@ -43,7 +43,7 @@ export function parseServerEvent(line: string): ParsedServerEvent | null {
   }
 
   const advMatch = line.match(ADVANCEMENT_REGEX);
-  if (advMatch) {
+  if (advMatch && advMatch[1] && advMatch[2] && advMatch[3]) {
     return {
       type: "advancement",
       title: "Advancement Made",
@@ -53,7 +53,7 @@ export function parseServerEvent(line: string): ParsedServerEvent | null {
   }
 
   const deathMatch = line.match(DEATH_REGEX);
-  if (deathMatch) {
+  if (deathMatch && deathMatch[1] && deathMatch[2]) {
     const victim = deathMatch[1];
     const deathText = `${victim} ${deathMatch[2]}${deathMatch[3] || ""}`.trim();
     return {
@@ -69,10 +69,10 @@ export function parseServerEvent(line: string): ParsedServerEvent | null {
 
 export function parseChatLine(line: string, index: number): ChatMessage | null {
   const tsMatch = line.match(TIMESTAMP_REGEX);
-  const timestamp = tsMatch ? tsMatch[1] : "";
+  const timestamp = tsMatch?.[1] ? tsMatch[1] : "";
 
   const playerMatch = line.match(PLAYER_CHAT_REGEX);
-  if (playerMatch) {
+  if (playerMatch && playerMatch[1] && playerMatch[2]) {
     return {
       id: `chat-${index}-${Date.now()}`,
       sender: playerMatch[1],
@@ -83,7 +83,7 @@ export function parseChatLine(line: string, index: number): ChatMessage | null {
   }
 
   const serverMatch = line.match(SERVER_CHAT_REGEX);
-  if (serverMatch) {
+  if (serverMatch && serverMatch[2]) {
     return {
       id: `chat-${index}-${Date.now()}`,
       sender: "Server",

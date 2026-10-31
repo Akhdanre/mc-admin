@@ -1,8 +1,7 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { AppError, BadRequestError, RateLimitError, UnauthorizedError } from "./errors";
-import { SESSION_COOKIE_NAME, verifySessionToken } from "@/server/auth";
+import { AppError, BadRequestError, RateLimitError } from "./errors";
 
 type RouteHandler<TContext = unknown> = (
   req: NextRequest,
@@ -96,14 +95,4 @@ export function handleRoute<TContext = unknown>(handler: RouteHandler<TContext>)
       );
     }
   };
-}
-
-export function withAuth<TContext = unknown>(handler: RouteHandler<TContext>): RouteHandler<TContext> {
-  return handleRoute(async (req: NextRequest, context?: TContext) => {
-    const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
-    if (!verifySessionToken(token)) {
-      throw new UnauthorizedError();
-    }
-    return await handler(req, context);
-  });
 }

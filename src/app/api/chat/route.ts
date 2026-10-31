@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRecentChatMessages, sendChatMessage } from "@/server/chat";
-import { withAuth, BadRequestError } from "@/server/core";
+import { withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
 import { sendChatSchema } from "@/schemas";
 import type { ChatResponse } from "@/types";
 

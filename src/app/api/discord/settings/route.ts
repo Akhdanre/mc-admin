@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDiscordConfig, saveDiscordConfig } from "@/server/discord";
-import { withAuth } from "@/server/core";
+import { withAuth } from "@/server/auth";
 import type { DiscordSettingsResponse, DiscordConfig } from "@/types";
 
 export const GET = withAuth(async () => {

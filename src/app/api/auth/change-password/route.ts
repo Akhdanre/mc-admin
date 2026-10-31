@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { changePassword } from "@/server/auth";
-import { withAuth, BadRequestError } from "@/server/core";
+import { changePassword, withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
 import { changePasswordSchema } from "@/schemas";
 import type { AuthResponse } from "@/types";
 

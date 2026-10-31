@@ -10,6 +10,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
+    "ci": "eslint && tsc --noEmit && bun test && next build",
+    "prepare": "husky",
     "version:bump": "bun scripts/release-version.ts"
   },
   "dependencies": {
@@ -34,6 +36,9 @@
     "bun-types": "^1.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

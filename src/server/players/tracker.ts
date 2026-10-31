@@ -73,7 +73,9 @@ export async function getPlayerHistory(onlinePlayerNames: string[] = []): Promis
         const match = line.match(joinRegex);
         if (!match) continue;
 
-        const [, timestr, username] = match;
+        const timestr = match[1];
+        const username = match[2];
+        if (!timestr || !username) continue;
         const parsedDate = parseMinecraftLogTime(timestr);
         if (!parsedDate) continue;
 
@@ -138,7 +140,14 @@ function parseMinecraftLogTime(str: string): Date | null {
   const match = str.match(/^(\d{2})([A-Za-z]{3})(\d{4})\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
   if (!match) return null;
 
-  const [, day, monthStr, year, hour, min, sec, ms] = match;
+  const day = match[1];
+  const monthStr = match[2];
+  const year = match[3];
+  const hour = match[4];
+  const min = match[5];
+  const sec = match[6];
+  const ms = match[7];
+  if (!day || !monthStr || !year || !hour || !min || !sec || !ms) return null;
   const months: Record<string, string> = {
     Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
     Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12",

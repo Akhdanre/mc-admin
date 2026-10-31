@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAppSettings } from "@/server/settings";
-import { withAuth } from "@/server/core";
+import { withAuth } from "@/server/auth";
 
 export const GET = withAuth(async () => {
   const settings = await getAppSettings();

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, BadRequestError } from "@/server/core";
+import { withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
 
 export const GET = withAuth(
   async (

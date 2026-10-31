@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppSettings, saveAppSettings } from "@/server/settings";
-import { withAuth } from "@/server/core";
+import { withAuth } from "@/server/auth";
 import { appSettingsPatchSchema } from "@/schemas";
 import type { AppSettingsResponse } from "@/types";
 

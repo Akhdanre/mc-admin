@@ -40,5 +40,5 @@ export function parseWhitelist(raw: string): string[] {
 
 export function parseDifficulty(raw: string): string | null {
   const match = raw.match(/difficulty is\s+([a-zA-Z]+)/i);
-  return match ? match[1].toLowerCase() : null;
+  return match?.[1] ? match[1].toLowerCase() : null;
 }

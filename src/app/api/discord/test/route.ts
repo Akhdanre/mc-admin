@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { testDiscordWebhook } from "@/server/discord";
-import { withAuth } from "@/server/core";
+import { withAuth } from "@/server/auth";
 import type { TestDiscordWebhookResponse } from "@/types";
 
 export const POST = withAuth(async (req: NextRequest) => {

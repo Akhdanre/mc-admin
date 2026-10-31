@@ -1,7 +1,8 @@
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { importWorldArchive } from "@/server/world";
-import { withAuth, BadRequestError } from "@/server/core";
+import { withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
 
 const MAX_WORLD_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB
 

@@ -1,7 +1,8 @@
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { listInstalledMods, toggleMod, deleteMod, saveModFile } from "@/server/mods";
-import { withAuth, BadRequestError } from "@/server/core";
+import { withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
 
 function assertSafeModFileName(fileName: string): string {
   const clean = path.basename(fileName);

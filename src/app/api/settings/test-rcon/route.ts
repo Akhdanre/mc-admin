@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Rcon } from "rcon-client";
 import { getAppSettings } from "@/server/settings";
-import { withAuth, BadRequestError } from "@/server/core";
+import { withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
 import type { TestRconResponse, AppSettings } from "@/types";
 
 export const POST = withAuth(async (req: NextRequest) => {

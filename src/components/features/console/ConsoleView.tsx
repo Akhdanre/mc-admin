@@ -44,7 +44,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
     const clean = cmdToRun.trim().replace(/^\//, "");
     if (!clean) return;
 
-    const time = new Date().toTimeString().split(" ")[0];
+    const time = new Date().toTimeString().split(" ")[0] || "00:00:00";
     const userLog: LogItem = {
       id: `cmd-${Date.now()}`,
       time,
@@ -60,7 +60,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
       const lines = response.split("\n").filter(Boolean);
       const responseLogs: LogItem[] = lines.map((line, i) => ({
         id: `resp-${Date.now()}-${i}`,
-        time: new Date().toTimeString().split(" ")[0],
+        time: new Date().toTimeString().split(" ")[0] || "00:00:00",
         level: line.toLowerCase().includes("error") ? "ERROR" : "INFO",
         message: line,
       }));
@@ -71,7 +71,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
         ...prev,
         {
           id: `err-${Date.now()}`,
-          time: new Date().toTimeString().split(" ")[0],
+          time: new Date().toTimeString().split(" ")[0] || "00:00:00",
           level: "ERROR",
           message: `[RCON ERROR]: ${errMsg}`,
         },

@@ -145,7 +145,7 @@ export function extractJarMetadata(buffer: Buffer): JarMetadata {
 export function parseFallbackFromFilename(fileName: string): { name: string; version?: string } {
   const clean = fileName.replace(/\.jar(\.disabled)?$/i, "");
   const parts = clean.split(/[-_](?=\d)/);
-  if (parts.length > 1) {
+  if (parts.length > 1 && parts[0]) {
     return {
       name: parts[0].replace(/[-_]/g, " "),
       version: parts.slice(1).join("-"),

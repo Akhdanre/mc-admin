@@ -10,3 +10,5 @@ export {
   hashPassword,
   verifyPasswordHash,
 } from "./token";
+
+export { withAuth } from "./withAuth";

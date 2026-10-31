@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeRconCommand, getWhitelistStatus } from "@/server/rcon";
-import { withAuth, BadRequestError } from "@/server/core";
+import { withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
 import { whitelistActionSchema } from "@/schemas";
 
 export const GET = withAuth(async () => {
