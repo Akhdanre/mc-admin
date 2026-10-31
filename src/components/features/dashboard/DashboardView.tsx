@@ -40,6 +40,12 @@ const PING_BARS = [
   14, 18, 12, 15, 24, 19, 13, 16, 21, 14, 17, 22, 13, 16, 25, 18, 14, 19, 23, 15, 17, 14, 20, 18,
 ];
 
+function getBarTimeLabel(idx: number, total = 24): string {
+  if (idx === total - 1) return "Now (Live)";
+  const minsAgo = Math.round((total - 1 - idx) * 2.5);
+  return `${minsAgo}m ago`;
+}
+
 function RestartIcon() {
   return (
     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
@@ -393,13 +399,25 @@ export function DashboardView({
             </div>
             <div className="mt-3 relative h-11 flex items-end gap-[3px] border-b border-border/80 pb-1">
               <div className="absolute top-0 inset-x-0 border-t border-dashed border-border" />
-              {TPS_BARS.map((height, idx) => (
-                <div
-                  key={idx}
-                  className="flex-1 bg-emerald-400 rounded-t-xs transition-all hover:bg-emerald-500"
-                  style={{ height: `${height}px` }}
-                />
-              ))}
+              {TPS_BARS.map((height, idx) => {
+                const tpsVal = ((height / 40) * 20).toFixed(1);
+                const timeLabel = getBarTimeLabel(idx, TPS_BARS.length);
+                return (
+                  <div key={idx} className="group relative flex-1 h-full flex items-end">
+                    <div
+                      className="w-full bg-emerald-400 rounded-t-xs transition-all group-hover:bg-emerald-500 cursor-pointer"
+                      style={{ height: `${height}px` }}
+                    />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center pointer-events-none z-30">
+                      <div className="bg-surface border border-border text-heading text-[10px] font-mono py-1 px-1.5 rounded shadow-md whitespace-nowrap leading-tight text-center">
+                        <div className="font-semibold text-emerald-500">{tpsVal} TPS</div>
+                        <div className="text-muted-foreground text-[9px]">{timeLabel}</div>
+                      </div>
+                      <div className="w-1.5 h-1.5 bg-surface border-r border-b border-border rotate-45 -mt-1" />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
@@ -419,13 +437,25 @@ export function DashboardView({
             </div>
             <div className="mt-3 relative h-11 flex items-end gap-[3px] border-b border-border/80 pb-1">
               <div className="absolute top-0 inset-x-0 border-t border-dashed border-danger/40" />
-              {MSPT_BARS.map((height, idx) => (
-                <div
-                  key={idx}
-                  className="flex-1 bg-blue-300 dark:bg-blue-400/80 rounded-t-xs transition-all hover:bg-blue-400"
-                  style={{ height: `${height}px` }}
-                />
-              ))}
+              {MSPT_BARS.map((height, idx) => {
+                const msptVal = height.toFixed(1);
+                const timeLabel = getBarTimeLabel(idx, MSPT_BARS.length);
+                return (
+                  <div key={idx} className="group relative flex-1 h-full flex items-end">
+                    <div
+                      className="w-full bg-blue-300 dark:bg-blue-400/80 rounded-t-xs transition-all group-hover:bg-blue-400 cursor-pointer"
+                      style={{ height: `${height}px` }}
+                    />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center pointer-events-none z-30">
+                      <div className="bg-surface border border-border text-heading text-[10px] font-mono py-1 px-1.5 rounded shadow-md whitespace-nowrap leading-tight text-center">
+                        <div className="font-semibold text-blue-500">{msptVal} ms</div>
+                        <div className="text-muted-foreground text-[9px]">{timeLabel}</div>
+                      </div>
+                      <div className="w-1.5 h-1.5 bg-surface border-r border-b border-border rotate-45 -mt-1" />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
@@ -455,13 +485,25 @@ export function DashboardView({
 
             <div className="mt-3 relative h-11 flex items-end gap-[3px] border-b border-border/80 pb-1">
               <div className="absolute top-0 inset-x-0 border-t border-dashed border-border" />
-              {PING_BARS.map((height, idx) => (
-                <div
-                  key={idx}
-                  className="flex-1 bg-violet-300 dark:bg-violet-400/80 rounded-t-xs transition-all hover:bg-violet-400"
-                  style={{ height: `${height}px` }}
-                />
-              ))}
+              {PING_BARS.map((height, idx) => {
+                const pingVal = height;
+                const timeLabel = getBarTimeLabel(idx, PING_BARS.length);
+                return (
+                  <div key={idx} className="group relative flex-1 h-full flex items-end">
+                    <div
+                      className="w-full bg-violet-300 dark:bg-violet-400/80 rounded-t-xs transition-all group-hover:bg-violet-400 cursor-pointer"
+                      style={{ height: `${height}px` }}
+                    />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center pointer-events-none z-30">
+                      <div className="bg-surface border border-border text-heading text-[10px] font-mono py-1 px-1.5 rounded shadow-md whitespace-nowrap leading-tight text-center">
+                        <div className="font-semibold text-violet-500">{pingVal} ms</div>
+                        <div className="text-muted-foreground text-[9px]">{timeLabel}</div>
+                      </div>
+                      <div className="w-1.5 h-1.5 bg-surface border-r border-b border-border rotate-45 -mt-1" />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
