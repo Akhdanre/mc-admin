@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect, type SubmitEvent } from "react";
+import { useState, useRef, useEffect, useCallback, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 import { apiGet } from "@/lib/api";
+import { usePolling } from "@/hooks/usePolling";
+import { MOCK_CONSOLE_LOGS } from "@/lib/mockData";
 import type { ConsoleLogsResponse, ConsoleLogItem } from "@/types";
-
 export interface ConsoleViewProps {
   onExecuteCommand: (command: string) => Promise<string>;
   isBusy: boolean;
@@ -18,8 +19,36 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
   const [levelFilter, setLevelFilter] = useState<"ALL" | "INFO" | "WARN" | "ERROR">("ALL");
   const [isPaused, setIsPaused] = useState(false);
   const [logs, setLogs] = useState<LogItem[]>([]);
+  const [isConnected, setIsConnected] = useState(true);
 
   const terminalRef = useRef<HTMLDivElement>(null);
+  const fetchLogs = useCallback(async () => {
+    try {
+      const data = await apiGet<ConsoleLogsResponse>("/api/logs");
+      if (Array.isArray(data?.logs) && data.logs.length > 0) {
+        setLogs(data.logs);
+        setIsConnected(true);
+      }
+    } catch {
+      // Fallback to mock logs if offline
+      setLogs((prev) => {
+        if (prev.length > 0) return prev;
+        return MOCK_CONSOLE_LOGS.map((raw, idx) => {
+          const match = raw.match(/\[(\d{2}:\d{2}:\d{2})\s+([A-Z]+)\]:\s+(.*)/);
+          return {
+            id: `mock-log-${idx}`,
+            time: match?.[1] || "00:00:00",
+            level: (match?.[2] as LogItem["level"]) || "INFO",
+            message: match?.[3] || raw,
+          };
+        });
+      });
+      setIsConnected(false);
+    }
+  }, []);
+
+  // Poll logs periodically as fallback when SSE is idle
+  usePolling(fetchLogs, isConnected ? 10000 : 4000);
 
   // Fetch initial logs and stream live log events via SSE
   useEffect(() => {
@@ -27,15 +56,35 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
 
     apiGet<ConsoleLogsResponse>("/api/logs")
       .then((data) => {
-        if (active && Array.isArray(data?.logs) && data.logs.length > 0) {
+        if (!active) return;
+        if (Array.isArray(data?.logs) && data.logs.length > 0) {
           setLogs(data.logs);
+          setIsConnected(true);
         }
       })
-      .catch(() => {});
-
+      .catch(() => {
+        if (!active) return;
+        setLogs((prev) => {
+          if (prev.length > 0) return prev;
+          return MOCK_CONSOLE_LOGS.map((raw, idx) => {
+            const match = raw.match(/\[(\d{2}:\d{2}:\d{2})\s+([A-Z]+)\]:\s+(.*)/);
+            return {
+              id: `mock-log-${idx}`,
+              time: match?.[1] || "00:00:00",
+              level: (match?.[2] as LogItem["level"]) || "INFO",
+              message: match?.[3] || raw,
+            };
+          });
+        });
+        setIsConnected(false);
+      });
     let eventSource: EventSource | null = null;
     try {
       eventSource = new EventSource("/api/logs/stream");
+
+      eventSource.onopen = () => {
+        if (active) setIsConnected(true);
+      };
 
       eventSource.onmessage = (event) => {
         if (!active) return;
@@ -46,20 +95,25 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
               const next = [...prev, item];
               return next.length > 3000 ? next.slice(-2000) : next;
             });
+            setIsConnected(true);
           }
         } catch {
           // Keep-alive or unparseable event
         }
       };
+
+      eventSource.onerror = () => {
+        if (active) setIsConnected(false);
+      };
     } catch {
-      // EventSource unavailable
+      // EventSource construction error
     }
 
     return () => {
       active = false;
       if (eventSource) eventSource.close();
     };
-  }, []);
+  }, [fetchLogs]);
 
   useEffect(() => {
     if (!isPaused && terminalRef.current) {
@@ -152,13 +206,24 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success-surface text-success border border-success-border">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-            RCON Socket Connected
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
+              isConnected
+                ? "bg-success-surface text-success border-success-border"
+                : "bg-warning-surface text-warning border-warning-border"
+            )}
+          >
+            <span
+              className={cn(
+                "w-1.5 h-1.5 rounded-full",
+                isConnected ? "bg-success animate-pulse" : "bg-warning"
+              )}
+            />
+            {isConnected ? "RCON Socket Connected" : "Stream Connecting..."}
           </span>
         </div>
       </div>
-
       {/* Console Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 bg-surface border border-border p-2 rounded-xl">
         <div className="inline-flex items-center gap-1.5 select-none">
