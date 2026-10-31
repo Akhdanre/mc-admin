@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Sidebar, type AdminTab } from "@/components/layout/Sidebar";
 import { DashboardOverview } from "@/components/features/dashboard/DashboardOverview";
-import { UserManagement } from "@/components/features/users/UserManagement";
+import { OnlinePlayersView } from "@/components/features/users/OnlinePlayersView";
+import { AccessControlView } from "@/components/features/users/AccessControlView";
+import { TelemetryView } from "@/components/features/telemetry/TelemetryView";
 import { WorldControls } from "@/components/features/world/WorldControls";
 import { LiveMap } from "@/components/features/world/LiveMap";
 import { ConsoleView } from "@/components/features/console/ConsoleView";
@@ -20,13 +22,13 @@ const TAB_LABELS: Record<AdminTab, string> = {
   commands: "Console & Logs",
   chat: "Live Chat",
   users: "Online Players",
-  whitelist: "Whitelist",
-  map: "Live Web Map",
+  whitelist: "Access Control",
+  map: "Live World Map",
   world: "World & Environment",
   mods: "Mods & Addons",
   backups: "Backups & Restore",
   telemetry: "Host Telemetry",
-  settings: "Settings",
+  settings: "Settings & Configuration",
 };
 
 export default function Home() {
@@ -76,59 +78,48 @@ export default function Home() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navbar */}
-        <header className="h-16 px-6 border-b border-border bg-surface/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-3">
+        {/* Mobile Header Bar */}
+        <div className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 h-14 border-b border-border bg-surface/95 backdrop-blur-md">
+          <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-surface-raised cursor-pointer"
+              className="w-11 h-11 -ml-2 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-raised cursor-pointer transition-colors"
+              aria-label="Open navigation menu"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <div className="flex items-center gap-2">
-              <span className="text-overline uppercase font-mono text-muted-foreground">
-                Active View:
-              </span>
-              <span className="text-sm font-semibold text-heading capitalize">{TAB_LABELS[currentTab]}</span>
-            </div>
+            <span className="text-sm font-semibold text-heading">Pulse MC</span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-xs font-mono px-3 py-1 bg-overlay/80 border border-border rounded-lg text-foreground">
-              <span className="text-muted-foreground">Host:</span>
-              <span>{serverInfo.host || "Connecting..."}</span>
-              <span className="text-slate-600">:</span>
-              <span>{serverInfo.port || 25575}</span>
-            </div>
-
-            <button
-              onClick={refresh}
-              disabled={isRefreshing}
-              className="p-2 text-muted-foreground hover:text-foreground bg-overlay/80 border border-border rounded-lg hover:border-border-strong transition cursor-pointer"
-              title="Refresh status"
+          <button
+            type="button"
+            onClick={refresh}
+            disabled={isRefreshing}
+            className="w-11 h-11 -mr-2 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-raised transition cursor-pointer"
+            title="Refresh status"
+            aria-label="Refresh status"
+          >
+            <svg
+              className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <svg
-                className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </button>
-
-          </div>
-        </header>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
+        </div>
 
         {/* Dynamic Main Body Content */}
-        <main className="flex-1 p-6 lg:p-8 max-w-6xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0">
           {/* Notification Feedback Toast */}
           {feedback && (
             <div
@@ -157,39 +148,29 @@ export default function Home() {
               playerStatus={playerStatus}
               whitelistStatus={whitelistStatus}
               serverInfo={serverInfo}
+              backupStatus={backupStatus}
+              playerLocations={playerLocations}
               playerHistory={playerHistory}
               onRefresh={refresh}
               isRefreshing={isRefreshing}
               onNavigateTab={(tab) => setCurrentTab(tab)}
+              onExecuteCommand={handleExecuteCommand}
+            />
+          )}
+          {currentTab === "users" && (
+            <OnlinePlayersView
+              livePlayers={playerStatus.players}
+              onRefresh={refresh}
+              isRefreshing={isRefreshing}
             />
           )}
 
-          {(currentTab === "users" || currentTab === "whitelist") && (
-            <UserManagement
-              key={currentTab}
-              onlinePlayers={playerStatus.players}
-              playerLocations={playerLocations}
-              whitelistedPlayers={whitelistStatus.players}
-              whitelistError={whitelistStatus.error}
-              playerHistory={playerHistory}
-              onWhitelistAction={handleWhitelistAction}
-              onExecuteCommand={handleExecuteCommand}
-              onTeleport={handleTeleport}
-              isBusy={isBusy}
-              initialTab={currentTab === "whitelist" ? "whitelist" : "online"}
-            />
+          {currentTab === "whitelist" && (
+            <AccessControlView onWhitelistAction={handleWhitelistAction} />
           )}
 
           {currentTab === "telemetry" && (
-            <DashboardOverview
-              playerStatus={playerStatus}
-              whitelistStatus={whitelistStatus}
-              serverInfo={serverInfo}
-              playerHistory={playerHistory}
-              onRefresh={refresh}
-              isRefreshing={isRefreshing}
-              onNavigateTab={(tab) => setCurrentTab(tab)}
-            />
+            <TelemetryView onRefresh={refresh} isRefreshing={isRefreshing} />
           )}
 
           {currentTab === "world" && (

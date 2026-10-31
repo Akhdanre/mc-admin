@@ -211,7 +211,7 @@ export function Sidebar({
         },
         {
           id: "whitelist",
-          label: "Whitelist",
+          label: "Access Control",
           icon: () => <WhitelistIcon />,
           badge: whitelistCount > 0 ? whitelistCount : null,
         },
@@ -288,7 +288,7 @@ export function Sidebar({
           <button
             type="button"
             onClick={onCloseMobile}
-            className="md:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-raised cursor-pointer"
+            className="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-raised cursor-pointer transition-colors"
             aria-label="Close sidebar"
           >
             ✕
@@ -315,7 +315,7 @@ export function Sidebar({
                     onCloseMobile();
                   }}
                   className={cn(
-                    "w-full h-9 flex items-center justify-between px-2.5 rounded-md text-[13px] font-normal transition-colors cursor-pointer text-left",
+                    "w-full h-10 sm:h-9 flex items-center justify-between px-2.5 rounded-md text-[13px] font-normal transition-colors cursor-pointer text-left active:scale-[0.99]",
                     isActive
                       ? "bg-[#eff6ff] dark:bg-primary/15 text-[#2656c8] dark:text-primary-muted font-medium"
                       : "text-foreground hover:bg-surface-raised hover:text-heading"
@@ -374,7 +374,7 @@ export function Sidebar({
             onClick={handleSignOut}
             title="Sign out"
             aria-label="Sign out"
-            className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-danger-foreground hover:bg-danger-surface transition-colors cursor-pointer shrink-0"
+            className="w-9 h-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-danger-foreground hover:bg-danger-surface transition-colors cursor-pointer shrink-0 active:scale-95"
           >
             <SignOutIcon />
           </button>
