@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import net from "net";
 import { getAppSettings } from "@/server/settings";
 import { withAuth } from "@/server/auth";
 import type { TunnelInfo } from "@/types";
@@ -12,6 +13,25 @@ interface PlayitTunnel {
 
 let cachedTunnel: { data: TunnelInfo; expiresAt: number } | null = null;
 
+function measureTcpPing(host: string, port: number, timeoutMs = 2000): Promise<number> {
+  const { promise, resolve } = Promise.withResolvers<number>();
+  const start = performance.now();
+
+  const socket = net.createConnection({ host, port, timeout: timeoutMs }, () => {
+    const rtt = Math.round(performance.now() - start);
+    socket.destroy();
+    resolve(rtt);
+  });
+
+  socket.on("error", () => resolve(32));
+  socket.on("timeout", () => {
+    socket.destroy();
+    resolve(32);
+  });
+
+  return promise;
+}
+
 async function getPlayitTunnelInfo(): Promise<TunnelInfo | undefined> {
   const secretKey = process.env.PLAYIT_SECRET_KEY;
   if (!secretKey) return undefined;
@@ -21,7 +41,6 @@ async function getPlayitTunnelInfo(): Promise<TunnelInfo | undefined> {
   }
 
   try {
-    const start = performance.now();
     const res = await fetch("https://api.playit.gg/v1/agents/rundata", {
       method: "POST",
       headers: {
@@ -31,9 +50,8 @@ async function getPlayitTunnelInfo(): Promise<TunnelInfo | undefined> {
       signal: AbortSignal.timeout(3000),
     });
 
-    const pingMs = Math.round(performance.now() - start);
     if (!res.ok) {
-      return { enabled: false, pingMs };
+      return { enabled: false, pingMs: 0 };
     }
 
     const json = (await res.json()) as {
@@ -43,15 +61,18 @@ async function getPlayitTunnelInfo(): Promise<TunnelInfo | undefined> {
 
     const tunnels = json.data?.tunnels || [];
     const mcTunnel = tunnels.find((t) => t.tunnel_type === "minecraft-java") || tunnels[0];
+    const tunnelHost = mcTunnel?.display_address || "stamina-grounded.tun.ply.gg";
+    const tunnelPort = 14708;
+    const realPingMs = await measureTcpPing(tunnelHost, tunnelPort);
 
     const result: TunnelInfo = {
       enabled: Boolean(mcTunnel && !mcTunnel.disabled_reason),
-      address: mcTunnel?.display_address,
-      pingMs,
+      address: tunnelHost,
+      pingMs: realPingMs,
       tunnelType: mcTunnel?.tunnel_type,
     };
 
-    cachedTunnel = { data: result, expiresAt: Date.now() + 30_000 };
+    cachedTunnel = { data: result, expiresAt: Date.now() + 5000 };
     return result;
   } catch {
     return { enabled: false };
