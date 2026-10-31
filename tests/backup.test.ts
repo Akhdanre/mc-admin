@@ -1,13 +1,13 @@
 import { describe, expect, it } from "bun:test";
-import { startBackupScheduler } from "@/server/data/backups";
 import {
+  startBackupScheduler,
   getMsUntilTargetHour,
   formatSize,
   buildArchiveName,
   isBackupArchive,
   isSafeFilename,
   DEFAULT_RETENTION_DAYS,
-} from "@/server/domain/parse/backup";
+} from "@/server/backup";
 
 describe("backup scheduler", () => {
   it("calculates positive delay until target hour", () => {

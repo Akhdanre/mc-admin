@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getBackupStatus, triggerBackup, deleteBackup, setRetention, restoreBackup } from "@/server/data/backups";
+import { getBackupStatus, triggerBackup, deleteBackup, setRetention, restoreBackup } from "@/server/backup";
 
 interface BackupActionBody {
   action?: "trigger" | "delete" | "retention" | "restore";

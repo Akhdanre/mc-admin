@@ -3,7 +3,7 @@ export async function register() {
     // Dynamic import required by Next.js instrumentation to isolate Node.js runtime APIs
     const { startChatTailer } = await import("@/server/data/logs/tailer");
     const { startDiscordBot } = await import("@/server/integrations/discordBot");
-    const { startBackupScheduler } = await import("@/server/data/backups");
+    const { startBackupScheduler } = await import("@/server/backup");
 
     startChatTailer();
     startDiscordBot();

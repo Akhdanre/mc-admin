@@ -4,7 +4,7 @@ import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { config } from "@/server/config";
-import { triggerBackup } from "@/server/data/backups";
+import { triggerBackup } from "@/server/backup";
 
 const execAsync = promisify(exec);
 
