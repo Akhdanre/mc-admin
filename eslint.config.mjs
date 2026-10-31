@@ -42,6 +42,7 @@ const eslintConfig = defineConfig([
           patterns: [
             {
               group: [
+                "@/server/access*",
                 "@/server/auth*",
                 "@/server/backup*",
                 "@/server/chat*",

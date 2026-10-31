@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeRconCommand, getWhitelistStatus } from "@/server/rcon";
+import { getAccessControlData } from "@/server/access";
 import { withAuth } from "@/server/auth";
 import { BadRequestError } from "@/server/core";
 import { whitelistActionSchema } from "@/schemas";
 
 export const GET = withAuth(async () => {
-  const status = await getWhitelistStatus();
-  return NextResponse.json(status);
+  const [status, accessData] = await Promise.all([
+    getWhitelistStatus(),
+    getAccessControlData().catch(() => null),
+  ]);
+  return NextResponse.json({ ...status, accessData });
 });
 
 export const POST = withAuth(async (req: NextRequest) => {

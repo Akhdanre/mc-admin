@@ -304,6 +304,34 @@ export interface IpBanEntry {
   country?: string;
 }
 
+export interface AccessControlData {
+  whitelist: WhitelistEntry[];
+  whitelistEnforced: boolean;
+  bans: BanEntry[];
+  ipBans: IpBanEntry[];
+  updatedAt?: string;
+}
+
+export type AccessControlAction =
+  | "add"
+  | "remove"
+  | "reload"
+  | "on"
+  | "off"
+  | "ban"
+  | "unban"
+  | "ban-ip"
+  | "unban-ip"
+  | "op"
+  | "deop";
+
+export interface AccessControlRequestBody {
+  action: AccessControlAction;
+  username?: string;
+  reason?: string;
+  ip?: string;
+}
+
 export interface GameruleItem {
   id: string;
   name: string;

@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 export const commandSchema = z.object({
-  command: z.string().trim().min(1, "Command cannot be empty").max(2000, "Command exceeds maximum length"),
+  command: z
+    .string()
+    .trim()
+    .min(1, "Command cannot be empty")
+    .max(2000, "Command exceeds maximum length"),
 });
 
 export const loginSchema = z.object({
@@ -36,7 +40,32 @@ export const backupActionSchema = z.object({
 
 export const whitelistActionSchema = z.object({
   action: z.enum(["add", "remove", "reload", "on", "off"]),
-  username: z.string().regex(/^[a-zA-Z0-9_]{1,16}$/, "Invalid Minecraft username").optional(),
+  username: z
+    .string()
+    .regex(/^[a-zA-Z0-9_]{1,16}$/, "Invalid Minecraft username")
+    .optional(),
+});
+
+export const accessControlActionSchema = z.object({
+  action: z.enum([
+    "add",
+    "remove",
+    "reload",
+    "on",
+    "off",
+    "ban",
+    "unban",
+    "ban-ip",
+    "unban-ip",
+    "op",
+    "deop",
+  ]),
+  username: z
+    .string()
+    .regex(/^[a-zA-Z0-9_]{1,16}$/, "Invalid Minecraft username")
+    .optional(),
+  reason: z.string().max(255).optional(),
+  ip: z.string().max(64).optional(),
 });
 
 export const sendChatSchema = z.object({
@@ -45,7 +74,10 @@ export const sendChatSchema = z.object({
 
 export const teleportSchema = z.object({
   player: z.string().regex(/^[a-zA-Z0-9_]{1,16}$/, "Invalid player username"),
-  targetPlayer: z.string().regex(/^[a-zA-Z0-9_]{1,16}$/, "Invalid target player").optional(),
+  targetPlayer: z
+    .string()
+    .regex(/^[a-zA-Z0-9_]{1,16}$/, "Invalid target player")
+    .optional(),
   x: z.number().optional(),
   y: z.number().optional(),
   z: z.number().optional(),
