@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPlayerHistory } from "@/server/data/logs/tracker";
+import { getPlayerHistory } from "@/server/players";
 import { getPlayerStatus } from "@/server/rcon";
 
 export async function GET() {

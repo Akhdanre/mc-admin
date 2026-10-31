@@ -5,7 +5,7 @@ import {
   parseDimension,
   buildPlayerLocation,
   isValidUsername,
-} from "@/server/domain/parse/location";
+} from "@/server/players";
 
 describe("parser service", () => {
   it("parses standard Minecraft player list output", () => {

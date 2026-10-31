@@ -1,6 +1,6 @@
 import "server-only";
 import { executeRconCommand } from "@/server/rcon";
-import { buildPlayerLocation, isValidUsername } from "@/server/domain/parse/location";
+import { buildPlayerLocation, isValidUsername } from "./parse";
 import type { PlayerLocation } from "@/types";
 
 export async function getPlayerLocation(username: string): Promise<PlayerLocation | null> {
