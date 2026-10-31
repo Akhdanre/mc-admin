@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { importWorldArchive } from "@/server/data/world";
+import { importWorldArchive } from "@/server/world";
 
 export async function POST(request: Request) {
   try {

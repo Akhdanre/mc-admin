@@ -71,7 +71,6 @@ export async function importWorldArchive(
 
     // 2. Extract into tempDir
     if (isZip) {
-      // Use unzip command or bun/python/tar
       await execAsync(`unzip -q -o "${archivePath}" -d "${tempDir}/extracted"`, { timeout: 300000 });
     } else {
       await fs.mkdir(path.join(tempDir, "extracted"), { recursive: true });
