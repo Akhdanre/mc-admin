@@ -43,12 +43,11 @@
   --subtle-foreground: var(--color-slate-500);
   --faint-foreground: var(--color-slate-400);
 
-  /* ---------- Brand / primary (indigo) ---------- */
-  --primary: var(--color-indigo-600);
-  --primary-hover: var(--color-indigo-500);
-  --primary-foreground: var(--color-white);
-  --primary-muted: var(--color-indigo-600);
-
+  /* ---------- Brand / primary (Penpot Blue #2656c8) ---------- */
+  --primary: #2656C8;
+  --primary-hover: #1E46A6;
+  --primary-foreground: #FFFFFF;
+  --primary-muted: #2656C8;
   /* ---------- Statuses (light — from Penpot `Theme/Light` tokens) ---------- */
   /* muted = solid, foreground = *.text, surface = *.bg, border = *.border */
   --success: #1A7F4B; /* status.success.solid */
@@ -97,12 +96,11 @@
   --subtle-foreground: var(--color-slate-500);
   --faint-foreground: var(--color-slate-600);
 
-  /* ---------- Brand / primary (indigo) ---------- */
-  --primary: var(--color-indigo-600);
-  --primary-hover: var(--color-indigo-500);
-  --primary-foreground: var(--color-white);
-  --primary-muted: var(--color-indigo-400);
-
+  /* ---------- Brand / primary (Penpot Blue #2656c8) ---------- */
+  --primary: #3B72F2;
+  --primary-hover: #2656C8;
+  --primary-foreground: #FFFFFF;
+  --primary-muted: #60A5FA;
   /* ---------- Statuses (dark — from Penpot `Theme/Dark` tokens) ---------- */
   --success: #4CC38A; /* status.success.solid */
   --success-muted: #4CC38A; /* status.success.solid */
@@ -131,7 +129,7 @@
   --info-border: #11525E; /* derived from #0B7285 (darkened) */
 
   /* ---------- Focus ring ---------- */
-  --ring: var(--color-indigo-500);
+  --ring: #2656C8;
 }
 
 @theme inline {
