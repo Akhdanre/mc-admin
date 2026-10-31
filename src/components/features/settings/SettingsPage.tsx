@@ -142,7 +142,7 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
             <span className="text-xs font-semibold text-heading">
               Docker: mc-server (itzg/minecraft-server)
             </span>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               RUNNING
             </span>
           </div>
@@ -167,15 +167,13 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
         <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-4">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-overline text-muted-foreground uppercase">
                 SERVER ENVIRONMENT & RESTART ENGINE
               </span>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-primary/10 text-primary border border-primary/20">
                 8 GB Heap
               </span>
             </div>
-
-            {/* Input 1 */}
             <div>
               <label className="text-xs text-muted-foreground block mb-1">
                 Server Port & Bind Address
@@ -205,7 +203,7 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
             <div>
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                 <span>Scheduled Daily Auto-Restart</span>
-                <span className="text-[11px] text-subtle-foreground font-mono">
+                <span className="text-xs text-subtle-foreground font-mono">
                   Recommended for Forge 1.20.1
                 </span>
               </div>
@@ -251,7 +249,7 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
         <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-4">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-overline text-muted-foreground uppercase">
                 RCON BRIDGE & PANEL SECURITY
               </span>
             </div>
@@ -328,15 +326,13 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
         <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-4">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-overline text-muted-foreground uppercase">
                 BACKUP AUTOMATION & RETENTION RULES
               </span>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 Active Schedule
               </span>
             </div>
-
-            {/* Daily Execution Time */}
             <div>
               <label className="text-xs text-muted-foreground block mb-1">
                 Daily Backup Execution Time
@@ -395,7 +391,7 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
                   <span className="text-muted-foreground">Days ▾</span>
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1 font-mono">
+              <p className="text-xs text-muted-foreground mt-1 font-mono">
                 ℹ Auto-deletes archives older than {retentionDays * 24} hours
               </p>
             </div>

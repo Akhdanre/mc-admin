@@ -232,7 +232,7 @@ export function ChatPage() {
               <span>{tab.label}</span>
               <span
                 className={cn(
-                  "text-[10px] font-mono px-1 rounded",
+                  "text-overline font-mono px-1 rounded",
                   selectedChannel === tab.id ? "bg-background/20 text-background" : "bg-surface-raised text-muted-foreground"
                 )}
               >
@@ -244,11 +244,11 @@ export function ChatPage() {
 
         {/* Chat Utilities */}
         <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
             Discord Bridge Active
           </div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-heading text-background font-mono shadow-xs">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-heading text-background font-mono shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             Live Stream
           </div>
@@ -269,27 +269,27 @@ export function ChatPage() {
               filteredMessages.map((msg) => (
                 <div key={msg.id} className="flex items-center gap-2.5 py-1.5 px-1 hover:bg-surface-raised/40 rounded transition-colors group">
                   {/* Timestamp */}
-                  <span className="text-[11px] text-muted-foreground shrink-0 w-11 select-none">
+                  <span className="text-xs font-mono text-muted-foreground shrink-0 w-11 select-none">
                     {msg.timestamp}
                   </span>
 
                   {/* Author Tag */}
                   <div className="shrink-0 flex items-center gap-1">
                     {msg.role === "bot" ? (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
                         <span>{msg.sender}</span>
-                        <span className="text-[9px] bg-indigo-500 text-white dark:text-slate-950 px-1 rounded font-bold">BOT</span>
+                        <span className="text-overline bg-indigo-500 text-white dark:text-slate-950 px-1 rounded font-bold">BOT</span>
                       </span>
                     ) : msg.role === "server" ? (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                         {msg.sender}
                       </span>
                     ) : msg.role === "admin" ? (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
                         {msg.sender}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                         {msg.sender}
                       </span>
                     )}
@@ -342,7 +342,7 @@ export function ChatPage() {
             {/* Panel Header */}
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-heading">Active In Chat</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
                 4 online
               </span>
             </div>
@@ -358,7 +358,7 @@ export function ChatPage() {
                     <span className={cn("w-2 h-2 rounded-full", p.dotColor)} />
                     <span className="font-semibold text-heading truncate">{p.name}</span>
                   </div>
-                  <span className="text-[11px] font-mono text-muted-foreground">{p.role}</span>
+                  <span className="text-xs font-mono text-muted-foreground">{p.role}</span>
                 </div>
               ))}
             </div>
@@ -366,7 +366,7 @@ export function ChatPage() {
 
           {/* Chat Moderation Box */}
           <div className="p-3 rounded-lg bg-surface-raised/50 border border-border space-y-2">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+            <span className="text-overline text-muted-foreground uppercase block">
               Chat Moderation
             </span>
 

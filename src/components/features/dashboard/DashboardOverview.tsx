@@ -221,7 +221,7 @@ export function DashboardOverview({
           <button
             type="button"
             onClick={() => handleAction("/restart", "Restart Server")}
-            className="h-9 sm:h-8 px-3 rounded-md text-xs font-semibold bg-[#eff6ff] hover:bg-[#dbeafe] text-[#2656c8] border border-[#dbeafe] transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs flex-1 sm:flex-initial active:scale-[0.98]"
+            className="h-8 px-3 rounded-md bg-primary/10 hover:bg-primary/20 text-primary-muted border border-primary/20 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
           >
             <RestartIcon />
             <span>Restart Server (60s)</span>
@@ -251,12 +251,12 @@ export function DashboardOverview({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Online Players */}
         <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+          <div className="text-overline text-muted-foreground uppercase">
             ONLINE PLAYERS
           </div>
-          <div className="text-2xl font-semibold text-heading mt-2">
+          <div className="text-2xl font-semibold text-heading font-mono mt-2">
             {playerStatus.onlineCount}{" "}
-            <span className="text-sm font-normal text-subtle-foreground">
+            <span className="text-sm font-normal text-subtle-foreground font-sans">
               / {playerStatus.maxCount || 20}
             </span>
           </div>
@@ -266,34 +266,34 @@ export function DashboardOverview({
               style={{ width: `${capacityPercent}%` }}
             />
           </div>
-          <div className="text-[11px] text-subtle-foreground truncate">
+          <div className="text-xs text-subtle-foreground truncate">
             {capacityPercent}% Capacity · {whitelistStatus.players.length} Whitelisted
           </div>
         </div>
 
         {/* Card 2: JVM Heap Memory */}
         <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+          <div className="text-overline text-muted-foreground uppercase">
             JVM HEAP MEMORY
           </div>
-          <div className="text-2xl font-semibold text-heading mt-2">
+          <div className="text-2xl font-semibold text-heading font-mono mt-2">
             3.2{" "}
-            <span className="text-sm font-normal text-subtle-foreground">/ 8.0 GB</span>
+            <span className="text-sm font-normal text-subtle-foreground font-sans">/ 8.0 GB</span>
           </div>
           <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
             <div className="bg-blue-500 h-full rounded-full" style={{ width: "40%" }} />
           </div>
-          <div className="text-[11px] text-subtle-foreground truncate">
+          <div className="text-xs text-subtle-foreground truncate">
             40% · Aikar G1GC 14ms avg
           </div>
         </div>
 
         {/* Card 3: Engine Performance */}
         <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+          <div className="text-overline text-muted-foreground uppercase">
             ENGINE PERFORMANCE
           </div>
-          <div className="text-2xl font-semibold text-heading mt-2">
+          <div className="text-2xl font-semibold text-heading font-mono mt-2">
             {isOnline ? "19.8 TPS" : "0.0 TPS"}
           </div>
           <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
@@ -302,17 +302,17 @@ export function DashboardOverview({
               style={{ width: isOnline ? "99%" : "0%" }}
             />
           </div>
-          <div className="text-[11px] text-subtle-foreground truncate">
+          <div className="text-xs text-subtle-foreground truncate">
             14.2 ms MSPT (Budget 50ms)
           </div>
         </div>
 
         {/* Card 4: World & Storage */}
         <div className="bg-surface border border-border rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+          <div className="text-overline text-muted-foreground uppercase">
             WORLD & STORAGE
           </div>
-          <div className="text-2xl font-semibold text-heading mt-2">
+          <div className="text-2xl font-semibold text-heading font-mono mt-2">
             {backupStatus?.totalSizeFormatted
               ? `${backupStatus.totalSizeFormatted} NVMe`
               : "18.4 GB NVMe"}
@@ -320,7 +320,7 @@ export function DashboardOverview({
           <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
             <div className="bg-indigo-500 h-full rounded-full" style={{ width: "55%" }} />
           </div>
-          <div className="text-[11px] text-subtle-foreground truncate">
+          <div className="text-xs text-subtle-foreground truncate">
             1,030 chunks · {backupStatus?.totalCount ?? 0} Backups stored
           </div>
         </div>
@@ -341,7 +341,7 @@ export function DashboardOverview({
                 className={cn(
                   "px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer",
                   timeframe === tf
-                    ? "bg-[#2656c8] text-white shadow-xs font-semibold"
+                    ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -371,7 +371,7 @@ export function DashboardOverview({
               ))}
             </div>
 
-            <div className="flex items-center justify-between text-[10px] mt-1.5 text-muted-foreground font-mono">
+            <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
               <span className="text-subtle-foreground font-sans">Engine Loop</span>
               <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
@@ -396,7 +396,7 @@ export function DashboardOverview({
               ))}
             </div>
 
-            <div className="flex items-center justify-between text-[10px] mt-1.5 text-muted-foreground font-mono">
+            <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
               <span className="text-subtle-foreground font-sans">Tick Calculation</span>
               <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
@@ -421,7 +421,7 @@ export function DashboardOverview({
               ))}
             </div>
 
-            <div className="flex items-center justify-between text-[10px] mt-1.5 text-muted-foreground font-mono">
+            <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
               <span className="text-subtle-foreground font-sans">Tunnel Route Ingress</span>
               <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
@@ -442,7 +442,7 @@ export function DashboardOverview({
               <button
                 type="button"
                 onClick={() => onNavigateTab("users")}
-                className="text-xs font-semibold text-[#2656c8] hover:underline cursor-pointer"
+                className="text-xs font-semibold text-primary hover:text-primary-hover hover:underline cursor-pointer"
               >
                 View all players →
               </button>
@@ -458,7 +458,7 @@ export function DashboardOverview({
               <div className="py-10 text-center">
                 <span className="text-2xl">😴</span>
                 <p className="text-xs font-medium text-heading mt-2">No players online</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Server is idle and ready for incoming player connections.
                 </p>
               </div>
@@ -492,21 +492,21 @@ export function DashboardOverview({
                           <span className="font-semibold text-heading truncate block leading-tight">
                             {name}
                           </span>
-                          <span className="text-[10px] text-muted-foreground leading-tight">
+                          <span className="text-xs text-muted-foreground leading-tight">
                             Member
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 sm:gap-2.5 pl-9 sm:pl-0 flex-wrap sm:flex-nowrap shrink-0">
-                        <span className="px-2 py-0.5 rounded bg-surface-raised text-[10px] text-muted-foreground font-mono">
+                        <span className="px-2 py-0.5 rounded bg-surface-raised text-xs text-muted-foreground font-mono">
                           {locLabel}
                         </span>
-                        <span className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+                        <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           24ms
                         </span>
-                        <span className="text-[11px] text-muted-foreground font-mono">
+                        <span className="text-xs text-muted-foreground font-mono">
                           Online
                         </span>
                       </div>
@@ -526,7 +526,7 @@ export function DashboardOverview({
               <button
                 type="button"
                 onClick={() => onNavigateTab("commands")}
-                className="text-xs font-semibold text-[#2656c8] hover:underline cursor-pointer"
+                className="text-xs font-semibold text-primary hover:text-primary-hover hover:underline cursor-pointer"
               >
                 Open Live Console →
               </button>
@@ -541,16 +541,16 @@ export function DashboardOverview({
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="shrink-0">{evt.icon}</span>
-                    <span className="text-heading truncate font-normal text-xs sm:text-[13px]">{evt.text}</span>
+                    <span className="text-heading truncate font-normal text-xs sm:text-sm">{evt.text}</span>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 pl-6 sm:pl-0 justify-between sm:justify-end">
-                    <span className="text-[11px] text-muted-foreground font-mono">
+                    <span className="text-xs text-muted-foreground font-mono">
                       {evt.time}
                     </span>
                     <span
                       className={cn(
-                        "px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono font-semibold uppercase border leading-none",
+                        "px-1.5 py-0.5 rounded-[3px] text-overline font-mono uppercase border leading-none",
                         evt.tagTone
                       )}
                     >

@@ -45,7 +45,7 @@ export function ProgressGauge({
         />
       </div>
       {showPercent && (
-        <span className="text-[11px] font-mono text-muted-foreground w-8 text-right">
+        <span className="text-xs font-mono text-muted-foreground w-8 text-right">
           {clamped}%
         </span>
       )}

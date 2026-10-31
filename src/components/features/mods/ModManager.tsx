@@ -206,11 +206,11 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
                     <div>
                       <div className="font-semibold text-heading flex items-center gap-2">
                         <span>{mod.name}</span>
-                        <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-surface-raised border border-border text-subtle-foreground uppercase">
+                        <span className="text-overline font-mono px-1 py-0.2 rounded bg-surface-raised border border-border text-subtle-foreground uppercase">
                           {mod.type}
                         </span>
                       </div>
-                      <div className="text-[11px] text-muted-foreground truncate max-w-xs mt-0.5">
+                      <div className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">
                         {mod.description}
                       </div>
                     </div>
@@ -240,7 +240,7 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
                       />
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded text-[10px] font-semibold border uppercase",
+                          "px-2 py-0.5 rounded text-overline font-semibold border uppercase",
                           mod.enabled
                             ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                             : "bg-slate-500/10 text-slate-500 border-slate-500/20"

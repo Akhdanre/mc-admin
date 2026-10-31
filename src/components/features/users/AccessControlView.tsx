@@ -155,7 +155,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
                 <div className="text-xs font-semibold text-heading">
                   Whitelist Enforcement: {whitelistEnforced ? "ENABLED" : "DISABLED"}
                 </div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   Only players on the whitelist or with bypass permission can connect.
                 </div>
               </div>
@@ -222,7 +222,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="font-mono text-[11px] text-muted-foreground truncate max-w-[200px] inline-block">
+                      <span className="font-mono text-xs text-muted-foreground truncate max-w-[200px] inline-block">
                         {item.uuid}
                       </span>
                     </TableCell>
@@ -234,7 +234,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
                     </TableCell>
                     <TableCell>
                       {item.isOp ? (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                        <span className="px-1.5 py-0.5 rounded text-overline uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
                           Operator
                         </span>
                       ) : (
@@ -337,7 +337,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
                     <TableCell>
                       <span
                         className={cn(
-                          "px-1.5 py-0.2 rounded text-[10px] font-semibold border uppercase",
+                          "px-1.5 py-0.2 rounded text-overline border uppercase",
                           ban.expires === "Permanent"
                             ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
                             : "bg-amber-500/10 text-amber-500 border-amber-500/20"
@@ -420,7 +420,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
                       <span className="text-xs font-mono text-subtle-foreground">{ipEntry.bannedAt}</span>
                     </TableCell>
                     <TableCell>
-                      <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-surface-raised border border-border">
+                      <span className="px-1.5 py-0.2 rounded text-overline font-mono bg-surface-raised border border-border">
                         {ipEntry.country || "Global"}
                       </span>
                     </TableCell>

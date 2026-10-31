@@ -131,7 +131,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             RCON Socket Connected
           </span>
@@ -185,7 +185,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
         {/* Terminal output */}
         <div
           ref={terminalRef}
-          className="flex-1 min-h-[360px] p-4 bg-slate-950 font-mono text-[12px] leading-relaxed text-slate-200 overflow-y-auto select-text space-y-1"
+          className="flex-1 min-h-[360px] p-4 bg-slate-950 font-mono text-xs leading-relaxed text-slate-200 overflow-y-auto select-text space-y-1"
         >
           {filteredLogs.map((log) => {
             const isWarn = log.level === "WARN";
@@ -203,7 +203,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
                 <span className="text-slate-500 shrink-0 select-none">[{log.time}]</span>
                 <span
                   className={cn(
-                    "text-[10px] px-1 rounded shrink-0 uppercase font-bold",
+                    "text-overline px-1 rounded shrink-0 uppercase",
                     isErr && "bg-rose-500/20 text-rose-300",
                     isWarn && "bg-amber-500/20 text-amber-300",
                     !isErr && !isWarn && "bg-slate-800 text-slate-400"
@@ -211,7 +211,6 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
                 >
                   {log.level}
                 </span>
-                <span className="flex-1 whitespace-pre-wrap">{log.message}</span>
               </div>
             );
           })}
@@ -245,7 +244,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
 
           {/* Preset Chips */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pr-1">
+            <span className="text-overline text-muted-foreground uppercase pr-1">
               Quick presets:
             </span>
             {quickPresets.map((preset) => (
@@ -254,7 +253,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
                 type="button"
                 disabled={isBusy}
                 onClick={() => handleRun(preset.cmd)}
-                className="px-2 py-0.5 bg-surface-raised hover:bg-primary/10 hover:text-primary-muted hover:border-primary/30 border border-border rounded text-[11px] font-mono text-muted-foreground transition-colors"
+                className="px-2 py-0.5 bg-surface-raised hover:bg-primary/10 hover:text-primary-muted hover:border-primary/30 border border-border rounded text-xs font-mono text-muted-foreground transition-colors"
               >
                 {preset.label}
               </button>

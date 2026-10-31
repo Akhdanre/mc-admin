@@ -103,7 +103,7 @@ export function PlayerInventoryModal({
 
             {/* Stack count badge */}
             {item.count > 1 && (
-              <span className="absolute bottom-1 right-1 font-mono font-bold text-[11px] text-white bg-slate-900/85 px-1 py-0.2 rounded-xs leading-none shadow-xs select-none pointer-events-none">
+              <span className="absolute bottom-1 right-1 font-mono font-bold text-xs text-white bg-slate-900/85 px-1 py-0.2 rounded-xs leading-none shadow-xs select-none pointer-events-none">
                 {item.count}
               </span>
             )}
@@ -133,7 +133,7 @@ export function PlayerInventoryModal({
 
         {/* Hotbar slot number (1-9) */}
         {slotNum >= 27 && slotNum <= 35 && (
-          <span className="absolute top-0.5 left-1 text-[9px] font-mono text-muted-foreground/40 select-none">
+          <span className="absolute top-0.5 left-1 text-overline font-mono text-muted-foreground/40 select-none">
             {slotNum - 26}
           </span>
         )}
@@ -165,7 +165,7 @@ export function PlayerInventoryModal({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-heading">{player.username}</span>
-                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                <span className="text-overline uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                   {player.role}
                 </span>
               </div>
@@ -214,7 +214,7 @@ export function PlayerInventoryModal({
 
         {/* Equipment & Armor Row */}
         <div>
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          <div className="text-overline text-muted-foreground uppercase mb-2">
             Equipped Armor & Offhand
           </div>
           <div className="flex items-center justify-center gap-2.5 p-3 bg-surface-raised/40 border border-border/70 rounded-xl">
@@ -226,7 +226,7 @@ export function PlayerInventoryModal({
 
         {/* 27-Slot Main Inventory (3 rows of 9) */}
         <div>
-          <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-overline text-muted-foreground uppercase mb-2">
             <span>Main Storage (27 Slots)</span>
             <span className="text-xs font-mono lowercase font-normal">
               {occupiedCount}/27 slots used
@@ -239,7 +239,7 @@ export function PlayerInventoryModal({
 
         {/* 9-Slot Hotbar */}
         <div>
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          <div className="text-overline text-muted-foreground uppercase mb-2">
             Quick Hotbar (9 Slots)
           </div>
           <div className="grid grid-cols-9 gap-2 p-3 bg-surface-raised border border-border rounded-xl justify-items-center">
@@ -259,10 +259,10 @@ export function PlayerInventoryModal({
                   <span className="font-semibold text-heading truncate">
                     {activeSlotItem.item.name}
                   </span>
-                  <span className="text-[11px] font-mono font-medium text-primary">
+                  <span className="text-xs font-mono font-medium text-primary">
                     x{activeSlotItem.item.count}
                   </span>
-                  <span className="text-[10px] text-muted-foreground bg-surface px-1.5 py-0.5 rounded border border-border">
+                  <span className="text-overline text-muted-foreground bg-surface px-1.5 py-0.5 rounded border border-border">
                     {activeSlotItem.slotLabel}
                   </span>
                 </div>
@@ -271,7 +271,7 @@ export function PlayerInventoryModal({
                     {activeSlotItem.item.lore.map((lore, idx) => (
                       <span
                         key={idx}
-                        className="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"
+                        className="text-overline px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"
                       >
                         {lore}
                       </span>
@@ -279,7 +279,7 @@ export function PlayerInventoryModal({
                   </div>
                 )}
                 {activeSlotItem.item.durability && (
-                  <div className="text-[10.5px] font-mono text-muted-foreground mt-0.5">
+                  <div className="text-xs font-mono text-muted-foreground mt-0.5">
                     Durability: {activeSlotItem.item.durability.current} /{" "}
                     {activeSlotItem.item.durability.max} (
                     {Math.round(

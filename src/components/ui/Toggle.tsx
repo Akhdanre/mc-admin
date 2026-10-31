@@ -23,7 +23,7 @@ export function Toggle({
         <div className="flex flex-col min-w-0 pr-2">
           {label && <span className="text-xs font-medium text-heading select-none">{label}</span>}
           {description && (
-            <span className="text-[11px] text-muted-foreground select-none">{description}</span>
+            <span className="text-xs text-muted-foreground select-none">{description}</span>
           )}
         </div>
       )}

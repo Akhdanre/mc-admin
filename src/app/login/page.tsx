@@ -170,7 +170,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setError("Contact server operator or inspect server config to reset credentials.")}
-                className="text-xs font-semibold text-[#2656c8] hover:underline cursor-pointer"
+                className="text-xs font-semibold text-primary hover:text-primary-hover hover:underline cursor-pointer"
               >
                 Forgot password?
               </button>
@@ -193,8 +193,8 @@ export default function LoginPage() {
               className={cn(
                 "w-full h-10 rounded-md text-xs font-semibold flex items-center justify-center gap-2 transition shadow-xs",
                 canSubmit
-                  ? "bg-[#2656c8] hover:bg-[#1e46a6] text-white cursor-pointer active:scale-[0.99]"
-                  : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+                  ? "bg-primary hover:bg-primary-hover text-primary-foreground cursor-pointer active:scale-[0.99]"
+                  : "bg-surface-raised text-faint-foreground border border-border cursor-not-allowed"
               )}
             >
               {loading ? (
@@ -213,7 +213,7 @@ export default function LoginPage() {
 
             <div className="border-t border-border w-full pt-1" />
 
-            <p className="text-[11px] text-subtle-foreground">v1.21.4</p>
+            <p className="text-xs font-mono text-subtle-foreground">v1.21.4</p>
           </form>
         </div>
       </div>

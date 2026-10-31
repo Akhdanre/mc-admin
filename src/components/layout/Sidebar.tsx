@@ -270,7 +270,7 @@ export function Sidebar({
             <span className="text-sm font-semibold text-heading tracking-tight block leading-tight">
               Pulse MC
             </span>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5 leading-tight">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 leading-tight">
               <span
                 className={cn(
                   "w-1.5 h-1.5 rounded-full shrink-0",
@@ -300,10 +300,9 @@ export function Sidebar({
       <nav className="flex-1 px-3 py-3 space-y-3.5 overflow-y-auto">
         {navSections.map((section) => (
           <div key={section.title} className="space-y-0.5">
-            <div className="px-2.5 py-1 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+            <div className="px-2.5 py-1 text-overline text-muted-foreground uppercase">
               {section.title}
             </div>
-
             {section.items.map((item) => {
               const isActive = currentTab === item.id;
               return (
@@ -315,9 +314,9 @@ export function Sidebar({
                     onCloseMobile();
                   }}
                   className={cn(
-                    "w-full h-10 sm:h-9 flex items-center justify-between px-2.5 rounded-md text-[13px] font-normal transition-colors cursor-pointer text-left active:scale-[0.99]",
+                    "w-full h-10 sm:h-9 flex items-center justify-between px-2.5 rounded-md text-sm font-normal transition-colors cursor-pointer text-left active:scale-[0.99]",
                     isActive
-                      ? "bg-[#eff6ff] dark:bg-primary/15 text-[#2656c8] dark:text-primary-muted font-medium"
+                      ? "bg-primary/10 dark:bg-primary/15 text-primary-muted font-medium"
                       : "text-foreground hover:bg-surface-raised hover:text-heading"
                   )}
                 >
@@ -325,7 +324,7 @@ export function Sidebar({
                     <span
                       className={cn(
                         "shrink-0",
-                        isActive ? "text-[#2656c8] dark:text-primary-muted" : "text-subtle-foreground"
+                        isActive ? "text-primary-muted" : "text-subtle-foreground"
                       )}
                     >
                       {item.icon(isActive)}
@@ -336,9 +335,9 @@ export function Sidebar({
                   {item.badge !== null && item.badge !== undefined && (
                     <span
                       className={cn(
-                        "shrink-0 px-1.5 py-0.5 rounded text-[11px] font-mono leading-none",
+                        "shrink-0 px-1.5 py-0.5 rounded text-xs font-mono leading-none",
                         isActive
-                          ? "bg-primary/15 text-[#2656c8] dark:text-primary-muted font-medium"
+                          ? "bg-primary/15 text-primary-muted font-medium"
                           : "bg-surface-raised text-muted-foreground border border-border/40"
                       )}
                     >
@@ -356,14 +355,14 @@ export function Sidebar({
       <div className="p-3 border-t border-border bg-surface">
         <div className="bg-surface-raised border border-border rounded-lg p-2.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-[#2656c8] text-white text-xs font-semibold flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-primary text-white text-xs font-semibold flex items-center justify-center shrink-0">
               {adminName.slice(0, 2).toUpperCase() || "AO"}
             </div>
             <div className="min-w-0">
-              <div className="text-[13px] font-medium text-heading leading-tight truncate">
+              <div className="text-sm font-medium text-heading leading-tight truncate">
                 {adminName}
               </div>
-              <div className="text-[11px] text-muted-foreground leading-tight truncate">
+              <div className="text-xs text-muted-foreground leading-tight truncate">
                 {adminRole}
               </div>
             </div>

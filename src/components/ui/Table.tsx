@@ -13,7 +13,7 @@ export function TableHeader({ className, ...props }: HTMLAttributes<HTMLTableSec
   return (
     <thead
       className={cn(
-        "border-b border-border bg-surface-raised/40 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider",
+        "border-b border-border bg-surface-raised/40 text-overline text-muted-foreground uppercase",
         className
       )}
       {...props}

@@ -233,10 +233,10 @@ export function BackupPage({
         {/* Card 1: Storage Quota */}
         <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-overline text-muted-foreground uppercase">
               STORAGE QUOTA
             </span>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-surface-raised border border-border text-heading font-mono">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-surface-raised border border-border text-heading font-mono">
               {archives.length} Archives
             </span>
           </div>
@@ -250,7 +250,7 @@ export function BackupPage({
             </div>
           </div>
 
-          <div className="text-[11px] text-muted-foreground font-mono">
+          <div className="text-xs text-muted-foreground font-mono">
             174 GB free on disk · /home/oukendev/minecraft/backups
           </div>
         </div>
@@ -258,10 +258,10 @@ export function BackupPage({
         {/* Card 2: Automated Snapshots */}
         <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-overline text-muted-foreground uppercase">
               AUTOMATED SNAPSHOTS
             </span>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
               ● Daily Enabled
             </span>
           </div>
@@ -275,7 +275,7 @@ export function BackupPage({
             </div>
           </div>
 
-          <div className="text-[11px] text-subtle-foreground">
+          <div className="text-xs text-subtle-foreground">
             Retention rule: Backups older than 7 days will be deleted
           </div>
         </div>
@@ -283,10 +283,10 @@ export function BackupPage({
         {/* Card 3: Off-site Cloud Sync */}
         <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-overline text-muted-foreground uppercase">
               OFF-SITE CLOUD SYNC
             </span>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-mono">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-mono">
               ● S3 Wasabi
             </span>
           </div>
@@ -300,7 +300,7 @@ export function BackupPage({
             </div>
           </div>
 
-          <div className="text-[11px] text-subtle-foreground font-mono">
+          <div className="text-xs text-subtle-foreground font-mono">
             Last mirrored: Today at 05:14 UTC (SHA-256 Verified)
           </div>
         </div>
@@ -360,12 +360,12 @@ export function BackupPage({
                           {archive.filename}
                         </span>
                         {archive.isLatest && (
-                          <span className="px-1.5 py-0.2 rounded text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          <span className="px-1.5 py-0.2 rounded text-overline font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                             Latest
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         {archive.timestamp}
                       </div>
                     </div>
@@ -391,11 +391,11 @@ export function BackupPage({
 
                   <TableCell>
                     {archive.status === "Verified" ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-overline font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                         ✓ Verified
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-overline font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                         📌 Pinned (Manual)
                       </span>
                     )}

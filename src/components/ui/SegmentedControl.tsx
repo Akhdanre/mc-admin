@@ -37,7 +37,7 @@ export function SegmentedControl<T extends string = string>({
             onClick={() => onChange(opt.value)}
             className={cn(
               "relative inline-flex items-center gap-1.5 font-medium rounded-md transition-all",
-              size === "sm" ? "px-2 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
+              size === "sm" ? "px-2 py-1 text-overline" : "px-3 py-1.5 text-xs",
               isSelected
                 ? "bg-surface text-heading shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-heading hover:bg-surface/50"
@@ -47,7 +47,7 @@ export function SegmentedControl<T extends string = string>({
             {opt.badge !== undefined && (
               <span
                 className={cn(
-                  "px-1.5 py-0.2 rounded-full text-[10px] font-mono leading-tight",
+                  "px-1.5 py-0.2 rounded-full text-overline font-mono leading-tight",
                   isSelected
                     ? "bg-primary/10 text-primary-muted font-bold"
                     : "bg-surface border border-border text-subtle-foreground"

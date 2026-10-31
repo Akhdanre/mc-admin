@@ -150,7 +150,7 @@ export function LiveMap({ mapUrl = "http://localhost:8123" }: LiveMapProps) {
         {/* Floating Player Markers HUD (Penpot Overlay Pattern) */}
         {trackPlayers && (
           <div className="absolute bottom-4 left-4 z-10 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-3 shadow-lg max-w-xs space-y-2 select-none">
-            <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="flex items-center justify-between text-overline text-muted-foreground uppercase">
               <span>Tracked Players</span>
               <span className="text-emerald-500 font-mono font-bold">{MOCK_PLAYERS.length} Online</span>
             </div>
@@ -170,7 +170,7 @@ export function LiveMap({ mapUrl = "http://localhost:8123" }: LiveMapProps) {
                     />
                     <span className="font-medium text-heading truncate">{p.username}</span>
                   </div>
-                  <span className="font-mono text-[10px] text-muted-foreground shrink-0">
+                  <span className="font-mono text-xs text-muted-foreground shrink-0">
                     {p.x.toFixed(0)}, {p.z.toFixed(0)}
                   </span>
                 </div>

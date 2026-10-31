@@ -170,14 +170,14 @@ export function WorldControls({
                   <span className="text-sm select-none">{dim.icon}</span>
                   <span className="text-sm font-semibold text-heading">{dim.name}</span>
                 </div>
-                <span className="text-[11px] font-mono font-medium text-muted-foreground">
+                <span className="text-xs font-mono font-medium text-muted-foreground">
                   {dim.diskSizeFormatted}
                 </span>
               </div>
 
               {/* Details Row */}
-              <div className="space-y-0.5 text-[11px] font-mono">
-                <div className="text-slate-500 dark:text-slate-400">
+              <div className="space-y-0.5 text-xs font-mono">
+                <div className="text-subtle-foreground">
                   Directory: {dim.directory} · {dim.chunksLoaded} Chunks Loaded
                 </div>
                 <div className="text-muted-foreground">{dim.detail}</div>
@@ -211,11 +211,11 @@ export function WorldControls({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm">🌤</span>
-              <span className="text-[13px] font-semibold text-heading">
+              <span className="text-sm font-semibold text-heading">
                 Atmospheric & Time Engine
               </span>
             </div>
-            <span className="text-[11px] font-mono text-muted-foreground bg-surface-raised px-2 py-0.5 rounded border border-border">
+            <span className="text-xs font-mono text-muted-foreground bg-surface-raised px-2 py-0.5 rounded border border-border">
               {MOCK_WORLD.time} · Tick {MOCK_WORLD.tick.toLocaleString()}
             </span>
           </div>
@@ -242,10 +242,10 @@ export function WorldControls({
                       : "border-border bg-surface-raised/40 hover:bg-surface-raised text-heading"
                   )}
                 >
-                  <span className="text-[11.5px] font-medium">{t.label}</span>
+                  <span className="text-xs font-medium">{t.label}</span>
                   <span
                     className={cn(
-                      "text-[9.5px] font-mono mt-0.5",
+                      "text-overline font-mono mt-0.5",
                       isSelected
                         ? "text-emerald-600 dark:text-emerald-400"
                         : "text-muted-foreground"
@@ -263,7 +263,7 @@ export function WorldControls({
             <div className="flex items-center gap-1.5 text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span className="text-muted-foreground">Weather Cycle:</span>
-              <span className="text-slate-400 font-mono text-[11px]">
+              <span className="text-subtle-foreground font-mono text-xs">
                 ({MOCK_WORLD.weatherCycle})
               </span>
             </div>
@@ -302,11 +302,11 @@ export function WorldControls({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm">⚔</span>
-              <span className="text-[13px] font-semibold text-heading">
+              <span className="text-sm font-semibold text-heading">
                 Server Modes & Difficulty Engine
               </span>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-overline font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Live Enforced
             </span>

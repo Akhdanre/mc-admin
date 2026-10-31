@@ -22,14 +22,14 @@ export function StatCards({
       <Card className="rounded-xl">
         <CardLabel>Online Players</CardLabel>
         <div className="flex items-baseline gap-2 mt-2">
-          <span className="text-3xl font-semibold text-heading">{onlineCount}</span>
+          <span className="text-3xl font-semibold text-heading font-mono">{onlineCount}</span>
           <Caption>/ {maxCount} max</Caption>
         </div>
       </Card>
       <Card className="rounded-xl">
         <CardLabel>Whitelisted Users</CardLabel>
         <div className="flex items-baseline gap-2 mt-2">
-          <span className="text-3xl font-semibold text-primary-muted">{whitelistCount}</span>
+          <span className="text-3xl font-semibold text-primary-muted font-mono">{whitelistCount}</span>
           <Caption>total</Caption>
         </div>
       </Card>
@@ -40,8 +40,7 @@ export function StatCards({
       </Card>
       <Card className="rounded-xl">
         <CardLabel>Last Synced</CardLabel>
-        <p className="text-base font-semibold text-heading mt-2">{updatedAt || "-"}</p>
-        <Caption>Auto refresh every 4s</Caption>
+        <p className="text-base font-semibold text-heading mt-2 font-mono">{updatedAt || "-"}</p>
       </Card>
     </div>
   );

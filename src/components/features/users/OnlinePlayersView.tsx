@@ -318,7 +318,7 @@ export function OnlinePlayersView({
                     <div className="flex items-center gap-2.5">
                       <div
                         className={cn(
-                          "w-6.5 h-6.5 rounded flex items-center justify-center text-[10px] font-bold font-mono shrink-0 select-none shadow-xs",
+                          "w-6.5 h-6.5 rounded flex items-center justify-center text-overline font-mono shrink-0 select-none shadow-xs",
                           player.avatarColor
                         )}
                       >
@@ -358,7 +358,7 @@ export function OnlinePlayersView({
                       <div>
                         <span
                           className={cn(
-                            "inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold border",
+                            "inline-flex items-center px-1.5 py-0.2 rounded text-overline border",
                             player.dimension === "Nether"
                               ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
                               : player.dimension === "The End"
@@ -369,7 +369,7 @@ export function OnlinePlayersView({
                           {player.dimension}
                         </span>
                       </div>
-                      <span className="font-mono text-[11px] text-muted-foreground truncate">
+                      <span className="font-mono text-xs text-muted-foreground truncate">
                         {player.coords}
                       </span>
                     </div>
@@ -388,7 +388,7 @@ export function OnlinePlayersView({
                     <div className="flex flex-col text-xs font-mono">
                       <span className="text-heading">{player.session}</span>
                       {player.isAfk && (
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                        <span className="text-overline text-muted-foreground whitespace-nowrap">
                           {player.isAfk}
                         </span>
                       )}
