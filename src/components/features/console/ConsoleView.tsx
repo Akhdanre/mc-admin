@@ -29,11 +29,13 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
       if (raw.includes("ERROR")) level = "ERROR";
       const timeMatch = raw.match(/\[(\d\d:\d\d:\d\d)/);
       const time = timeMatch ? timeMatch[1] : "00:00:00";
+      // Strip leading timestamp and log level prefix to render clean message
+      const message = raw.replace(/^\[\d\d:\d\d:\d\d\s+(INFO|WARN|ERROR)\]:\s*/, "");
       return {
         id: `mock-${idx}`,
         time,
         level,
-        message: raw,
+        message,
       };
     });
   });
@@ -185,7 +187,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
         {/* Terminal output */}
         <div
           ref={terminalRef}
-          className="flex-1 min-h-[360px] p-4 bg-terminal font-mono text-xs leading-relaxed text-terminal-foreground overflow-y-auto select-text space-y-1"
+          className="flex-1 min-h-[360px] p-4 bg-[#0b0f19] font-mono text-xs leading-relaxed overflow-y-auto select-text space-y-1"
         >
           {filteredLogs.map((log) => {
             const isWarn = log.level === "WARN";
@@ -193,23 +195,28 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
             return (
               <div
                 key={log.id}
-                className={cn(
-                  "flex items-start gap-2 hover:bg-white/5 px-1 py-0.5 rounded transition-colors break-all",
-                  isErr && "text-danger-muted bg-danger-surface",
-                  isWarn && "text-warning-muted bg-warning-surface",
-                  log.isCommand && "text-primary font-semibold"
-                )}
+                className="flex items-baseline gap-2.5 hover:bg-white/5 px-1 py-0.5 rounded transition-colors"
               >
-                <span className="text-subtle-foreground shrink-0 select-none">[{log.time}]</span>
+                <span className="text-[#4f5b6e] text-xs font-mono shrink-0 select-none">
+                  [{log.time}]
+                </span>
                 <span
                   className={cn(
-                    "text-overline px-1 rounded shrink-0 uppercase",
-                    isErr && "bg-danger-surface text-danger-muted",
-                    isWarn && "bg-warning-surface text-warning-muted",
-                    !isErr && !isWarn && "bg-surface-raised text-muted-foreground"
+                    "text-xs font-mono font-medium shrink-0 select-none",
+                    isErr && "text-[#f87171]",
+                    isWarn && "text-[#fbbf24]",
+                    !isErr && !isWarn && "text-[#38bdf8]"
                   )}
                 >
-                  {log.level}
+                  [{log.level}]
+                </span>
+                <span
+                  className={cn(
+                    "text-xs font-mono text-[#e6eaf0] break-all leading-relaxed",
+                    log.isCommand && "text-[#60a5fa] font-semibold"
+                  )}
+                >
+                  {log.message}
                 </span>
               </div>
             );
