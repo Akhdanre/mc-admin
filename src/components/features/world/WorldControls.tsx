@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, type SubmitEvent } from "react";
+import { useState } from "react";
+import { Toggle } from "@/components/ui/Toggle";
+import { MOCK_WORLD, type MockGamerule } from "@/lib/mockData";
+import { cn } from "@/lib/cn";
 
-import { Badge, Button, Card, Input } from "@/components/ui";
-
-interface WorldControlsProps {
+export interface WorldControlsProps {
   onExecuteCommand: (command: string) => Promise<string>;
   isBusy: boolean;
   currentDifficulty?: string;
@@ -19,312 +20,514 @@ export function WorldControls({
   onRefreshStatus,
   onShowFeedback,
 }: WorldControlsProps) {
-  const [isImporting, setIsImporting] = useState(false);
-  const [pendingRestart, setPendingRestart] = useState(false);
-  const [broadcastMessage, setBroadcastMessage] = useState("");
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  const [activeGamemode, setActiveGamemode] = useState(MOCK_WORLD.gamemode || "survival");
+  const [activeDifficulty, setActiveDifficulty] = useState(currentDifficulty || MOCK_WORLD.difficulty || "hard");
+  const [activeTime, setActiveTime] = useState<string>("day");
+  const [activeWeather, setActiveWeather] = useState<string>("clear");
+  const [gamerules, setGamerules] = useState<MockGamerule[]>(MOCK_WORLD.gamerules);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const activeDifficulty = selectedDifficulty ?? currentDifficulty ?? "normal";
-  const runCommand = async (cmd: string) => {
-    await onExecuteCommand(cmd);
-  };
-
-  const handleBroadcast = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const clean = broadcastMessage.trim();
-    if (!clean) return;
-    await onExecuteCommand(`say [ANNOUNCEMENT] ${clean}`);
-    setBroadcastMessage("");
-  };
-  const handleImportMap = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const name = file.name.toLowerCase();
-    if (!name.endsWith(".zip") && !name.endsWith(".tar.gz") && !name.endsWith(".tgz")) {
-      onShowFeedback?.("Only .zip and .tar.gz world archives are supported", true);
-      return;
-    }
-
-    if (
-      !window.confirm(
-        `Import map archive "${file.name}"?\n\nWarning: An automatic safety backup will be created, and the active server world will be replaced. A server restart will be required.`
-      )
-    ) {
-      e.target.value = "";
-      return;
-    }
-
+  const handleSaveAll = async () => {
+    setIsSaving(true);
     try {
-      setIsImporting(true);
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/world/import", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to import world");
-      }
-
-      setPendingRestart(true);
-      onShowFeedback?.(data.message || "Map successfully imported! Restart server to load.");
+      await onExecuteCommand("save-all");
+      onShowFeedback?.("World saved to disk successfully.");
       onRefreshStatus?.();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Import failed";
-      onShowFeedback?.(msg, true);
+    } catch {
+      onShowFeedback?.("Failed to execute save-all", true);
     } finally {
-      setIsImporting(false);
-      e.target.value = "";
+      setIsSaving(false);
     }
   };
+
+  const handleSetTime = async (timeKey: string, tickValue: string) => {
+    setActiveTime(timeKey);
+    try {
+      await onExecuteCommand(`time set ${tickValue}`);
+      onShowFeedback?.(`Time set to ${timeKey} (${tickValue})`);
+    } catch {
+      onShowFeedback?.(`Failed to set time to ${timeKey}`, true);
+    }
+  };
+
+  const handleSetWeather = async (weather: string) => {
+    setActiveWeather(weather);
+    try {
+      await onExecuteCommand(`weather ${weather}`);
+      onShowFeedback?.(`Weather changed to ${weather}`);
+    } catch {
+      onShowFeedback?.("Failed to change weather", true);
+    }
+  };
+
+  const handleSetGamemode = async (mode: string) => {
+    setActiveGamemode(mode);
+    try {
+      await onExecuteCommand(`defaultgamemode ${mode}`);
+      onShowFeedback?.(`Default gamemode changed to ${mode}`);
+    } catch {
+      onShowFeedback?.(`Failed to set gamemode to ${mode}`, true);
+    }
+  };
+
+  const handleSetDifficulty = async (diff: string) => {
+    setActiveDifficulty(diff);
+    try {
+      await onExecuteCommand(`difficulty ${diff}`);
+      onShowFeedback?.(`Difficulty updated to ${diff}`);
+      onRefreshStatus?.();
+    } catch {
+      onShowFeedback?.("Failed to set difficulty", true);
+    }
+  };
+
+  const handleToggleGamerule = async (rule: MockGamerule, nextVal: boolean) => {
+    setGamerules((prev) =>
+      prev.map((r) => (r.id === rule.id ? { ...r, value: nextVal } : r))
+    );
+    try {
+      await onExecuteCommand(`gamerule ${rule.id} ${nextVal}`);
+      onShowFeedback?.(`Gamerule ${rule.name} set to ${nextVal}`);
+    } catch {
+      onShowFeedback?.(`Failed to update gamerule ${rule.name}`, true);
+    }
+  };
+
+  const handleUpdateNumberRule = async (rule: MockGamerule, nextVal: number) => {
+    setGamerules((prev) =>
+      prev.map((r) => (r.id === rule.id ? { ...r, value: nextVal } : r))
+    );
+    try {
+      await onExecuteCommand(`gamerule ${rule.id} ${nextVal}`);
+      onShowFeedback?.(`Gamerule ${rule.name} set to ${nextVal}`);
+    } catch {
+      onShowFeedback?.(`Failed to update gamerule ${rule.name}`, true);
+    }
+  };
+
+  const handleDimensionAction = async (dimName: string, actionLabel: string, actionVariant: string) => {
+    if (actionVariant === "danger") {
+      if (
+        !window.confirm(
+          `Are you sure you want to execute "${actionLabel}" for ${dimName}?\n\nThis will purge and regenerate dimension chunks on server reload.`
+        )
+      ) {
+        return;
+      }
+    }
+    onShowFeedback?.(`${actionLabel} initiated for ${dimName}.`);
+  };
+
+  // Group gamerules by Penpot categories
+  const gameplayRules = gamerules.filter((r) => r.category === "gameplay");
+  const combatRules = gamerules.filter((r) => r.category === "combat");
+  const physicsRules = gamerules.filter((r) => r.category === "physics");
+  const adminRules = gamerules.filter((r) => r.category === "admin");
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card padding="lg">
-        <Badge tone="warning" className="mb-2">
-          <span>Environment &amp; Server State</span>
-        </Badge>
-        <h2 className="text-xl font-semibold text-heading">World &amp; Environment Controls</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Control day/night cycles, weather patterns, gamerules, and perform server maintenance.
-        </p>
-      </Card>
-
-      {pendingRestart && (
-        <div className="p-4 rounded-xl border border-warning/30 bg-warning-surface text-warning-muted flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">⚠️</span>
-            <div>
-              <p className="font-semibold text-sm">Server restart required</p>
-              <p className="text-xs text-warning-muted/80">
-                New world map files have been extracted. Restart Minecraft server container to load the new map.
-              </p>
-            </div>
-          </div>
-          <Button size="sm" variant="secondary" onClick={() => setPendingRestart(false)}>
-            Dismiss
-          </Button>
+    <div className="space-y-4">
+      {/* Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-semibold text-heading tracking-tight">
+            World & Environment
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5 flex-wrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="font-semibold text-heading">ONLINE</span>
+            <span>·</span>
+            <span>3 Dimensions</span>
+            <span>·</span>
+            <span className="font-mono">Seed {MOCK_WORLD.seed}</span>
+            <span>·</span>
+            <span>Autosave {MOCK_WORLD.autosave}</span>
+          </p>
         </div>
-      )}
-
-      {/* Map Import Card */}
-      <Card padding="lg" className="space-y-3 border-primary/20 bg-primary/5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🗺️</span>
-              <h3 className="text-base font-semibold text-heading">Import New World Map</h3>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Upload a custom map archive (.zip or .tar.gz). A safety backup will be generated before replacing the world.
-            </p>
-          </div>
-
-          <label className="cursor-pointer self-start sm:self-auto shrink-0">
-            <input
-              type="file"
-              accept=".zip,.tar.gz,.tgz"
-              className="hidden"
-              disabled={isImporting || isBusy}
-              onChange={handleImportMap}
-            />
-            <span className="inline-flex items-center justify-center font-semibold transition cursor-pointer rounded-xl px-3 py-2 text-xs bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm">
-              {isImporting ? "Importing Map..." : "Upload & Import Map"}
-            </span>
-          </label>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleSaveAll}
+            disabled={isSaving || isBusy}
+            className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-medium border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {isSaving ? "Saving Chunks..." : "Save All Chunks"}
+          </button>
         </div>
-      </Card>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Time of Day */}
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-heading text-base">Time of Day</h3>
-              <p className="text-xs text-muted-foreground">Set the in-game world clock</p>
-            </div>
-            <span className="text-2xl">☀️</span>
-          </div>
+      {/* Row 1: Dimensions & Storage Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {MOCK_WORLD.dimensions.map((dim) => {
+          const isDanger = dim.actionVariant === "danger";
+          return (
+            <div
+              key={dim.id}
+              className="bg-surface border border-border rounded-xl p-3.5 shadow-xs flex flex-col justify-between gap-3.5"
+            >
+              {/* Top Meta Row */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm select-none">{dim.icon}</span>
+                  <span className="text-sm font-semibold text-heading">{dim.name}</span>
+                </div>
+                <span className="text-[11px] font-mono font-medium text-muted-foreground">
+                  {dim.diskSizeFormatted}
+                </span>
+              </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
-            <Button
-              variant="secondary"
-              onClick={() => runCommand("time set day")}
-              disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-warning/40"
-            >
-              <div className="text-lg">🌅</div>
-              <div className="text-xs font-semibold text-heading mt-1">Day</div>
-              <div className="text-[10px] text-subtle-foreground font-mono">1000 ticks</div>
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => runCommand("time set noon")}
-              disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-warning/40"
-            >
-              <div className="text-lg">☀️</div>
-              <div className="text-xs font-semibold text-heading mt-1">Noon</div>
-              <div className="text-[10px] text-subtle-foreground font-mono">6000 ticks</div>
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => runCommand("time set night")}
-              disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-indigo-500/40"
-            >
-              <div className="text-lg">🌙</div>
-              <div className="text-xs font-semibold text-heading mt-1">Night</div>
-              <div className="text-[10px] text-subtle-foreground font-mono">13000 ticks</div>
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => runCommand("time set midnight")}
-              disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-indigo-500/40"
-            >
-              <div className="text-lg">🌌</div>
-              <div className="text-xs font-semibold text-heading mt-1">Midnight</div>
-              <div className="text-[10px] text-subtle-foreground font-mono">18000 ticks</div>
-            </Button>
-          </div>
-        </Card>
+              {/* Details Row */}
+              <div className="space-y-0.5 text-[11px] font-mono">
+                <div className="text-slate-500 dark:text-slate-400">
+                  Directory: {dim.directory} · {dim.chunksLoaded} Chunks Loaded
+                </div>
+                <div className="text-muted-foreground">{dim.detail}</div>
+              </div>
 
-        {/* Weather Controls */}
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-heading text-base">Weather Machine</h3>
-              <p className="text-xs text-muted-foreground">Control rain, clouds, and storms</p>
-            </div>
-            <span className="text-2xl">🌦️</span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 pt-2">
-            <Button
-              variant="secondary"
-              onClick={() => runCommand("weather clear")}
-              disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-info/40"
-            >
-              <div className="text-lg">☀️</div>
-              <div className="text-xs font-semibold text-heading mt-1">Clear</div>
-              <div className="text-[10px] text-subtle-foreground">Sunny sky</div>
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => runCommand("weather rain")}
-              disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-info/40"
-            >
-              <div className="text-lg">🌧️</div>
-              <div className="text-xs font-semibold text-heading mt-1">Rain</div>
-              <div className="text-[10px] text-subtle-foreground">Precipitation</div>
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => runCommand("weather thunder")}
-              disabled={isBusy}
-              className="flex-col gap-0 p-3 hover:border-info/40"
-            >
-              <div className="text-lg">⚡</div>
-              <div className="text-xs font-semibold text-heading mt-1">Thunder</div>
-              <div className="text-[10px] text-subtle-foreground">Stormy night</div>
-            </Button>
-          </div>
-        </Card>
-
-        {/* Server Broadcast Chat */}
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-heading text-base">Broadcast Announcement</h3>
-              <p className="text-xs text-muted-foreground">Send server-wide chat message to all players</p>
-            </div>
-            <span className="text-2xl">📢</span>
-          </div>
-
-          <form onSubmit={handleBroadcast} className="flex gap-2">
-            <Input
-              type="text"
-              value={broadcastMessage}
-              onChange={(e) => setBroadcastMessage(e.target.value)}
-              placeholder="e.g. Server restart in 10 minutes..."
-              disabled={isBusy}
-              mono
-              className="flex-1"
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isBusy || !broadcastMessage.trim()}
-              className="px-4 py-2"
-            >
-              Send
-            </Button>
-          </form>
-        </Card>
-
-        {/* Difficulty & Maintenance */}
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-heading text-base">Server Maintenance</h3>
-              <p className="text-xs text-muted-foreground">World saves and difficulty adjustments</p>
-            </div>
-            <span className="text-2xl">⚙️</span>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-xs text-foreground font-medium">Difficulty:</span>
-              <div className="flex items-center gap-1">
-                {["peaceful", "easy", "normal", "hard"].map((diff) => (
-                  <Button
-                    key={diff}
-                    variant="tab"
-                    active={activeDifficulty.toLowerCase() === diff}
-                    size="sm"
-                    onClick={async () => {
-                      setSelectedDifficulty(diff);
-                      await runCommand(`difficulty ${diff}`);
-                      onRefreshStatus?.();
-                    }}
-                    disabled={isBusy}
-                    className="px-2.5 py-1 text-[11px] capitalize font-mono"
-                  >
-                    {diff}
-                  </Button>
-                ))}
+              {/* Action Row */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => handleDimensionAction(dim.name, dim.actionLabel, dim.actionVariant)}
+                  className={cn(
+                    "text-xs px-3 py-1 rounded-md font-medium border transition-colors cursor-pointer",
+                    isDanger
+                      ? "border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/5 hover:bg-rose-500/15"
+                      : "border-border text-heading bg-surface hover:bg-surface-raised"
+                  )}
+                >
+                  {dim.actionLabel}
+                </button>
               </div>
             </div>
+          );
+        })}
+      </div>
 
-            <div className="pt-2 border-t border-border/60 flex items-center gap-2">
-              <Button
-                variant="success"
-                onClick={() => runCommand("save-all")}
-                disabled={isBusy}
-                className="flex-1 py-2 px-3 text-xs"
-              >
-                <span>💾 Save World (save-all)</span>
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => runCommand("gamerule keepInventory true")}
-                disabled={isBusy}
-                title="Prevent item drops on death"
-                className="py-2 px-3 text-xs font-normal"
-              >
-                Keep Inv
-              </Button>
+      {/* Row 2: Environment & Modes Panels Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Panel / Atmospheric & Time Engine */}
+        <div className="bg-surface border border-border rounded-xl p-3.5 shadow-xs flex flex-col justify-between gap-3.5">
+          {/* Time Header Row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">🌤</span>
+              <span className="text-[13px] font-semibold text-heading">
+                Atmospheric & Time Engine
+              </span>
+            </div>
+            <span className="text-[11px] font-mono text-muted-foreground bg-surface-raised px-2 py-0.5 rounded border border-border">
+              {MOCK_WORLD.time} · Tick {MOCK_WORLD.tick.toLocaleString()}
+            </span>
+          </div>
+
+          {/* Time Scrub Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { id: "day", label: "☀ Day", tick: "t: 1,000", val: "1000" },
+              { id: "noon", label: "🌤 Noon", tick: "t: 6,000", val: "6000" },
+              { id: "night", label: "🌙 Night", tick: "t: 13,000", val: "13000" },
+              { id: "midnight", label: "🌑 Midnight", tick: "t: 18,000", val: "18000" },
+            ].map((t) => {
+              const isSelected = activeTime === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleSetTime(t.id, t.val)}
+                  disabled={isBusy}
+                  className={cn(
+                    "flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-colors cursor-pointer",
+                    isSelected
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                      : "border-border bg-surface-raised/40 hover:bg-surface-raised text-heading"
+                  )}
+                >
+                  <span className="text-[11.5px] font-medium">{t.label}</span>
+                  <span
+                    className={cn(
+                      "text-[9.5px] font-mono mt-0.5",
+                      isSelected
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {t.tick}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Weather Control Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-muted-foreground">Weather Cycle:</span>
+              <span className="text-slate-400 font-mono text-[11px]">
+                ({MOCK_WORLD.weatherCycle})
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {[
+                { id: "clear", label: "☀ Clear" },
+                { id: "rain", label: "🌧 Rain" },
+                { id: "thunder", label: "⚡ Thunder" },
+              ].map((w) => {
+                const isSelected = activeWeather === w.id;
+                return (
+                  <button
+                    key={w.id}
+                    type="button"
+                    onClick={() => handleSetWeather(w.id)}
+                    disabled={isBusy}
+                    className={cn(
+                      "text-xs px-2.5 py-1 rounded-md font-medium border transition-colors cursor-pointer",
+                      isSelected
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+                        : "bg-surface-raised border-border text-muted-foreground hover:text-heading"
+                    )}
+                  >
+                    {w.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </Card>
+        </div>
+
+        {/* Panel / Server Modes & Difficulty Engine */}
+        <div className="bg-surface border border-border rounded-xl p-3.5 shadow-xs flex flex-col justify-between gap-3.5">
+          {/* Rules Header Row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">⚔</span>
+              <span className="text-[13px] font-semibold text-heading">
+                Server Modes & Difficulty Engine
+              </span>
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Live Enforced
+            </span>
+          </div>
+
+          {/* Gamemode Selector Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { id: "survival", label: "Survival", sub: "Core Survival" },
+              { id: "creative", label: "Creative", sub: "Unlimited Blocks" },
+              { id: "adventure", label: "Adventure", sub: "Immutable World" },
+              { id: "spectator", label: "Spectator", sub: "Noclip Flying" },
+            ].map((m) => {
+              const isSelected = activeGamemode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => handleSetGamemode(m.id)}
+                  disabled={isBusy}
+                  className={cn(
+                    "flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-colors cursor-pointer",
+                    isSelected
+                      ? "border-blue-500 bg-blue-50/60 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400"
+                      : "border-border bg-surface-raised/40 hover:bg-surface-raised text-heading"
+                  )}
+                >
+                  <span className="text-[11.5px] font-medium">{m.label}</span>
+                  <span
+                    className={cn(
+                      "text-[9.5px] mt-0.5",
+                      isSelected
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {m.sub}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Difficulty Selector Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-border">
+            <span className="text-xs text-muted-foreground">Server Difficulty:</span>
+
+            <div className="inline-flex rounded-lg bg-surface-raised p-0.5 border border-border">
+              {["peaceful", "easy", "normal", "hard"].map((diff) => {
+                const isSelected = activeDifficulty.toLowerCase() === diff;
+                const isHard = diff === "hard";
+                return (
+                  <button
+                    key={diff}
+                    type="button"
+                    onClick={() => handleSetDifficulty(diff)}
+                    disabled={isBusy}
+                    className={cn(
+                      "px-2.5 py-1 text-[11px] font-medium rounded-md capitalize transition-colors cursor-pointer",
+                      isSelected
+                        ? isHard
+                          ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-semibold"
+                          : "bg-surface text-heading shadow-xs font-semibold"
+                        : "text-muted-foreground hover:text-heading"
+                    )}
+                  >
+                    {diff}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 3: Gamerules Row 1 (Gameplay & Mobs) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Category: Gameplay & Survival Mechanics */}
+        <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-surface-raised border-b border-border px-3.5 py-2.5 flex items-center justify-between">
+            <span className="text-xs font-semibold text-heading">
+              ⚔ Gameplay & Survival Mechanics
+            </span>
+            <span className="text-[10.5px] font-mono text-muted-foreground">
+              {gameplayRules.length} Rules
+            </span>
+          </div>
+          <div>
+            {gameplayRules.map((rule) => (
+              <GameruleRow
+                key={rule.id}
+                rule={rule}
+                isBusy={isBusy}
+                onToggle={(val) => handleToggleGamerule(rule, val)}
+                onUpdateNumber={(val) => handleUpdateNumberRule(rule, val)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Category: Mobs, Spawning & Combat */}
+        <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-surface-raised border-b border-border px-3.5 py-2.5 flex items-center justify-between">
+            <span className="text-xs font-semibold text-heading">
+              👾 Mobs, Spawning & Combat
+            </span>
+            <span className="text-[10.5px] font-mono text-muted-foreground">
+              {combatRules.length} Rules
+            </span>
+          </div>
+          <div>
+            {combatRules.map((rule) => (
+              <GameruleRow
+                key={rule.id}
+                rule={rule}
+                isBusy={isBusy}
+                onToggle={(val) => handleToggleGamerule(rule, val)}
+                onUpdateNumber={(val) => handleUpdateNumberRule(rule, val)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 4: Gamerules Row 2 (Environment & Operations) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Category: World, Physics & Environment */}
+        <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-surface-raised border-b border-border px-3.5 py-2.5 flex items-center justify-between">
+            <span className="text-xs font-semibold text-heading">
+              🌍 World, Physics & Environment
+            </span>
+            <span className="text-[10.5px] font-mono text-muted-foreground">
+              {physicsRules.length} Rules
+            </span>
+          </div>
+          <div>
+            {physicsRules.map((rule) => (
+              <GameruleRow
+                key={rule.id}
+                rule={rule}
+                isBusy={isBusy}
+                onToggle={(val) => handleToggleGamerule(rule, val)}
+                onUpdateNumber={(val) => handleUpdateNumberRule(rule, val)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Category: Chat, Console & Admin Operations */}
+        <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-surface-raised border-b border-border px-3.5 py-2.5 flex items-center justify-between">
+            <span className="text-xs font-semibold text-heading">
+              📢 Chat, Console & Admin Operations
+            </span>
+            <span className="text-[10.5px] font-mono text-muted-foreground">
+              {adminRules.length} Rules
+            </span>
+          </div>
+          <div>
+            {adminRules.map((rule) => (
+              <GameruleRow
+                key={rule.id}
+                rule={rule}
+                isBusy={isBusy}
+                onToggle={(val) => handleToggleGamerule(rule, val)}
+                onUpdateNumber={(val) => handleUpdateNumberRule(rule, val)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GameruleRow({
+  rule,
+  isBusy,
+  onToggle,
+  onUpdateNumber,
+}: {
+  rule: MockGamerule;
+  isBusy: boolean;
+  onToggle: (val: boolean) => void;
+  onUpdateNumber: (val: number) => void;
+}) {
+  return (
+    <div className="px-3.5 py-2.5 border-b border-border/50 last:border-b-0 flex items-center justify-between gap-4 hover:bg-surface-raised/30 transition-colors">
+      <div className="min-w-0 flex-1 pr-2">
+        <div className="text-xs font-mono font-medium text-heading truncate">
+          {rule.name}
+        </div>
+        <div className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
+          {rule.description}
+        </div>
+      </div>
+
+      <div className="shrink-0">
+        {rule.type === "number" ? (
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-surface-raised border border-border text-[11.5px] font-mono">
+            <input
+              type="number"
+              value={rule.value as number}
+              onChange={(e) => onUpdateNumber(Number(e.target.value))}
+              disabled={isBusy}
+              className="w-14 bg-transparent text-right text-heading focus:outline-none font-mono"
+            />
+            {rule.unit && (
+              <span className="text-[10px] text-muted-foreground select-none">
+                {rule.unit}
+              </span>
+            )}
+          </div>
+        ) : (
+          <Toggle
+            checked={Boolean(rule.value)}
+            onChange={onToggle}
+            disabled={isBusy}
+          />
+        )}
       </div>
     </div>
   );
