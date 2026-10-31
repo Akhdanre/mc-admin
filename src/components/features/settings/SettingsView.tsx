@@ -24,7 +24,7 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
   const [jvmHeap, setJvmHeap] = useState("8G (-Xms4G -Xmx8G -XX:+UseG1GC)");
   const [restartHour, setRestartHour] = useState("04");
   const [restartMinute, setRestartMinute] = useState("00");
-  const [restartWarning, setRestartWarning] = useState("60s Warning");
+  const [restartWarning] = useState("60s Warning");
 
   // Security
   const [masterPassword, setMasterPassword] = useState("••••••••••••");
@@ -221,9 +221,10 @@ export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
             size="sm"
             variant="primary"
             onClick={handleSaveAll}
+            disabled={isBusy}
             className="text-xs h-8 px-4 font-medium"
           >
-            Save All Changes
+            {isBusy ? "Saving..." : "Save All Changes"}
           </Button>
         </div>
       </div>

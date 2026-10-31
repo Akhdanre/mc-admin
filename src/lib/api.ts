@@ -26,6 +26,7 @@ async function parseJson<T>(res: Response): Promise<T> {
       typeof window !== "undefined" &&
       window.location.pathname !== "/login"
     ) {
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = "/login";
     }
     const msg = extractErrorMessage(data, res.statusText);

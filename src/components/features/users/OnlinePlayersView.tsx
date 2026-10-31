@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { PlayerInventoryModal } from "./PlayerInventoryModal";
 import type { PlayerDetail } from "@/types";
@@ -30,8 +37,6 @@ interface PlayerRowItem {
   isAfk?: string;
   detail: PlayerDetail;
 }
-
-
 
 export function OnlinePlayersView({
   livePlayers = [],
@@ -123,7 +128,10 @@ export function OnlinePlayersView({
       {actionNotice && (
         <div className="p-3 rounded-lg bg-surface border border-primary/30 text-xs font-mono text-primary flex items-center justify-between shadow-xs">
           <span>{actionNotice}</span>
-          <button onClick={() => setActionNotice(null)} className="text-subtle-foreground hover:text-foreground cursor-pointer">
+          <button
+            onClick={() => setActionNotice(null)}
+            className="text-subtle-foreground hover:text-foreground cursor-pointer"
+          >
             ✕
           </button>
         </div>
@@ -136,7 +144,8 @@ export function OnlinePlayersView({
             Online Players
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-success font-bold">●</span> RUNNING · 7 / 20 Online · Peak 18 Today · Whitelist Enforced
+            <span className="text-success font-bold">●</span> RUNNING · 7 / 20 Online · Peak 18
+            Today · Whitelist Enforced
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -157,10 +166,10 @@ export function OnlinePlayersView({
         {/* Dimension Segmented Filter */}
         <div className="flex items-center h-7 p-0.5 bg-surface-raised border border-border rounded-[6px]">
           {[
-            { id: "all", label: "All Players (7)" },
-            { id: "overworld", label: "Overworld (4)" },
-            { id: "nether", label: "Nether (2)" },
-            { id: "end", label: "The End (1)" },
+            { id: "all", label: `All Players (${playerItems.length})` },
+            { id: "overworld", label: `Overworld (${overworldCount})` },
+            { id: "nether", label: `Nether (${netherCount})` },
+            { id: "end", label: `The End (${endCount})` },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -250,9 +259,7 @@ export function OnlinePlayersView({
                   <TableCell>
                     <div className="flex items-center gap-1.5">
                       <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", player.roleColor)} />
-                      <span className="text-xs font-medium text-heading">
-                        {player.role}
-                      </span>
+                      <span className="text-xs font-medium text-heading">{player.role}</span>
                     </div>
                   </TableCell>
 
@@ -278,8 +285,8 @@ export function OnlinePlayersView({
                             player.dimension === "Nether"
                               ? "bg-danger-surface text-danger-foreground border-danger-border"
                               : player.dimension === "The End"
-                              ? "bg-primary/10 text-primary border-primary/20"
-                              : "bg-info-surface text-info-foreground border-info-border"
+                                ? "bg-primary/10 text-primary border-primary/20"
+                                : "bg-info-surface text-info-foreground border-info-border"
                           )}
                         >
                           {player.dimension}

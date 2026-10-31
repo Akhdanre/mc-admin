@@ -17,20 +17,6 @@ import { useServerStatus } from "@/hooks/useServerStatus";
 import { useServerActions } from "@/hooks/useServerActions";
 import { useFeedback } from "@/hooks/useFeedback";
 
-const TAB_LABELS: Record<AdminTab, string> = {
-  dashboard: "Dashboard",
-  console: "Console & Logs",
-  chat: "Live Chat",
-  users: "Online Players",
-  whitelist: "Access Control",
-  map: "Live World Map",
-  world: "World & Environment",
-  mods: "Mods & Addons",
-  backup: "Backups & Restore",
-  telemetry: "Host Telemetry",
-  settings: "Settings & Configuration",
-};
-
 export default function Home() {
   const [currentTab, setCurrentTab] = useState<AdminTab>("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -51,7 +37,6 @@ export default function Home() {
     isBusy,
     isBackingUp,
     handleWhitelistAction,
-    handleTeleport,
     handleExecuteCommand,
     handleTriggerBackup,
     handleDeleteBackup,
