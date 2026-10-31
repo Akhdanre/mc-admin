@@ -216,7 +216,12 @@ export default function Home() {
             <ConsoleView onExecuteCommand={handleExecuteCommand} isBusy={isBusy} />
           )}
 
-          {currentTab === "chat" && <ChatView />}
+          {currentTab === "chat" && (
+            <ChatView
+              livePlayers={playerStatus?.players ?? []}
+              onExecuteCommand={handleExecuteCommand}
+            />
+          )}
 
           {currentTab === "settings" && (
             <SettingsView

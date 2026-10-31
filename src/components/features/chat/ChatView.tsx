@@ -4,8 +4,13 @@ import { useState, useEffect, useRef, useCallback, type SubmitEvent } from "reac
 import { usePolling } from "@/hooks/usePolling";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { apiGet, apiPost } from "@/lib/api";
 import type { ChatMessage, ChatResponse } from "@/types";
 
+export interface ChatViewProps {
+  livePlayers?: string[];
+  onExecuteCommand?: (command: string) => Promise<string>;
+}
 type ChatChannel = "all" | "in-game" | "discord" | "staff";
 
 interface DisplayMessage {
@@ -17,21 +22,7 @@ interface DisplayMessage {
   channel: "all" | "in-game" | "discord" | "staff";
 }
 
-interface Participant {
-  name: string;
-  role: string;
-  dotColor: string;
-}
-
-const PARTICIPANTS: Participant[] = [
-  { name: "Alex_M", role: "18ms", dotColor: "bg-info" },
-  { name: "Steve_Builder", role: "24ms", dotColor: "bg-success" },
-  { name: "Herobrine_Watcher", role: "42ms", dotColor: "bg-warning" },
-  { name: "Discord Bot", role: "Bridge", dotColor: "bg-primary" },
-];
-
-
-export function ChatView() {
+export function ChatView({ livePlayers = [], onExecuteCommand }: ChatViewProps) {
   const [selectedChannel, setSelectedChannel] = useState<ChatChannel>("all");
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -44,9 +35,7 @@ export function ChatView() {
 
   const fetchChat = useCallback(async () => {
     try {
-      const res = await fetch("/api/chat");
-      if (!res.ok) return;
-      const data = (await res.json()) as ChatResponse;
+      const data = await apiGet<ChatResponse>("/api/chat");
       if (data.messages && data.messages.length > 0) {
         setMessages((prev) => {
           const incoming: DisplayMessage[] = data.messages.map((m: ChatMessage) => ({
@@ -86,7 +75,9 @@ export function ChatView() {
             timestamp: msg.timestamp,
             channel: "in-game",
           };
-          setMessages((prev) => (prev.some((m) => m.id === displayMsg.id) ? prev : [...prev, displayMsg]));
+          setMessages((prev) =>
+            prev.some((m) => m.id === displayMsg.id) ? prev : [...prev, displayMsg]
+          );
         } catch {
           // ignore
         }
@@ -113,7 +104,11 @@ export function ChatView() {
       sender: "Admin (You)",
       role: "admin",
       text: clean,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
       channel: selectedChannel === "all" ? "in-game" : selectedChannel,
     };
 
@@ -121,34 +116,58 @@ export function ChatView() {
     setInputText("");
 
     try {
-      await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: clean }),
-      });
-    } catch {
-      // non-fatal
+      await apiPost("/api/chat", { message: clean });
+    } catch (err: unknown) {
+      setActionNotice(err instanceof Error ? err.message : "Failed to broadcast message");
+      setTimeout(() => setActionNotice(null), 3000);
     } finally {
       setIsSending(false);
     }
   };
 
-  const handleClearChat = () => {
+  const handleClearChat = async () => {
+    if (onExecuteCommand) {
+      try {
+        await onExecuteCommand(
+          'tellraw @a [{"text":"\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n[Server] Chat cleared by Admin."}]'
+        );
+      } catch {
+        // ignore
+      }
+    }
     setMessages([]);
-    setActionNotice("Chat feed cleared locally.");
+    setActionNotice("In-game chat cleared.");
     setTimeout(() => setActionNotice(null), 2500);
   };
 
-  const handleToggleSlowmode = () => {
+  const handleToggleSlowmode = async () => {
     const next = !slowmode;
     setSlowmode(next);
+    if (onExecuteCommand) {
+      try {
+        await onExecuteCommand(
+          `say [Server] Chat slowmode is now ${next ? "enabled (5s interval)" : "disabled"}.`
+        );
+      } catch {
+        // ignore
+      }
+    }
     setActionNotice(`Slowmode ${next ? "enabled (5s interval)" : "disabled"}.`);
     setTimeout(() => setActionNotice(null), 2500);
   };
 
-  const handleToggleMute = () => {
+  const handleToggleMute = async () => {
     const next = !muteAll;
     setMuteAll(next);
+    if (onExecuteCommand) {
+      try {
+        await onExecuteCommand(
+          `say [Server] Emergency chat mute is now ${next ? "ACTIVE" : "LIFTED"}.`
+        );
+      } catch {
+        // ignore
+      }
+    }
     setActionNotice(`Emergency mute ${next ? "active" : "lifted"}.`);
     setTimeout(() => setActionNotice(null), 2500);
   };
@@ -164,7 +183,10 @@ export function ChatView() {
       {actionNotice && (
         <div className="p-2.5 rounded-lg bg-surface border border-primary/30 text-xs font-mono text-primary flex items-center justify-between shadow-xs">
           <span>{actionNotice}</span>
-          <button onClick={() => setActionNotice(null)} className="text-subtle-foreground hover:text-foreground cursor-pointer">
+          <button
+            onClick={() => setActionNotice(null)}
+            className="text-subtle-foreground hover:text-foreground cursor-pointer"
+          >
             ✕
           </button>
         </div>
@@ -177,7 +199,8 @@ export function ChatView() {
             Live Chat
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-success font-bold">●</span> RUNNING · In-Game Chat Stream · Discord SRV Bridge Active (#general)
+            <span className="text-success font-bold">●</span> RUNNING · In-Game Chat Stream ·
+            Discord SRV Bridge Active (#general)
           </p>
         </div>
       </div>
@@ -187,10 +210,22 @@ export function ChatView() {
         {/* Channel Tabs */}
         <div className="flex items-center gap-1.5 p-1 bg-surface border border-border rounded-lg">
           {[
-            { id: "all", label: "All Messages", count: 342 },
-            { id: "in-game", label: "In-Game", count: 286 },
-            { id: "discord", label: "Discord Bridge", count: 56 },
-            { id: "staff", label: "Staff Chat", count: 14 },
+            { id: "all", label: "All Messages", count: messages.length },
+            {
+              id: "in-game",
+              label: "In-Game",
+              count: messages.filter((m) => m.channel === "in-game").length,
+            },
+            {
+              id: "discord",
+              label: "Discord Bridge",
+              count: messages.filter((m) => m.channel === "discord").length,
+            },
+            {
+              id: "staff",
+              label: "Staff Chat",
+              count: messages.filter((m) => m.channel === "staff").length,
+            },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -206,7 +241,9 @@ export function ChatView() {
               <span
                 className={cn(
                   "text-overline font-mono px-1 rounded",
-                  selectedChannel === tab.id ? "bg-background/20 text-background" : "bg-surface-raised text-muted-foreground"
+                  selectedChannel === tab.id
+                    ? "bg-background/20 text-background"
+                    : "bg-surface-raised text-muted-foreground"
                 )}
               >
                 {tab.count}
@@ -240,7 +277,10 @@ export function ChatView() {
               </div>
             ) : (
               filteredMessages.map((msg) => (
-                <div key={msg.id} className="flex items-center gap-2.5 py-1.5 px-1 hover:bg-surface-raised/40 rounded transition-colors group">
+                <div
+                  key={msg.id}
+                  className="flex items-center gap-2.5 py-1.5 px-1 hover:bg-surface-raised/40 rounded transition-colors group"
+                >
                   {/* Timestamp */}
                   <span className="text-xs font-mono text-muted-foreground shrink-0 w-11 select-none">
                     {msg.timestamp}
@@ -251,7 +291,9 @@ export function ChatView() {
                     {msg.role === "bot" ? (
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                         <span>{msg.sender}</span>
-                        <span className="text-overline bg-primary text-primary-foreground px-1 rounded font-bold">BOT</span>
+                        <span className="text-overline bg-primary text-primary-foreground px-1 rounded font-bold">
+                          BOT
+                        </span>
                       </span>
                     ) : msg.role === "server" ? (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-danger-surface text-danger border border-danger-border">
@@ -316,27 +358,48 @@ export function ChatView() {
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-heading">Active In Chat</span>
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-success-surface text-success border border-success-border font-mono">
-                4 online
+                {livePlayers.length} online
               </span>
             </div>
 
             {/* Participants List */}
             <div className="space-y-1.5">
-              {PARTICIPANTS.map((p) => (
-                <div
-                  key={p.name}
-                  className="flex items-center justify-between p-2 rounded-lg bg-surface-raised/50 border border-border/60 text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={cn("w-2 h-2 rounded-full", p.dotColor)} />
-                    <span className="font-semibold text-heading truncate">{p.name}</span>
-                  </div>
-                  <span className="text-xs font-mono text-muted-foreground">{p.role}</span>
+              {livePlayers.length === 0 ? (
+                <div className="p-3 text-center text-xs text-muted-foreground bg-surface-raised/40 rounded-lg font-sans">
+                  No players currently online in-game.
                 </div>
-              ))}
+              ) : (
+                livePlayers.map((name) => (
+                  <div
+                    key={name}
+                    className="flex items-center justify-between p-2 rounded-lg bg-surface-raised/50 border border-border/60 text-xs"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-2 h-2 rounded-full bg-success shrink-0" />
+                      <span className="font-semibold text-heading truncate">{name}</span>
+                    </div>
+                    <span className="text-xs font-mono text-muted-foreground shrink-0">
+                      In-Game
+                    </span>
+                  </div>
+                ))
+              )}
+              <div className="flex items-center justify-between p-2 rounded-lg bg-surface-raised/50 border border-border/60 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-info shrink-0" />
+                  <span className="font-semibold text-heading truncate">Console (RCON)</span>
+                </div>
+                <span className="text-xs font-mono text-muted-foreground shrink-0">Admin</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-surface-raised/50 border border-border/60 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                  <span className="font-semibold text-heading truncate">Discord Relay</span>
+                </div>
+                <span className="text-xs font-mono text-muted-foreground shrink-0">Bridge</span>
+              </div>
             </div>
           </div>
-
           {/* Chat Moderation Box */}
           <div className="p-3 rounded-lg bg-surface-raised/50 border border-border space-y-2">
             <span className="text-overline text-muted-foreground uppercase block">
