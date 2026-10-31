@@ -80,4 +80,42 @@ describe("Chat Log Parser", () => {
     expect(event?.title).toBe("Advancement Made");
     expect(event?.description).toContain("Suit Up");
   });
+
+  it("parses challenge and goal advancements", () => {
+    const challengeLine =
+      "[10Oct2026 19:00:00.000] [Server thread/INFO]: Steve has completed the challenge [How Did We Get Here?]";
+    const challengeEvent = parseServerEvent(challengeLine);
+    expect(challengeEvent).not.toBeNull();
+    expect(challengeEvent?.type).toBe("advancement");
+    expect(challengeEvent?.description).toContain("How Did We Get Here?");
+
+    const goalLine =
+      "[10Oct2026 19:05:00.000] [Server thread/INFO]: Alex has reached the goal [A Furious Cocktail]";
+    const goalEvent = parseServerEvent(goalLine);
+    expect(goalEvent).not.toBeNull();
+    expect(goalEvent?.type).toBe("advancement");
+    expect(goalEvent?.description).toContain("A Furious Cocktail");
+  });
+
+  it("parses player join and leave events", () => {
+    const joinLine = "[10Oct2026 12:00:00.000] [Server thread/INFO]: Steve joined the game";
+    const joinEvent = parseServerEvent(joinLine);
+    expect(joinEvent).not.toBeNull();
+    expect(joinEvent?.type).toBe("join");
+    expect(joinEvent?.description).toContain("**Steve** joined the game");
+
+    const leaveLine = "[10Oct2026 12:30:00.000] [Server thread/INFO]: Steve left the game";
+    const leaveEvent = parseServerEvent(leaveLine);
+    expect(leaveEvent).not.toBeNull();
+    expect(leaveEvent?.type).toBe("leave");
+    expect(leaveEvent?.description).toContain("**Steve** left the game");
+  });
+
+  it("handles complex chat messages containing colons and brackets", () => {
+    const complexLine = "[14:20:00] [Server thread/INFO]: <Miner_99> coords: x=100, y=64, z=-200 [portal]";
+    const msg = parseChatLine(complexLine, 10);
+    expect(msg).not.toBeNull();
+    expect(msg?.sender).toBe("Miner_99");
+    expect(msg?.message).toBe("coords: x=100, y=64, z=-200 [portal]");
+  });
 });
