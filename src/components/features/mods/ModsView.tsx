@@ -18,8 +18,8 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Toggle } from "@/components/ui/Toggle";
 import { Dropzone } from "@/components/ui/Dropzone";
 import { cn } from "@/lib/cn";
+import { MOCK_MODS } from "@/lib/mockData";
 import type { ModInfo, ModItem } from "@/types";
-
 export interface ModsViewProps {
   onShowFeedback?: (message: string, isError?: boolean) => void;
 }
@@ -50,9 +50,13 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
             description: m.description || "Server extension jar",
           }));
           setMods(mapped);
+        } else {
+          setMods(MOCK_MODS);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        setMods(MOCK_MODS);
+      })
       .finally(() => setIsLoading(false));
   };
 
@@ -75,13 +79,16 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
             description: m.description || "Server extension jar",
           }));
           setMods(mapped);
+        } else {
+          setMods(MOCK_MODS);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (mounted) setMods(MOCK_MODS);
+      })
       .finally(() => {
         if (mounted) setIsLoading(false);
       });
-
     return () => {
       mounted = false;
     };
