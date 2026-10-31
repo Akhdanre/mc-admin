@@ -1,30 +1,81 @@
 "use client";
 
 import { useState } from "react";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { ProgressGauge } from "@/components/ui/ProgressGauge";
-import { MOCK_TELEMETRY, type MockTelemetryData } from "@/lib/mockData";
+import { cn } from "@/lib/cn";
 
 export interface TelemetryViewProps {
   onRefresh?: () => void;
   isRefreshing?: boolean;
 }
 
+interface SparkHotspot {
+  rank: string;
+  pct: string;
+  category: string;
+  method: string;
+}
+
+const SPARK_HOTSPOTS: SparkHotspot[] = [
+  {
+    rank: "#1",
+    pct: "18.24%",
+    category: "[MOD LOGIC]",
+    method: "com.majruszsdifficulty.undeadarmy.UndeadArmy.tick()",
+  },
+  {
+    rank: "#2",
+    pct: "14.12%",
+    category: "[MOB AI ENGINE]",
+    method: "net.minecraft.world.entity.ai.goal.GoalSelector.tick()",
+  },
+  {
+    rank: "#3",
+    pct: "11.85%",
+    category: "[CHUNK TICK]",
+    method: "net.minecraft.server.level.ServerChunkCache.tickChunks()",
+  },
+  {
+    rank: "#4",
+    pct: "8.45%",
+    category: "[BLOCK PHYSICS]",
+    method: "net.minecraft.world.level.block.piston.PistonBaseBlock.checkSite()",
+  },
+  {
+    rank: "#5",
+    pct: "6.30%",
+    category: "[DYNMAP TILE I/O]",
+    method: "org.dynmap.forge.DynmapPlugin.renderQueue()",
+  },
+];
+
 export function TelemetryView({ onRefresh, isRefreshing = false }: TelemetryViewProps) {
-  const [telemetry] = useState<MockTelemetryData>(MOCK_TELEMETRY);
   const [isProfiling, setIsProfiling] = useState(false);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
 
   const handleRunSpark = () => {
     setIsProfiling(true);
+    setActionNotice("Sampling 18,402 ticks across server threads...");
     setTimeout(() => {
       setIsProfiling(false);
-      alert("Spark profiler report generated: https://spark.lucko.me/sample-report-id");
-    }, 1500);
+      setActionNotice("Spark profiler report generated: spark.lucko.me/sample-report-id");
+      setTimeout(() => setActionNotice(null), 4000);
+    }, 2000);
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      {/* Toast Notice */}
+      {actionNotice && (
+        <div className="p-3 rounded-lg bg-surface border border-primary/30 text-xs font-mono text-primary flex items-center justify-between shadow-xs">
+          <span>{actionNotice}</span>
+          <button onClick={() => setActionNotice(null)} className="text-subtle-foreground hover:text-foreground cursor-pointer">
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -57,216 +108,216 @@ export function TelemetryView({ onRefresh, isRefreshing = false }: TelemetryView
         </div>
       </div>
 
-      {/* Host Hardware & Engine Banner */}
-      <div className="bg-surface border border-border rounded-xl p-4 shadow-xs">
-        <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Dedicated Node Specifications & Runtime
+      {/* Host Hardware & Engine Banner (Penpot exact) */}
+      <div className="bg-surface border border-border rounded-xl p-3 sm:px-4 sm:py-3 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="space-y-0.5 text-xs">
+          <div className="font-semibold text-heading">
+            Host OS: Debian GNU/Linux 12 (bookworm) · Kernel 6.1.0-53-amd64
+          </div>
+          <div className="text-muted-foreground font-mono text-[11px]">
+            CPU: Intel Core i5-7200U @ 2.50GHz (2 Cores, 4 Threads) · Load Avg: 0.42, 0.38, 0.35
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-          <div>
-            <div className="text-muted-foreground">Host Processor</div>
-            <div className="font-semibold text-heading mt-0.5">{telemetry.hostCpu}</div>
-          </div>
-          <div>
-            <div className="text-muted-foreground">Physical Memory & Storage</div>
-            <div className="font-semibold text-heading mt-0.5">
-              {telemetry.hostRam} · NVMe RAID1
-            </div>
-          </div>
-          <div>
-            <div className="text-muted-foreground">Paper Engine & Build</div>
-            <div className="font-semibold text-heading mt-0.5">{telemetry.paperBuild}</div>
-          </div>
-          <div>
-            <div className="text-muted-foreground">Continuous Server Uptime</div>
-            <div className="font-semibold text-emerald-500 font-mono mt-0.5">
-              {telemetry.uptime}
-            </div>
-          </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+            ● 20.0 TPS (Stable)
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+            MSPT: 24.2 ms
+          </span>
         </div>
       </div>
 
-      {/* 4-Metric Grid */}
+      {/* Telemetry 4-Metric Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1 */}
-        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Container CPU Load
+        {/* Card 1: CONTAINER CPU LOAD */}
+        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+            CONTAINER CPU LOAD
           </div>
-          <div className="text-2xl font-semibold text-heading mt-2">
-            {telemetry.cpuPercent}%
+          <div className="text-2xl font-semibold text-heading font-mono">
+            12.4% Utilized
           </div>
-          <div className="mt-3">
-            <ProgressGauge value={telemetry.cpuPercent} tone="auto" />
-            <div className="text-[10px] text-muted-foreground text-right mt-1">
-              Threshold budget 100%
+          <div>
+            <ProgressGauge value={12.4} tone="auto" />
+            <div className="text-[11px] text-muted-foreground mt-1.5 font-mono">
+              Intel i5-7200U · 4 Threads active
             </div>
           </div>
         </div>
 
-        {/* Metric 2 */}
-        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            JVM Heap Allocation
+        {/* Card 2: JVM HEAP ALLOCATION */}
+        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+            JVM HEAP ALLOCATION
           </div>
-          <div className="text-2xl font-semibold text-heading mt-2">
-            {(telemetry.heapUsedMb / 1024).toFixed(1)} GB / {(telemetry.heapMaxMb / 1024).toFixed(1)} GB
+          <div className="text-2xl font-semibold text-heading font-mono">
+            7.57 GB / 8.00 GB
           </div>
-          <div className="mt-3">
-            <ProgressGauge
-              value={(telemetry.heapUsedMb / telemetry.heapMaxMb) * 100}
-              tone="primary"
-            />
-            <div className="text-[10px] text-muted-foreground text-right mt-1">
-              50% committed memory
+          <div>
+            <ProgressGauge value={94.6} tone="danger" />
+            <div className="text-[11px] text-muted-foreground mt-1.5 font-mono">
+              G1GC Collector · 18ms avg pause
             </div>
           </div>
         </div>
 
-        {/* Metric 3 */}
-        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Engine Tick Rate
+        {/* Card 3: HOST PHYSICAL RAM */}
+        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+            HOST PHYSICAL RAM
           </div>
-          <div className="text-2xl font-semibold text-emerald-500 mt-2">
-            {telemetry.tps} TPS
+          <div className="text-2xl font-semibold text-heading font-mono">
+            8.2 GB / 15.5 GB
           </div>
-          <div className="mt-3">
-            <ProgressGauge value={(telemetry.tps / 20) * 100} tone="success" />
-            <div className="text-[10px] text-muted-foreground text-right mt-1">
-              Target 20.0 TPS (99% health)
+          <div>
+            <ProgressGauge value={52.9} tone="auto" />
+            <div className="text-[11px] text-muted-foreground mt-1.5 font-mono">
+              7.4 GB OS Cache · 7.3 GB Available
             </div>
           </div>
         </div>
 
-        {/* Metric 4 */}
-        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Average MSPT
+        {/* Card 4: DISK NVME FOOTPRINT */}
+        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+            DISK NVME FOOTPRINT
           </div>
-          <div className="text-2xl font-semibold text-heading mt-2">
-            {telemetry.mspt} ms
+          <div className="text-2xl font-semibold text-heading font-mono">
+            48 GB / 233 GB
           </div>
-          <div className="mt-3">
-            <ProgressGauge value={(telemetry.mspt / 50) * 100} tone="auto" />
-            <div className="text-[10px] text-muted-foreground text-right mt-1">
-              Budget 50.0 ms per tick
+          <div>
+            <ProgressGauge value={20.6} tone="auto" />
+            <div className="text-[11px] text-muted-foreground mt-1.5 font-mono">
+              174 GB Free · /dev/sda1 (ext4)
             </div>
           </div>
         </div>
       </div>
 
-      {/* Deep Telemetry Row 2 */}
+      {/* Deep Telemetry Row 2 (2 Large Cards) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* MSPT Percentiles */}
-        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs space-y-3">
-          <div className="text-sm font-semibold text-heading">Tick MSPT Distribution Percentiles</div>
-          <div className="space-y-2">
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground">50th Percentile (Median)</span>
-                <span className="font-mono font-semibold text-heading">
-                  {telemetry.msptPercentiles.p50} ms
-                </span>
-              </div>
-              <ProgressGauge value={(telemetry.msptPercentiles.p50 / 50) * 100} tone="success" />
+        {/* Card Left: MSPT & Engine Distribution */}
+        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs space-y-3.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-heading">
+              TICK TIME ENGINE DISTRIBUTION (MSPT)
+            </span>
+            <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
+              Target: &lt; 50.0 ms (20 TPS)
+            </span>
+          </div>
+
+          {/* Stacked Tick Bar */}
+          <div className="h-5 rounded-md overflow-hidden flex text-[10px] font-mono font-bold text-white shadow-xs">
+            <div style={{ width: "22.4%" }} className="bg-amber-500 flex items-center justify-center truncate px-1" title="Entities 22.4%">
+              Entities (22.4%)
             </div>
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground">95th Percentile</span>
-                <span className="font-mono font-semibold text-heading">
-                  {telemetry.msptPercentiles.p95} ms
-                </span>
-              </div>
-              <ProgressGauge value={(telemetry.msptPercentiles.p95 / 50) * 100} tone="auto" />
+            <div style={{ width: "18.2%" }} className="bg-purple-600 flex items-center justify-center truncate px-1" title="Mods 18.2%">
+              Mods (18.2%)
             </div>
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground">99th Percentile (Worst Spikes)</span>
-                <span className="font-mono font-semibold text-heading">
-                  {telemetry.msptPercentiles.p99} ms
-                </span>
-              </div>
-              <ProgressGauge value={(telemetry.msptPercentiles.p99 / 50) * 100} tone="danger" />
+            <div style={{ width: "20.5%" }} className="bg-rose-500 flex items-center justify-center truncate px-1" title="Redstone">
+              Redstone
+            </div>
+            <div style={{ width: "38.9%" }} className="bg-emerald-500/80 text-emerald-950 flex items-center justify-center truncate px-1" title="Idle Headroom 38.9%">
+              Idle Headroom (38.9%)
+            </div>
+          </div>
+
+          {/* Engine Dimension Breakdown */}
+          <div className="divide-y divide-border/40 text-xs font-mono space-y-2 pt-1">
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-heading">Overworld (world) Dimension Tick</span>
+              <span className="text-muted-foreground">14.8 ms / tick (61% load)</span>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-heading">Nether (world_nether) Dimension Tick</span>
+              <span className="text-muted-foreground">5.2 ms / tick (21% load)</span>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-heading">The End (world_the_end) Dimension Tick</span>
+              <span className="text-muted-foreground">4.2 ms / tick (18% load)</span>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-heading">Packet Network Dispatch Rate</span>
+              <span className="text-muted-foreground">142 packets / sec · 18.4 KB/s</span>
             </div>
           </div>
         </div>
 
-        {/* JVM GC Metrics */}
-        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs space-y-3">
-          <div className="text-sm font-semibold text-heading">JVM Garbage Collector Statistics</div>
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="p-3 bg-surface-raised rounded-lg border border-border">
-              <div className="text-xs text-muted-foreground">Young Gen GC Pauses</div>
-              <div className="text-lg font-semibold text-heading mt-1">
-                {telemetry.gcPauses.youngCount.toLocaleString()}
-              </div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">
-                Total pause time: {telemetry.gcPauses.youngTimeMs} ms
-              </div>
+        {/* Card Right: JVM Garbage Collection & Heap Pools */}
+        <div className="bg-surface border border-border rounded-xl p-4 shadow-xs space-y-3.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-heading">
+              JVM GARBAGE COLLECTION & HEAP POOLS
+            </span>
+            <span className="text-[11px] font-mono text-muted-foreground">
+              Collector: G1GC (-XX:+UseG1GC)
+            </span>
+          </div>
+
+          <div className="divide-y divide-border/40 text-xs font-mono space-y-2">
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-heading">Eden Space (Young Generation)</span>
+              <span className="text-amber-500 font-semibold">1.45 GB / 1.80 GB (80.5%)</span>
             </div>
-            <div className="p-3 bg-surface-raised rounded-lg border border-border">
-              <div className="text-xs text-muted-foreground">Old Gen (Major) Pauses</div>
-              <div className="text-lg font-semibold text-heading mt-1">
-                {telemetry.gcPauses.oldCount}
-              </div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">
-                Total pause time: {telemetry.gcPauses.oldTimeMs} ms
-              </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-heading">Survivor Space</span>
+              <span className="text-muted-foreground">128 MB / 256 MB (50.0%)</span>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-heading">Tenured (Old Generation Pool)</span>
+              <span className="text-emerald-500 font-semibold">5.99 GB / 5.94 GB (Cleaned)</span>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-heading">Metaspace (Class Metadata)</span>
+              <span className="text-muted-foreground">184 MB / Unlimited</span>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-heading">GC Pause Frequency & Max Stall</span>
+              <span className="text-muted-foreground">1.2 pauses / min · 18.2 ms max pause</span>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-heading">Direct ByteBuffers / Native Memory</span>
+              <span className="text-muted-foreground">412 MB allocated</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Spark Profiler Sampler Table Card */}
+      {/* Spark Profiler Sampler Table Card (Penpot exact) */}
       <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
-        <div className="p-3.5 border-b border-border flex items-center justify-between">
-          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Spark Profiler Top Tick Consumers
-          </div>
-          <span className="text-xs font-mono text-muted-foreground">Sampling Window: 15 min</span>
+        <div className="p-3.5 border-b border-border bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+          <span className="text-xs font-bold text-heading uppercase tracking-wider">
+            LIVE SPARK PROFILER METHOD SAMPLING (TOP EXECUTION HOTSPOTS)
+          </span>
+          <span className="text-[11px] font-mono text-muted-foreground">
+            Sample count: 18,402 ticks · Sampling Interval: 10ms · Engine: Spark 1.10.53
+          </span>
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[420px]">Method / Subsystem</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Self Time</TableHead>
-              <TableHead className="text-right">% of Tick</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {telemetry.profilerSamples.map((sample) => (
-              <TableRow key={sample.method}>
-                <TableCell>
-                  <span className="font-mono text-xs font-medium text-heading">
-                    {sample.method}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-surface-raised border border-border text-subtle-foreground">
-                    {sample.category}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span className="font-mono text-xs text-heading">
-                    {sample.selfTimeMs} ms
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="inline-flex items-center gap-2 justify-end">
-                    <span className="font-mono text-xs font-semibold text-heading">
-                      {sample.percent}%
-                    </span>
-                    <div className="w-16">
-                      <ProgressGauge value={sample.percent} tone="primary" size="sm" />
-                    </div>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+
+        <div className="divide-y divide-border/40 p-2 sm:p-3 space-y-1.5 font-mono text-xs">
+          {SPARK_HOTSPOTS.map((hotspot) => (
+            <div
+              key={hotspot.rank}
+              className="flex items-center gap-3 py-1.5 px-2 hover:bg-surface-raised/50 rounded transition-colors"
+            >
+              <span className="font-bold text-muted-foreground w-6 shrink-0">
+                {hotspot.rank}
+              </span>
+              <span className="font-bold text-rose-500 w-16 shrink-0">
+                {hotspot.pct}
+              </span>
+              <span className="text-[11px] px-1.5 py-0.2 rounded bg-surface-raised border border-border text-heading shrink-0 font-semibold">
+                {hotspot.category}
+              </span>
+              <span className="text-muted-foreground truncate flex-1 min-w-0">
+                {hotspot.method}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
