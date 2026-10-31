@@ -365,7 +365,7 @@ export function DashboardOverview({
               {TPS_BARS.map((height, idx) => (
                 <div
                   key={idx}
-                  className="flex-1 bg-success-muted rounded-t-xs transition-all hover:bg-success"
+                  className="flex-1 bg-emerald-400 rounded-t-xs transition-all hover:bg-emerald-500"
                   style={{ height: `${height}px` }}
                 />
               ))}
@@ -374,7 +374,7 @@ export function DashboardOverview({
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
               <span className="text-subtle-foreground font-sans">Engine Loop</span>
-              <span className="text-success font-semibold">Live</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
             </div>
           </div>
 
@@ -390,7 +390,7 @@ export function DashboardOverview({
               {MSPT_BARS.map((height, idx) => (
                 <div
                   key={idx}
-                  className="flex-1 bg-info/60 rounded-t-xs transition-all hover:bg-info"
+                  className="flex-1 bg-blue-300 dark:bg-blue-400/80 rounded-t-xs transition-all hover:bg-blue-400"
                   style={{ height: `${height}px` }}
                 />
               ))}
@@ -399,7 +399,7 @@ export function DashboardOverview({
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
               <span className="text-subtle-foreground font-sans">Tick Calculation</span>
-              <span className="text-success font-semibold">Live</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
             </div>
           </div>
 
@@ -415,7 +415,7 @@ export function DashboardOverview({
               {PING_BARS.map((height, idx) => (
                 <div
                   key={idx}
-                  className="flex-1 bg-primary/60 rounded-t-xs transition-all hover:bg-primary"
+                  className="flex-1 bg-violet-300 dark:bg-violet-400/80 rounded-t-xs transition-all hover:bg-violet-400"
                   style={{ height: `${height}px` }}
                 />
               ))}
@@ -424,7 +424,7 @@ export function DashboardOverview({
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
               <span className="text-subtle-foreground font-sans">Tunnel Route Ingress</span>
-              <span className="text-success font-semibold">Live</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
             </div>
           </div>
         </div>
