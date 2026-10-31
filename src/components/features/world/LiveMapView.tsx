@@ -317,7 +317,12 @@ export function LiveMapView({
                 className="text-xs h-7 px-2.5"
                 title="Rerender chunk tiles for current world"
               >
-                ⚡ Rerender
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5z" />
+                  </svg>
+                  <span>Rerender</span>
+                </span>
               </Button>
 
               <Button
@@ -405,8 +410,13 @@ export function LiveMapView({
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-surface-raised/30">
-            <div className="w-16 h-16 rounded-2xl bg-surface-raised border border-border flex items-center justify-center text-3xl mb-3">
-              🗺️
+            <div className="w-16 h-16 rounded-2xl bg-surface-raised border border-border flex items-center justify-center text-muted-foreground mb-3">
+              <svg className="w-8 h-8" viewBox="0 0 16 16" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"
+                />
+              </svg>
             </div>
             <h3 className="text-base font-semibold text-heading">Map Server Not Reachable</h3>
             <p className="text-xs text-muted-foreground max-w-md mt-1 mb-4 leading-relaxed">

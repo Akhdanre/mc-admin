@@ -197,7 +197,16 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
         <div className="flex items-center gap-2">
           {stagedCount > 0 && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-warning-surface text-warning border border-warning-border">
-              <span>🔄 {stagedCount} Staged (/restart)</span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z" />
+                  <path
+                    fillRule="evenodd"
+                    d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A4.985 4.985 0 0 1 8 2c2.76 0 5 2.24 5 5a.5.5 0 0 1-1 0c0-2.21-1.79-4-4-4zm-4.992 8.5a.5.5 0 0 1 .5.5c0 2.21 1.79 4 4 4 1.552 0 2.94-.707 3.857-1.818a.5.5 0 1 1 .771.636A4.985 4.985 0 0 1 8 16c-2.76 0-5-2.24-5-5a.5.5 0 0 1 .5-.5z"
+                  />
+                </svg>
+                <span>{stagedCount} Staged (/restart)</span>
+              </span>
             </span>
           )}
           <Button size="sm" variant="outline" onClick={fetchMods} className="text-xs h-8 px-3">
@@ -246,7 +255,13 @@ export function ModsView({ onShowFeedback }: ModsViewProps) {
         {filteredMods.length === 0 ? (
           <div className="py-16 px-4 text-center">
             <div className="w-12 h-12 rounded-full bg-surface-raised border border-border flex items-center justify-center text-muted-foreground mx-auto mb-3">
-              🧩
+              <svg
+                className="w-6 h-6 text-muted-foreground"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+              >
+                <path d="M3.112 5.112a3.145 3.145 0 0 1-.211-.396A3.026 3.026 0 0 1 2.5 3.564 3.076 3.076 0 0 1 3.564 2.5a3.026 3.026 0 0 1 1.152-.401c.133-.021.266-.032.396-.211A1.5 1.5 0 0 1 6.5 2.5h3A1.5 1.5 0 0 1 11 1.888c.13.179.263.19.396.211.393.062.779.2 1.152.401.373.202.71.468 1.064.952.355.485.49 1.026.401 1.152a1.5 1.5 0 0 1-.613 1.396V9.5a1.5 1.5 0 0 1 .613 1.396c.089.126-.046.667-.401 1.152-.354.484-.691.75-1.064.952-.373.201-.759.339-1.152.401-.133.021-.266.032-.396.211A1.5 1.5 0 0 1 9.5 14.5h-3a1.5 1.5 0 0 1-1.5-.612c-.13-.179-.263-.19-.396-.211a3.026 3.026 0 0 1-1.152-.401 3.076 3.076 0 0 1-.952-1.064 3.026 3.026 0 0 1-.401-1.152A1.5 1.5 0 0 1 1.5 9.5V6.5a1.5 1.5 0 0 1 .612-1.388zm6.388 7.388a.5.5 0 0 0 .5.5h.5a.5.5 0 0 0 .5-.5V11a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 0 .5-.5v-.5a.5.5 0 0 0-.5-.5H11a.5.5 0 0 1-.5-.5V7a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 0 .5-.5v-.5a.5.5 0 0 0-.5-.5H11a.5.5 0 0 1-.5-.5V3a.5.5 0 0 0-.5-.5h-.5a.5.5 0 0 0-.5.5V4.5a.5.5 0 0 1-.5.5H7a.5.5 0 0 1-.5-.5V3a.5.5 0 0 0-.5-.5h-.5a.5.5 0 0 0-.5.5V4.5a.5.5 0 0 1-.5.5H3.5a.5.5 0 0 0-.5.5v.5a.5.5 0 0 0 .5.5H5a.5.5 0 0 1 .5.5V8.5a.5.5 0 0 1-.5.5H3.5a.5.5 0 0 0-.5.5v.5a.5.5 0 0 0 .5.5H5a.5.5 0 0 1 .5.5V12a.5.5 0 0 0 .5.5h.5a.5.5 0 0 0 .5-.5V10.5a.5.5 0 0 1 .5-.5H8a.5.5 0 0 1 .5.5v1.5z" />
+              </svg>
             </div>
             <h3 className="text-sm font-semibold text-heading">No plugins or mods found</h3>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
