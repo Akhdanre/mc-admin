@@ -1,14 +1,16 @@
-export { getRecentChatMessages, sendChatMessage } from "./service";
+export { getRecentChatMessages, getRecentConsoleLogs, sendChatMessage } from "./service";
 
 export {
   startChatTailer,
   subscribeToChatStream,
   subscribeToServerEvents,
+  subscribeToLogStream,
 } from "./tailer";
 
 export {
   parseChatLine,
   parseServerEvent,
+  parseConsoleLogLine,
   type ParsedServerEvent,
   JOIN_REGEX,
   LEAVE_REGEX,

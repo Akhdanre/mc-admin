@@ -3,19 +3,15 @@
 import { useState, useRef, useEffect, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { apiGet } from "@/lib/api";
+import type { ConsoleLogsResponse, ConsoleLogItem } from "@/types";
 
 export interface ConsoleViewProps {
   onExecuteCommand: (command: string) => Promise<string>;
   isBusy: boolean;
 }
 
-interface LogItem {
-  id: string;
-  time: string;
-  level: "INFO" | "WARN" | "ERROR";
-  message: string;
-  isCommand?: boolean;
-}
+type LogItem = ConsoleLogItem;
 
 export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
   const [command, setCommand] = useState("");
@@ -25,21 +21,60 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
 
   const terminalRef = useRef<HTMLDivElement>(null);
 
+  // Fetch initial logs and stream live log events via SSE
+  useEffect(() => {
+    let active = true;
+
+    apiGet<ConsoleLogsResponse>("/api/logs")
+      .then((data) => {
+        if (active && Array.isArray(data?.logs) && data.logs.length > 0) {
+          setLogs(data.logs);
+        }
+      })
+      .catch(() => {});
+
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource("/api/logs/stream");
+
+      eventSource.onmessage = (event) => {
+        if (!active) return;
+        try {
+          const item = JSON.parse(event.data) as LogItem;
+          if (item && item.message) {
+            setLogs((prev) => {
+              const next = [...prev, item];
+              return next.length > 3000 ? next.slice(-2000) : next;
+            });
+          }
+        } catch {
+          // Keep-alive or unparseable event
+        }
+      };
+    } catch {
+      // EventSource unavailable
+    }
+
+    return () => {
+      active = false;
+      if (eventSource) eventSource.close();
+    };
+  }, []);
+
   useEffect(() => {
     if (!isPaused && terminalRef.current) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
   }, [logs, isPaused]);
-
   const quickPresets = [
-    { label: "/tps", cmd: "tps" },
+    { label: "/forge tps", cmd: "forge tps" },
     { label: "/list", cmd: "list" },
-    { label: "/save-all", cmd: "save-all" },
     { label: "/seed", cmd: "seed" },
+    { label: "/save-all", cmd: "save-all" },
     { label: "/whitelist list", cmd: "whitelist list" },
     { label: "/weather clear", cmd: "weather clear" },
+    { label: "/time set day", cmd: "time set day" },
   ];
-
   const handleRun = async (cmdToRun: string) => {
     const clean = cmdToRun.trim().replace(/^\//, "");
     if (!clean) return;
@@ -112,7 +147,8 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
             Console & Logs
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-success font-bold">●</span> ONLINE · Interactive RCON Terminal · Buffer 5,000 Lines
+            <span className="text-success font-bold">●</span> ONLINE · Interactive RCON Terminal ·
+            Buffer 5,000 Lines
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -216,7 +252,9 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
           {filteredLogs.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-20 text-[#6b778a]">
               <span className="font-mono text-sm font-semibold text-[#94a3b8]">Terminal Ready</span>
-              <span className="font-mono text-xs mt-1 text-[#64748b]">Awaiting server console output or command execution.</span>
+              <span className="font-mono text-xs mt-1 text-[#64748b]">
+                Awaiting server console output or command execution.
+              </span>
             </div>
           ) : (
             filteredLogs.map((log) => {

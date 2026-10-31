@@ -4,8 +4,13 @@ import path from "path";
 import readline from "readline";
 import { EventEmitter } from "events";
 import { config } from "@/server/core";
-import { parseChatLine, parseServerEvent, type ParsedServerEvent } from "./parse";
-import type { ChatMessage } from "@/types";
+import {
+  parseChatLine,
+  parseConsoleLogLine,
+  parseServerEvent,
+  type ParsedServerEvent,
+} from "./parse";
+import type { ChatMessage, ConsoleLogItem } from "@/types";
 
 // ---------------------------------------------------------------------------
 // Realtime Log File Tailer & Event Stream
@@ -85,6 +90,7 @@ class ChatLogTailer extends EventEmitter {
       });
 
       rl.on("line", (line) => {
+        this.emit("logLine", line);
         const chat = parseChatLine(line, 0);
         if (chat) {
           console.log(`[ChatTailer] Detected in-game chat: <${chat.sender}> ${chat.message}`);
@@ -133,5 +139,18 @@ export function subscribeToServerEvents(callback: (event: ParsedServerEvent) => 
   tailer.on("serverEvent", callback);
   return () => {
     tailer.off("serverEvent", callback);
+  };
+}
+
+export function subscribeToLogStream(callback: (log: ConsoleLogItem) => void): () => void {
+  tailer.start();
+  let counter = 0;
+  const handler = (line: string) => {
+    counter = (counter + 1) % 10000;
+    callback(parseConsoleLogLine(line, counter));
+  };
+  tailer.on("logLine", handler);
+  return () => {
+    tailer.off("logLine", handler);
   };
 }

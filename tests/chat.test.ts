@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseChatLine, parseServerEvent } from "@/server/chat";
+import { parseChatLine, parseConsoleLogLine, parseServerEvent } from "@/server/chat";
 
 describe("Chat Log Parser", () => {
   it("parses Forge/Modded player chat lines with [Not Secure] prefix", () => {
@@ -47,8 +47,7 @@ describe("Chat Log Parser", () => {
   });
 
   it("returns null for non-chat lines", () => {
-    const loginLine =
-      "[06Oct2026 11:59:00.677] [Server thread/INFO]: Karepto joined the game";
+    const loginLine = "[06Oct2026 11:59:00.677] [Server thread/INFO]: Karepto joined the game";
     expect(parseChatLine(loginLine, 4)).toBeNull();
 
     const garbageLine = "Some random line without tags";
@@ -112,10 +111,27 @@ describe("Chat Log Parser", () => {
   });
 
   it("handles complex chat messages containing colons and brackets", () => {
-    const complexLine = "[14:20:00] [Server thread/INFO]: <Miner_99> coords: x=100, y=64, z=-200 [portal]";
+    const complexLine =
+      "[14:20:00] [Server thread/INFO]: <Miner_99> coords: x=100, y=64, z=-200 [portal]";
     const msg = parseChatLine(complexLine, 10);
     expect(msg).not.toBeNull();
     expect(msg?.sender).toBe("Miner_99");
     expect(msg?.message).toBe("coords: x=100, y=64, z=-200 [portal]");
+  });
+
+  it("parses console log lines with timestamp and severity levels", () => {
+    const infoLine = "[31Oct2026 15:25:24.382] [RCON Listener #1/INFO]: Thread RCON Client started";
+    const infoLog = parseConsoleLogLine(infoLine, 1);
+    expect(infoLog.time).toBe("15:25:24");
+    expect(infoLog.level).toBe("INFO");
+    expect(infoLog.message).toBe(infoLine);
+
+    const warnLine = "[15:30:00 WARN]: Can't keep up! Is the server overloaded?";
+    const warnLog = parseConsoleLogLine(warnLine, 2);
+    expect(warnLog.level).toBe("WARN");
+
+    const errorLine = "[15:31:00 ERROR]: Encountered an unexpected exception";
+    const errorLog = parseConsoleLogLine(errorLine, 3);
+    expect(errorLog.level).toBe("ERROR");
   });
 });

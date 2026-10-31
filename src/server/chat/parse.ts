@@ -1,4 +1,4 @@
-import type { ChatMessage } from "@/types";
+import type { ChatMessage, ConsoleLogItem } from "@/types";
 
 // Matches Forge / Vanilla timestamps: [06Oct2026 11:48:04.547] or [11:48:04]
 const TIMESTAMP_REGEX = /^\[([^\]]+)\]/;
@@ -11,8 +11,10 @@ const SERVER_CHAT_REGEX = /\[(Server|Rcon)\]\s*(.*)$/;
 
 export const JOIN_REGEX = /:\s*([a-zA-Z0-9_]{1,16})\s+joined the game/;
 export const LEAVE_REGEX = /:\s*([a-zA-Z0-9_]{1,16})\s+left the game/;
-export const ADVANCEMENT_REGEX = /:\s*([a-zA-Z0-9_]{1,16})\s+(has made the advancement|has completed the challenge|has reached the goal)\s+(\[.+\])/;
-export const DEATH_REGEX = /:\s*([a-zA-Z0-9_]{1,16})\s+(was slain by|was shot by|was blown up by|was killed by|was impaled by|was doomed to fall by|fell from a high place|fell out of the world|fell off|hit the ground too hard|drowned|withered away|burned to death|went up in flames|walked into fire|walked into danger|suffocated in a wall|tried to swim in lava|starved to death|died|was squashed by|was struck by lightning|froze to death|discovered floor was lava|was stung to death|was roasted|was squished|experienced kinetic energy|blew up|was killed)(.*)$/;
+export const ADVANCEMENT_REGEX =
+  /:\s*([a-zA-Z0-9_]{1,16})\s+(has made the advancement|has completed the challenge|has reached the goal)\s+(\[.+\])/;
+export const DEATH_REGEX =
+  /:\s*([a-zA-Z0-9_]{1,16})\s+(was slain by|was shot by|was blown up by|was killed by|was impaled by|was doomed to fall by|fell from a high place|fell out of the world|fell off|hit the ground too hard|drowned|withered away|burned to death|went up in flames|walked into fire|walked into danger|suffocated in a wall|tried to swim in lava|starved to death|died|was squashed by|was struck by lightning|froze to death|discovered floor was lava|was stung to death|was roasted|was squished|experienced kinetic energy|blew up|was killed)(.*)$/;
 
 export interface ParsedServerEvent {
   type: "join" | "leave" | "advancement" | "death";
@@ -94,4 +96,29 @@ export function parseChatLine(line: string, index: number): ChatMessage | null {
   }
 
   return null;
+}
+
+export function parseConsoleLogLine(line: string, index: number): ConsoleLogItem {
+  const tsMatch = line.match(TIMESTAMP_REGEX);
+  let time = "00:00:00";
+  if (tsMatch?.[1]) {
+    const timeMatch = tsMatch[1].match(/(\d{2}:\d{2}:\d{2})/);
+    if (timeMatch?.[1]) {
+      time = timeMatch[1];
+    }
+  }
+
+  let level: "INFO" | "WARN" | "ERROR" = "INFO";
+  if (/ERROR|FATAL|SEVERE/i.test(line)) {
+    level = "ERROR";
+  } else if (/WARN(?:ING)?/i.test(line)) {
+    level = "WARN";
+  }
+
+  return {
+    id: `log-${index}-${Date.now()}`,
+    time,
+    level,
+    message: line,
+  };
 }
