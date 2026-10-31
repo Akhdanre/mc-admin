@@ -18,6 +18,7 @@ export type ButtonVariant =
   | "success"
   | "danger"
   | "ghost"
+  | "outline"
   | "tab"
   | "tab-active";
 
@@ -41,6 +42,7 @@ const variants: Record<ButtonVariant, string> = {
   danger:
     "bg-danger/20 text-danger-foreground border border-danger-border/50 hover:bg-danger/30",
   ghost: "text-muted-foreground hover:text-foreground hover:bg-surface-raised",
+  outline: "bg-transparent text-heading border border-border hover:bg-surface-raised",
   tab: "text-muted-foreground hover:text-foreground",
   "tab-active": "bg-primary text-primary-foreground shadow-sm",
 };
