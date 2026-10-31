@@ -109,7 +109,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
             Access Control
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-emerald-500 font-bold">●</span> ENFORCED · Gatekeeper Rules, Whitelist & Security Blacklists
+            <span className="text-success font-bold">●</span> ENFORCED · Gatekeeper Rules, Whitelist & Security Blacklists
           </p>
         </div>
       </div>
@@ -234,7 +234,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
                     </TableCell>
                     <TableCell>
                       {item.isOp ? (
-                        <span className="px-1.5 py-0.5 rounded text-overline uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                        <span className="px-1.5 py-0.5 rounded text-overline uppercase bg-warning-surface text-warning-foreground border border-warning-border">
                           Operator
                         </span>
                       ) : (
@@ -322,7 +322,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
                               "https://mc-heads.net/avatar/Steve/24";
                           }}
                         />
-                        <span className="font-semibold text-rose-500">{ban.username}</span>
+                        <span className="font-semibold text-danger">{ban.username}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -339,8 +339,8 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
                         className={cn(
                           "px-1.5 py-0.2 rounded text-overline border uppercase",
                           ban.expires === "Permanent"
-                            ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
-                            : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                            ? "bg-danger-surface text-danger-foreground border-danger-border"
+                            : "bg-warning-surface text-warning-foreground border-warning-border"
                         )}
                       >
                         {ban.expires}
@@ -406,7 +406,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
                 {ipBans.map((ipEntry) => (
                   <TableRow key={ipEntry.ip}>
                     <TableCell>
-                      <span className="font-mono text-xs font-semibold text-rose-500">
+                      <span className="font-mono text-xs font-semibold text-danger">
                         {ipEntry.ip}
                       </span>
                     </TableCell>

@@ -24,10 +24,10 @@ interface Participant {
 }
 
 const PARTICIPANTS: Participant[] = [
-  { name: "Alex_M", role: "18ms", dotColor: "bg-blue-500" },
-  { name: "Steve_Builder", role: "24ms", dotColor: "bg-emerald-500" },
-  { name: "Herobrine_Watcher", role: "42ms", dotColor: "bg-amber-500" },
-  { name: "Discord Bot", role: "Bridge", dotColor: "bg-indigo-500" },
+  { name: "Alex_M", role: "18ms", dotColor: "bg-info" },
+  { name: "Steve_Builder", role: "24ms", dotColor: "bg-success" },
+  { name: "Herobrine_Watcher", role: "42ms", dotColor: "bg-warning" },
+  { name: "Discord Bot", role: "Bridge", dotColor: "bg-primary" },
 ];
 
 const PENPOT_CHAT_MESSAGES: DisplayMessage[] = [
@@ -204,7 +204,7 @@ export function ChatPage() {
             Live Chat
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-emerald-500 font-bold">●</span> RUNNING · In-Game Chat Stream · Discord SRV Bridge Active (#general)
+            <span className="text-success font-bold">●</span> RUNNING · In-Game Chat Stream · Discord SRV Bridge Active (#general)
           </p>
         </div>
       </div>
@@ -244,12 +244,12 @@ export function ChatPage() {
 
         {/* Chat Utilities */}
         <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20 font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             Discord Bridge Active
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-heading text-background font-mono shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-success" />
             Live Stream
           </div>
         </div>
@@ -276,20 +276,20 @@ export function ChatPage() {
                   {/* Author Tag */}
                   <div className="shrink-0 flex items-center gap-1">
                     {msg.role === "bot" ? (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                         <span>{msg.sender}</span>
-                        <span className="text-overline bg-indigo-500 text-white dark:text-slate-950 px-1 rounded font-bold">BOT</span>
+                        <span className="text-overline bg-primary text-primary-foreground px-1 rounded font-bold">BOT</span>
                       </span>
                     ) : msg.role === "server" ? (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-danger-surface text-danger border border-danger-border">
                         {msg.sender}
                       </span>
                     ) : msg.role === "admin" ? (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                         {msg.sender}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-info-surface text-info border border-info-border">
                         {msg.sender}
                       </span>
                     )}
@@ -308,7 +308,7 @@ export function ChatPage() {
           {/* Chat Send Input Row */}
           <div className="p-2.5 border-t border-border bg-surface-raised/50 shrink-0">
             <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0 font-mono">
+              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-info-surface text-info border border-info-border shrink-0 font-mono">
                 [Server Admin]
               </span>
 
@@ -342,7 +342,7 @@ export function ChatPage() {
             {/* Panel Header */}
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-heading">Active In Chat</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-success-surface text-success border border-success-border font-mono">
                 4 online
               </span>
             </div>
@@ -385,7 +385,7 @@ export function ChatPage() {
               className={cn(
                 "w-full flex items-center gap-2 px-2.5 py-1.5 rounded border text-xs transition-colors cursor-pointer",
                 slowmode
-                  ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold"
+                  ? "bg-warning-surface border-warning-border text-warning font-semibold"
                   : "bg-surface border-border hover:bg-surface-raised text-heading"
               )}
             >
@@ -399,7 +399,7 @@ export function ChatPage() {
               className={cn(
                 "w-full flex items-center gap-2 px-2.5 py-1.5 rounded border text-xs transition-colors cursor-pointer",
                 muteAll
-                  ? "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 font-semibold"
+                  ? "bg-danger-surface border-danger-border text-danger font-semibold"
                   : "bg-surface border-border hover:bg-surface-raised text-heading"
               )}
             >

@@ -122,7 +122,7 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
             Settings & Configuration
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-emerald-500 font-bold">●</span> ONLINE · Docker mc-server · Forge 1.20.1 · 8 GB Allocated · server.properties
+            <span className="text-success font-bold">●</span> ONLINE · Docker mc-server · Forge 1.20.1 · 8 GB Allocated · server.properties
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
             <span className="text-xs font-semibold text-heading">
               Docker: mc-server (itzg/minecraft-server)
             </span>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline uppercase bg-success-surface text-success border border-success-border">
               RUNNING
             </span>
           </div>
@@ -237,7 +237,7 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
           {/* Action Row */}
           <div className="pt-2 border-t border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <span className="font-mono text-muted-foreground">
-              <span className="text-emerald-500 font-bold">●</span> Next Auto-Restart: Today at 04:00 UTC (in 19h 36m)
+              <span className="text-success font-bold">●</span> Next Auto-Restart: Today at 04:00 UTC (in 19h 36m)
             </span>
             <Button size="sm" variant="outline" onClick={handleRestartNow} className="h-7 text-xs px-2.5">
               Restart Now (60s)
@@ -304,7 +304,7 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
 
           {/* Action Row */}
           <div className="pt-2 border-t border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-            <span className="font-mono text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-success">
               {rconStatus}
             </span>
             <Button
@@ -329,7 +329,7 @@ export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
               <span className="text-overline text-muted-foreground uppercase">
                 BACKUP AUTOMATION & RETENTION RULES
               </span>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-success-surface text-success border border-success-border">
                 Active Schedule
               </span>
             </div>

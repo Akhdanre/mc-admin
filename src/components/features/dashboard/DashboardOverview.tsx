@@ -60,7 +60,7 @@ function TerminalIcon() {
 
 function PromptIcon() {
   return (
-    <svg className="w-3.5 h-3.5 text-slate-800 dark:text-slate-200" viewBox="0 0 16 16" fill="currentColor">
+    <svg className="w-3.5 h-3.5 text-heading" viewBox="0 0 16 16" fill="currentColor">
       <path d="M2.5 4.5L6 8L2.5 11.5L3.5 12.5L8 8L3.5 3.5L2.5 4.5zm5.5 7h5.5v1.5H8v-1.5z" />
     </svg>
   );
@@ -68,7 +68,7 @@ function PromptIcon() {
 
 function BanIcon() {
   return (
-    <svg className="w-3.5 h-3.5 text-red-500" viewBox="0 0 16 16" fill="currentColor">
+    <svg className="w-3.5 h-3.5 text-danger" viewBox="0 0 16 16" fill="currentColor">
       <path d="M8 1.5C4.41 1.5 1.5 4.41 1.5 8s2.91 6.5 6.5 6.5 6.5-2.91 6.5-6.5S11.59 1.5 8 1.5zM3.4 8c0-1.1.4-2.1 1-2.9l6.5 6.5c-.8.6-1.8 1-2.9 1-2.5 0-4.6-2.1-4.6-4.6zm8.2 2.9L5.1 4.4c.8-.6 1.8-1 2.9-1 2.5 0 4.6 2.1 4.6 4.6 0 1.1-.4 2.1-1 2.9z" />
     </svg>
   );
@@ -76,7 +76,7 @@ function BanIcon() {
 
 function UserCheckIcon() {
   return (
-    <svg className="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 16 16" fill="currentColor">
+    <svg className="w-3.5 h-3.5 text-success" viewBox="0 0 16 16" fill="currentColor">
       <path d="M6 6c1.38 0 2.5-1.12 2.5-2.5S7.38 1 6 1 3.5 2.12 3.5 3.5 4.62 6 6 6zm-5 7.5v-1.5c0-1.8 3.3-2.8 5-2.8.5 0 1.1.1 1.7.2L6.6 10.5c-.2.2-.3.5-.3.8v2.2H1zm11.7-4.2l-3.2 3.2-1.5-1.5-.7.7 2.2 2.2 3.9-3.9-.7-.7z" />
     </svg>
   );
@@ -84,7 +84,7 @@ function UserCheckIcon() {
 
 function CloudBackupIcon() {
   return (
-    <svg className="w-3.5 h-3.5 text-indigo-500" viewBox="0 0 16 16" fill="currentColor">
+    <svg className="w-3.5 h-3.5 text-primary" viewBox="0 0 16 16" fill="currentColor">
       <path d="M12.5 6c-.1-1.87-1.48-3.43-3.33-3.74-1.85-.31-3.66.7-4.37 2.44C3.02 4.8 1.6 6.22 1.5 8c0 1.93 1.57 3.5 3.5 3.5h7.5c1.66 0 3-1.34 3-3 0-1.4-1-2.6-2.5-2.9z" />
     </svg>
   );
@@ -92,7 +92,7 @@ function CloudBackupIcon() {
 
 function WarningAlertIcon() {
   return (
-    <svg className="w-3.5 h-3.5 text-amber-500" viewBox="0 0 16 16" fill="currentColor">
+    <svg className="w-3.5 h-3.5 text-warning" viewBox="0 0 16 16" fill="currentColor">
       <path d="M8 2L1.5 13.5h13L8 2zm-.7 3.5h1.4v4H7.3v-4zm0 5h1.4v1.5H7.3v-1.5z" />
     </svg>
   );
@@ -144,21 +144,21 @@ export function DashboardOverview({
       text: "_xKaelin executed /time set day",
       time: "2m ago",
       tag: "RCON",
-      tagTone: "bg-[#eff6ff] text-foreground border-[#dbeafe] dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900",
+      tagTone: "bg-info-surface text-foreground border-info-border",
     },
     {
       icon: <BanIcon />,
       text: "GriefBot banned by Console",
       time: "6m ago",
       tag: "JOIN",
-      tagTone: "bg-[#ecfdf5] text-foreground border-[#a7f3d0] dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900",
+      tagTone: "bg-success-surface text-foreground border-success-border",
     },
     {
       icon: <UserCheckIcon />,
       text: `${whitelistStatus.players[0] || "notch_fan_99"} added to whitelist`,
       time: "11m ago",
       tag: "WORLD",
-      tagTone: "bg-[#f8fafc] text-foreground border-[#e2e8f0] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+      tagTone: "bg-surface-raised text-foreground border-border",
     },
     {
       icon: <CloudBackupIcon />,
@@ -167,14 +167,14 @@ export function DashboardOverview({
         : "Automated backup completed",
       time: "18m ago",
       tag: "ADVANCEMENT",
-      tagTone: "bg-[#fef3c7] text-foreground border-[#fde68a] dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900",
+      tagTone: "bg-warning-surface text-foreground border-warning-border",
     },
     {
       icon: <WarningAlertIcon />,
       text: "TPS drop detected (16.2 TPS)",
       time: "25m ago",
       tag: "BACKUP",
-      tagTone: "bg-[#f3e8ff] text-foreground border-[#e9d5ff] dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900",
+      tagTone: "bg-primary/10 text-foreground border-primary/20",
     },
   ];
 
@@ -203,7 +203,7 @@ export function DashboardOverview({
             <span
               className={cn(
                 "w-2 h-2 rounded-full shrink-0",
-                isOnline ? "bg-emerald-500" : "bg-danger"
+                isOnline ? "bg-success" : "bg-danger"
               )}
             />
             <span className="font-semibold">{isOnline ? "ONLINE" : "OFFLINE"}</span>
@@ -260,9 +260,9 @@ export function DashboardOverview({
               / {playerStatus.maxCount || 20}
             </span>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
+          <div className="w-full bg-surface-raised rounded-full h-1.5 my-2.5 overflow-hidden">
             <div
-              className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+              className="bg-success h-full rounded-full transition-all duration-500"
               style={{ width: `${capacityPercent}%` }}
             />
           </div>
@@ -280,8 +280,8 @@ export function DashboardOverview({
             3.2{" "}
             <span className="text-sm font-normal text-subtle-foreground font-sans">/ 8.0 GB</span>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
-            <div className="bg-blue-500 h-full rounded-full" style={{ width: "40%" }} />
+          <div className="w-full bg-surface-raised rounded-full h-1.5 my-2.5 overflow-hidden">
+            <div className="bg-primary h-full rounded-full" style={{ width: "40%" }} />
           </div>
           <div className="text-xs text-subtle-foreground truncate">
             40% · Aikar G1GC 14ms avg
@@ -296,9 +296,9 @@ export function DashboardOverview({
           <div className="text-2xl font-semibold text-heading font-mono mt-2">
             {isOnline ? "19.8 TPS" : "0.0 TPS"}
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
+          <div className="w-full bg-surface-raised rounded-full h-1.5 my-2.5 overflow-hidden">
             <div
-              className={cn("h-full rounded-full", isOnline ? "bg-emerald-500" : "bg-danger")}
+              className={cn("h-full rounded-full", isOnline ? "bg-success" : "bg-danger")}
               style={{ width: isOnline ? "99%" : "0%" }}
             />
           </div>
@@ -317,8 +317,8 @@ export function DashboardOverview({
               ? `${backupStatus.totalSizeFormatted} NVMe`
               : "18.4 GB NVMe"}
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 my-2.5 overflow-hidden">
-            <div className="bg-indigo-500 h-full rounded-full" style={{ width: "55%" }} />
+          <div className="w-full bg-surface-raised rounded-full h-1.5 my-2.5 overflow-hidden">
+            <div className="bg-primary h-full rounded-full" style={{ width: "55%" }} />
           </div>
           <div className="text-xs text-subtle-foreground truncate">
             1,030 chunks · {backupStatus?.totalCount ?? 0} Backups stored
@@ -365,7 +365,7 @@ export function DashboardOverview({
               {TPS_BARS.map((height, idx) => (
                 <div
                   key={idx}
-                  className="flex-1 bg-emerald-400 rounded-t-xs transition-all hover:bg-emerald-500"
+                  className="flex-1 bg-success-muted rounded-t-xs transition-all hover:bg-success"
                   style={{ height: `${height}px` }}
                 />
               ))}
@@ -374,7 +374,7 @@ export function DashboardOverview({
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
               <span className="text-subtle-foreground font-sans">Engine Loop</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
+              <span className="text-success font-semibold">Live</span>
             </div>
           </div>
 
@@ -390,7 +390,7 @@ export function DashboardOverview({
               {MSPT_BARS.map((height, idx) => (
                 <div
                   key={idx}
-                  className="flex-1 bg-blue-300 dark:bg-blue-400/80 rounded-t-xs transition-all hover:bg-blue-400"
+                  className="flex-1 bg-info/60 rounded-t-xs transition-all hover:bg-info"
                   style={{ height: `${height}px` }}
                 />
               ))}
@@ -399,7 +399,7 @@ export function DashboardOverview({
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
               <span className="text-subtle-foreground font-sans">Tick Calculation</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
+              <span className="text-success font-semibold">Live</span>
             </div>
           </div>
 
@@ -415,7 +415,7 @@ export function DashboardOverview({
               {PING_BARS.map((height, idx) => (
                 <div
                   key={idx}
-                  className="flex-1 bg-violet-300 dark:bg-violet-400/80 rounded-t-xs transition-all hover:bg-violet-400"
+                  className="flex-1 bg-primary/60 rounded-t-xs transition-all hover:bg-primary"
                   style={{ height: `${height}px` }}
                 />
               ))}
@@ -424,7 +424,7 @@ export function DashboardOverview({
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
               <span className="text-subtle-foreground font-sans">Tunnel Route Ingress</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
+              <span className="text-success font-semibold">Live</span>
             </div>
           </div>
         </div>
@@ -502,8 +502,8 @@ export function DashboardOverview({
                         <span className="px-2 py-0.5 rounded bg-surface-raised text-xs text-muted-foreground font-mono">
                           {locLabel}
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span className="flex items-center gap-1 text-xs text-success font-mono font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-success" />
                           24ms
                         </span>
                         <span className="text-xs text-muted-foreground font-mono">

@@ -103,22 +103,22 @@ export function PlayerInventoryModal({
 
             {/* Stack count badge */}
             {item.count > 1 && (
-              <span className="absolute bottom-1 right-1 font-mono font-bold text-xs text-white bg-slate-900/85 px-1 py-0.2 rounded-xs leading-none shadow-xs select-none pointer-events-none">
+              <span className="absolute bottom-1 right-1 font-mono font-bold text-xs text-terminal-foreground bg-terminal/85 px-1 py-0.2 rounded-xs leading-none shadow-xs select-none pointer-events-none">
                 {item.count}
               </span>
             )}
 
             {/* Durability bar */}
             {item.durability && (
-              <div className="absolute bottom-1 left-1.5 right-1.5 h-1 bg-slate-900/80 rounded-full overflow-hidden pointer-events-none">
+              <div className="absolute bottom-1 left-1.5 right-1.5 h-1 bg-terminal/80 rounded-full overflow-hidden pointer-events-none">
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
                     item.durability.current / item.durability.max > 0.5
-                      ? "bg-emerald-500"
+                      ? "bg-success"
                       : item.durability.current / item.durability.max > 0.2
-                        ? "bg-amber-500"
-                        : "bg-rose-500"
+                        ? "bg-warning"
+                        : "bg-danger"
                   )}
                   style={{
                     width: `${Math.round((item.durability.current / item.durability.max) * 100)}%`,

@@ -37,7 +37,7 @@ export function LiveMap({ mapUrl = "http://localhost:8123" }: LiveMapProps) {
             Live World Map
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-emerald-500 font-bold">●</span> ONLINE · Dynmap 3.7-beta-6 · 169,708 Tiles Rendered · Port 8123
+            <span className="text-success font-bold">●</span> ONLINE · Dynmap 3.7-beta-6 · 169,708 Tiles Rendered · Port 8123
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export function LiveMap({ mapUrl = "http://localhost:8123" }: LiveMapProps) {
           <div className="absolute bottom-4 left-4 z-10 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-3 shadow-lg max-w-xs space-y-2 select-none">
             <div className="flex items-center justify-between text-overline text-muted-foreground uppercase">
               <span>Tracked Players</span>
-              <span className="text-emerald-500 font-mono font-bold">{MOCK_PLAYERS.length} Online</span>
+              <span className="text-success font-mono font-bold">{MOCK_PLAYERS.length} Online</span>
             </div>
             <div className="space-y-1.5 max-h-36 overflow-y-auto">
               {MOCK_PLAYERS.map((p) => (

@@ -22,7 +22,7 @@ const SPARK_HOTSPOTS: SparkHotspot[] = [
   {
     rank: "#1",
     pct: "18.24%",
-    pctColor: "text-rose-500",
+    pctColor: "text-danger",
     category: "[MOD LOGIC]",
     method: "com.majruszsdifficulty.undeadarmy.UndeadArmy.tick()",
     isAltBg: false,
@@ -30,7 +30,7 @@ const SPARK_HOTSPOTS: SparkHotspot[] = [
   {
     rank: "#2",
     pct: "14.12%",
-    pctColor: "text-amber-500",
+    pctColor: "text-warning",
     category: "[MOB AI ENGINE]",
     method: "net.minecraft.world.entity.ai.goal.GoalSelector.tick()",
     isAltBg: true,
@@ -94,7 +94,7 @@ export function TelemetryView({ onRefresh, isRefreshing = false }: TelemetryView
             System Telemetry & Performance
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-emerald-500 font-bold">●</span> LIVE TELEMETRY · 1s Polling · Intel i5-7200U · 15.5 GB RAM · Docker Container mc-server
+            <span className="text-success font-bold">●</span> LIVE TELEMETRY · 1s Polling · Intel i5-7200U · 15.5 GB RAM · Docker Container mc-server
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -129,7 +129,7 @@ export function TelemetryView({ onRefresh, isRefreshing = false }: TelemetryView
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="inline-flex items-center h-6 px-2.5 rounded-[4px] text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+          <span className="inline-flex items-center h-6 px-2.5 rounded-[4px] text-xs font-medium bg-success-surface text-success border border-success-border font-mono">
             ● 20.0 TPS (Stable)
           </span>
           <span className="inline-flex items-center h-6 px-2.5 rounded-[4px] text-xs font-medium bg-primary/10 text-primary border border-primary/20 font-mono">
@@ -168,7 +168,7 @@ export function TelemetryView({ onRefresh, isRefreshing = false }: TelemetryView
           </div>
           <div>
             <div className="h-1 w-full bg-surface-raised rounded-[2px] overflow-hidden">
-              <div style={{ width: "94%" }} className="h-full bg-amber-500 rounded-[2px]" />
+              <div style={{ width: "94%" }} className="h-full bg-warning rounded-[2px]" />
             </div>
             <div className="text-xs text-muted-foreground mt-1 font-mono">
               G1GC Collector · 18ms avg pause
@@ -186,7 +186,7 @@ export function TelemetryView({ onRefresh, isRefreshing = false }: TelemetryView
           </div>
           <div>
             <div className="h-1 w-full bg-surface-raised rounded-[2px] overflow-hidden">
-              <div style={{ width: "52%" }} className="h-full bg-emerald-600 dark:bg-emerald-500 rounded-[2px]" />
+              <div style={{ width: "52%" }} className="h-full bg-success rounded-[2px]" />
             </div>
             <div className="text-xs text-muted-foreground mt-1 font-mono">
               7.4 GB OS Cache · 7.3 GB Available
@@ -204,7 +204,7 @@ export function TelemetryView({ onRefresh, isRefreshing = false }: TelemetryView
           </div>
           <div>
             <div className="h-1 w-full bg-surface-raised rounded-[2px] overflow-hidden">
-              <div style={{ width: "21%" }} className="h-full bg-emerald-600 dark:bg-emerald-500 rounded-[2px]" />
+              <div style={{ width: "21%" }} className="h-full bg-success rounded-[2px]" />
             </div>
             <div className="text-xs text-muted-foreground mt-1 font-mono">
               174 GB Free · /dev/sda1 (ext4)
@@ -221,26 +221,26 @@ export function TelemetryView({ onRefresh, isRefreshing = false }: TelemetryView
             <span className="text-overline text-heading uppercase">
               TICK TIME ENGINE DISTRIBUTION (MSPT)
             </span>
-            <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-mono text-success">
               Target: &lt; 50.0 ms (20 TPS)
             </span>
           </div>
 
           {/* Tick Stack Bar (Penpot exact 5 segments: Entities 22.4%, Mods 18.2%, Redstone 12%, I/O 8%, Idle 38.9%) */}
           <div className="h-[22px] rounded-[4px] bg-surface-raised overflow-hidden flex text-overline font-mono text-white shadow-xs">
-            <div style={{ width: "22.4%" }} className="h-full bg-[#dc2626] flex items-center justify-center truncate px-1" title="Entities (22.4%)">
+            <div style={{ width: "22.4%" }} className="h-full bg-danger flex items-center justify-center truncate px-1" title="Entities (22.4%)">
               Entities (22.4%)
             </div>
-            <div style={{ width: "18.2%" }} className="h-full bg-[#d97706] flex items-center justify-center truncate px-1" title="Mods (18.2%)">
+            <div style={{ width: "18.2%" }} className="h-full bg-warning flex items-center justify-center truncate px-1" title="Mods (18.2%)">
               Mods (18.2%)
             </div>
-            <div style={{ width: "12%" }} className="h-full bg-[#2656c8] flex items-center justify-center truncate px-1" title="Redstone (12%)">
+            <div style={{ width: "12%" }} className="h-full bg-primary flex items-center justify-center truncate px-1" title="Redstone (12%)">
               Redstone
             </div>
-            <div style={{ width: "8%" }} className="h-full bg-[#7c3aed] flex items-center justify-center truncate px-0.5" title="I / O (8%)">
+            <div style={{ width: "8%" }} className="h-full bg-info flex items-center justify-center truncate px-0.5" title="I / O (8%)">
               I/O
             </div>
-            <div style={{ width: "39.4%" }} className="h-full bg-[#15803d] flex items-center justify-center truncate px-1" title="Idle Headroom (38.9%)">
+            <div style={{ width: "39.4%" }} className="h-full bg-success flex items-center justify-center truncate px-1" title="Idle Headroom (38.9%)">
               Idle Headroom (38.9%)
             </div>
           </div>

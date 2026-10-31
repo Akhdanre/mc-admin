@@ -201,7 +201,7 @@ export function BackupPage({
             Backups & Restore
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-emerald-500 font-bold">●</span> HEALTHY · Daily Snapshots · 7-Day Auto Retention · 174 GB Disk Free
+            <span className="text-success font-bold">●</span> HEALTHY · Daily Snapshots · 7-Day Auto Retention · 174 GB Disk Free
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -261,7 +261,7 @@ export function BackupPage({
             <span className="text-overline text-muted-foreground uppercase">
               AUTOMATED SNAPSHOTS
             </span>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-success-surface text-success border border-success-border font-mono">
               ● Daily Enabled
             </span>
           </div>
@@ -286,7 +286,7 @@ export function BackupPage({
             <span className="text-overline text-muted-foreground uppercase">
               OFF-SITE CLOUD SYNC
             </span>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-mono">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-semibold bg-primary/10 text-primary border border-primary/20 font-mono">
               ● S3 Wasabi
             </span>
           </div>
@@ -360,7 +360,7 @@ export function BackupPage({
                           {archive.filename}
                         </span>
                         {archive.isLatest && (
-                          <span className="px-1.5 py-0.2 rounded text-overline font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          <span className="px-1.5 py-0.2 rounded text-overline font-bold uppercase bg-success-surface text-success border border-success-border">
                             Latest
                           </span>
                         )}
@@ -391,11 +391,11 @@ export function BackupPage({
 
                   <TableCell>
                     {archive.status === "Verified" ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-overline font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-overline font-semibold bg-success-surface text-success border border-success-border">
                         ✓ Verified
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-overline font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-overline font-semibold bg-info-surface text-info border border-info-border">
                         📌 Pinned (Manual)
                       </span>
                     )}

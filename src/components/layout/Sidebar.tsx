@@ -46,7 +46,7 @@ function BrandLogo({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "w-8 h-8 rounded-lg bg-[#2656c8] flex items-center justify-center text-white shrink-0 shadow-xs",
+        "w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold font-mono text-sm shadow-xs select-none shrink-0",
         className
       )}
     >
@@ -274,7 +274,7 @@ export function Sidebar({
               <span
                 className={cn(
                   "w-1.5 h-1.5 rounded-full shrink-0",
-                  isConnected ? "bg-emerald-500 animate-pulse" : "bg-danger"
+                  isConnected ? "bg-success animate-pulse" : "bg-danger"
                 )}
               />
               <span>{isConnected ? "Online" : "Offline"}</span>

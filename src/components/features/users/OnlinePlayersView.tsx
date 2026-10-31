@@ -35,96 +35,96 @@ const PENPOT_PLAYERS: PlayerRowItem[] = [
   {
     id: "p1",
     initials: "XK",
-    avatarColor: "bg-blue-600 text-white",
+    avatarColor: "bg-info text-info-foreground",
     username: "_xKaelin",
     role: "Admin",
-    roleColor: "bg-blue-600",
+    roleColor: "bg-info",
     health: "❤ 20/20 HP",
     food: "🍗 20/20",
     dimension: "Overworld",
     coords: "X: 124, Y: 68, Z: -321",
     ping: "18ms",
-    pingColor: "bg-emerald-500",
+    pingColor: "bg-success",
     session: "4h 12m",
     mockDetail: MOCK_PLAYERS[0],
   },
   {
     id: "p2",
     initials: "NF",
-    avatarColor: "bg-emerald-600 text-white",
+    avatarColor: "bg-success text-success-foreground",
     username: "notch_fan_99",
     role: "Member",
-    roleColor: "bg-slate-500",
+    roleColor: "bg-muted-foreground",
     health: "❤ 20/20 HP",
     food: "🍗 19/20",
     dimension: "Overworld",
     coords: "X: -810, Y: 63, Z: 412",
     ping: "31ms",
-    pingColor: "bg-emerald-500",
+    pingColor: "bg-success",
     session: "1h 45m",
     mockDetail: MOCK_PLAYERS[1],
   },
   {
     id: "p3",
     initials: "DP",
-    avatarColor: "bg-indigo-600 text-white",
+    avatarColor: "bg-primary text-primary-foreground",
     username: "DiamondPick42",
     role: "Moderator",
-    roleColor: "bg-indigo-600",
+    roleColor: "bg-primary",
     health: "❤ 18/20 HP",
     food: "🍗 16/20",
     dimension: "Nether",
     coords: "X: -42, Y: 72, Z: 104",
     ping: "42ms",
-    pingColor: "bg-emerald-500",
+    pingColor: "bg-success",
     session: "58m",
     mockDetail: MOCK_PLAYERS[2],
   },
   {
     id: "p4",
     initials: "ES",
-    avatarColor: "bg-purple-600 text-white",
+    avatarColor: "bg-primary text-primary-foreground",
     username: "EndermanSlayer",
     role: "VIP+",
-    roleColor: "bg-amber-500",
+    roleColor: "bg-warning",
     health: "❤ 20/20 HP",
     food: "🍗 20/20",
     dimension: "The End",
     coords: "X: 0, Y: 64, Z: 0",
     ping: "28ms",
-    pingColor: "bg-emerald-500",
+    pingColor: "bg-success",
     session: "2h 15m",
     mockDetail: MOCK_PLAYERS[3],
   },
   {
     id: "p5",
     initials: "RM",
-    avatarColor: "bg-rose-600 text-white",
+    avatarColor: "bg-danger text-danger-foreground",
     username: "RedstoneMaster",
     role: "Member",
-    roleColor: "bg-slate-500",
+    roleColor: "bg-muted-foreground",
     health: "❤ 14/20 HP",
     food: "🍗 18/20",
     dimension: "Overworld",
     coords: "X: 210, Y: 71, Z: -88",
     ping: "88ms",
-    pingColor: "bg-amber-500",
+    pingColor: "bg-warning",
     session: "3h 30m",
     mockDetail: MOCK_PLAYERS[4],
   },
   {
     id: "p6",
     initials: "SB",
-    avatarColor: "bg-amber-600 text-white",
+    avatarColor: "bg-warning text-warning-foreground",
     username: "Steve_Builder",
     role: "Member",
-    roleColor: "bg-slate-500",
+    roleColor: "bg-muted-foreground",
     health: "❤ 20/20 HP",
     food: "🍗 15/20",
     dimension: "Nether",
     coords: "X: -65, Y: 58, Z: 180",
     ping: "115ms",
-    pingColor: "bg-rose-500",
+    pingColor: "bg-danger",
     session: "38m",
     isAfk: "• AFK (14m)",
     mockDetail: MOCK_PLAYERS[5] || MOCK_PLAYERS[0],
@@ -132,16 +132,16 @@ const PENPOT_PLAYERS: PlayerRowItem[] = [
   {
     id: "p7",
     initials: "HW",
-    avatarColor: "bg-slate-700 text-white",
+    avatarColor: "bg-surface-raised text-heading",
     username: "Herobrine_Watcher",
     role: "Spectator",
-    roleColor: "bg-purple-600",
+    roleColor: "bg-primary",
     health: "❤ 20/20 HP",
     food: "🍗 20/20",
     dimension: "Overworld",
     coords: "X: 420, Y: 64, Z: -120",
     ping: "24ms",
-    pingColor: "bg-emerald-500",
+    pingColor: "bg-success",
     session: "1h 10m",
     mockDetail: MOCK_PLAYERS[6] || MOCK_PLAYERS[0],
   },
@@ -220,7 +220,7 @@ export function OnlinePlayersView({
             Online Players
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-emerald-500 font-bold">●</span> RUNNING · 7 / 20 Online · Peak 18 Today · Whitelist Enforced
+            <span className="text-success font-bold">●</span> RUNNING · 7 / 20 Online · Peak 18 Today · Whitelist Enforced
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -239,7 +239,7 @@ export function OnlinePlayersView({
       {/* Players Toolbar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
         {/* Dimension Segmented Filter */}
-        <div className="flex items-center h-7 p-0.5 bg-[#eef1f5] dark:bg-surface-raised border border-[#e1e6ed] dark:border-border rounded-[6px]">
+        <div className="flex items-center h-7 p-0.5 bg-surface-raised border border-border rounded-[6px]">
           {[
             { id: "all", label: "All Players (7)" },
             { id: "overworld", label: "Overworld (4)" },
@@ -252,8 +252,8 @@ export function OnlinePlayersView({
               className={cn(
                 "h-[22px] px-2.5 rounded-[4px] text-xs transition-colors whitespace-nowrap cursor-pointer flex items-center justify-center font-medium",
                 dimensionFilter === tab.id
-                  ? "bg-white dark:bg-surface text-[#161b24] dark:text-heading border border-[#cbd3de] dark:border-border shadow-xs font-medium"
-                  : "text-[#3a4455] dark:text-muted-foreground hover:text-heading"
+                  ? "bg-surface text-heading border border-border-strong shadow-xs font-medium"
+                  : "text-muted-foreground hover:text-heading"
               )}
             >
               {tab.label}
@@ -269,7 +269,7 @@ export function OnlinePlayersView({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari gamertag, IP, atau UUID..."
-              className="w-full h-7 bg-white dark:bg-surface-raised border border-[#e1e6ed] dark:border-border rounded-[6px] px-2.5 text-xs text-heading placeholder:text-[#9aa5b5] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+              className="w-full h-7 bg-surface border border-border rounded-[6px] px-2.5 text-xs text-heading placeholder:text-subtle-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
             />
           </div>
 
@@ -282,7 +282,7 @@ export function OnlinePlayersView({
                 setTimeout(() => setActionNotice(null), 3000);
               }
             }}
-            className="h-7 px-3 bg-white dark:bg-surface hover:bg-surface-raised border border-[#cbd3de] dark:border-border rounded-[6px] text-xs font-medium text-[#161b24] dark:text-heading cursor-pointer whitespace-nowrap shadow-xs"
+            className="h-7 px-3 bg-surface hover:bg-surface-raised border border-border rounded-[6px] text-xs font-medium text-heading cursor-pointer whitespace-nowrap shadow-xs"
           >
             Broadcast Msg
           </button>
@@ -343,10 +343,10 @@ export function OnlinePlayersView({
                   {/* HEALTH & HUNGER */}
                   <TableCell>
                     <div className="flex items-center gap-2 text-xs font-mono">
-                      <span className="text-rose-500 font-medium whitespace-nowrap">
+                      <span className="text-danger font-medium whitespace-nowrap">
                         {player.health}
                       </span>
-                      <span className="text-amber-600 dark:text-amber-500 font-medium whitespace-nowrap">
+                      <span className="text-warning-foreground font-medium whitespace-nowrap">
                         {player.food}
                       </span>
                     </div>
@@ -360,10 +360,10 @@ export function OnlinePlayersView({
                           className={cn(
                             "inline-flex items-center px-1.5 py-0.2 rounded text-overline border",
                             player.dimension === "Nether"
-                              ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                              ? "bg-danger-surface text-danger-foreground border-danger-border"
                               : player.dimension === "The End"
-                              ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
-                              : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                              ? "bg-primary/10 text-primary border-primary/20"
+                              : "bg-info-surface text-info-foreground border-info-border"
                           )}
                         >
                           {player.dimension}
@@ -402,7 +402,7 @@ export function OnlinePlayersView({
                         size="sm"
                         variant="outline"
                         onClick={() => handleInspect(player.mockDetail)}
-                        className="text-xs h-6.5 px-2.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 hover:bg-blue-500/20"
+                        className="text-xs h-6.5 px-2.5 bg-info-surface text-info-foreground border-info-border hover:bg-info/20"
                       >
                         Inspect
                       </Button>

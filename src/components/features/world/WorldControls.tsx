@@ -133,7 +133,7 @@ export function WorldControls({
             World & Environment
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5 flex-wrap">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
             <span className="font-semibold text-heading">ONLINE</span>
             <span>·</span>
             <span>3 Dimensions</span>
@@ -238,7 +238,7 @@ export function WorldControls({
                   className={cn(
                     "flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-colors cursor-pointer",
                     isSelected
-                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                      ? "border-success-border bg-success-surface text-success-foreground"
                       : "border-border bg-surface-raised/40 hover:bg-surface-raised text-heading"
                   )}
                 >
@@ -247,7 +247,7 @@ export function WorldControls({
                     className={cn(
                       "text-overline font-mono mt-0.5",
                       isSelected
-                        ? "text-emerald-600 dark:text-emerald-400"
+                        ? "text-success"
                         : "text-muted-foreground"
                     )}
                   >
@@ -261,7 +261,7 @@ export function WorldControls({
           {/* Weather Control Row */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-border">
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
               <span className="text-muted-foreground">Weather Cycle:</span>
               <span className="text-subtle-foreground font-mono text-xs">
                 ({MOCK_WORLD.weatherCycle})
@@ -284,7 +284,7 @@ export function WorldControls({
                     className={cn(
                       "text-xs px-2.5 py-1 rounded-md font-medium border transition-colors cursor-pointer",
                       isSelected
-                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+                        ? "bg-success-surface border-success-border text-success-foreground"
                         : "bg-surface-raised border-border text-muted-foreground hover:text-heading"
                     )}
                   >
@@ -306,8 +306,8 @@ export function WorldControls({
                 Server Modes & Difficulty Engine
               </span>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-overline font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-overline font-medium bg-success-surface text-success border border-success-border">
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
               Live Enforced
             </span>
           </div>

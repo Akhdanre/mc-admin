@@ -122,11 +122,11 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
             Mods & Addons
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-emerald-500 font-bold">●</span> ONLINE · 49 Installed Mods (211 MB) · Forge 47.3.0 · Minecraft 1.20.1
+            <span className="text-success font-bold">●</span> ONLINE · 49 Installed Mods (211 MB) · Forge 47.3.0 · Minecraft 1.20.1
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-warning-surface text-warning border border-warning-border">
             <span>🔄 1 Staged (/restart)</span>
           </span>
           <Button
@@ -242,8 +242,8 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
                         className={cn(
                           "px-2 py-0.5 rounded text-overline font-semibold border uppercase",
                           mod.enabled
-                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                            : "bg-slate-500/10 text-slate-500 border-slate-500/20"
+                            ? "bg-success-surface text-success border-success-border"
+                            : "bg-surface-raised text-muted-foreground border-border"
                         )}
                       >
                         {mod.enabled ? "Active" : "Disabled"}

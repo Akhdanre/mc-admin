@@ -127,12 +127,12 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
             Console & Logs
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-emerald-500 font-bold">●</span> ONLINE · Interactive RCON Terminal · Buffer 5,000 Lines
+            <span className="text-success font-bold">●</span> ONLINE · Interactive RCON Terminal · Buffer 5,000 Lines
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success-surface text-success border border-success-border">
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
             RCON Socket Connected
           </span>
         </div>
@@ -185,7 +185,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
         {/* Terminal output */}
         <div
           ref={terminalRef}
-          className="flex-1 min-h-[360px] p-4 bg-slate-950 font-mono text-xs leading-relaxed text-slate-200 overflow-y-auto select-text space-y-1"
+          className="flex-1 min-h-[360px] p-4 bg-terminal font-mono text-xs leading-relaxed text-terminal-foreground overflow-y-auto select-text space-y-1"
         >
           {filteredLogs.map((log) => {
             const isWarn = log.level === "WARN";
@@ -195,18 +195,18 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
                 key={log.id}
                 className={cn(
                   "flex items-start gap-2 hover:bg-white/5 px-1 py-0.5 rounded transition-colors break-all",
-                  isErr && "text-rose-400 bg-rose-950/20",
-                  isWarn && "text-amber-300 bg-amber-950/20",
-                  log.isCommand && "text-indigo-400 font-semibold"
+                  isErr && "text-danger-muted bg-danger-surface",
+                  isWarn && "text-warning-muted bg-warning-surface",
+                  log.isCommand && "text-primary font-semibold"
                 )}
               >
-                <span className="text-slate-500 shrink-0 select-none">[{log.time}]</span>
+                <span className="text-subtle-foreground shrink-0 select-none">[{log.time}]</span>
                 <span
                   className={cn(
                     "text-overline px-1 rounded shrink-0 uppercase",
-                    isErr && "bg-rose-500/20 text-rose-300",
-                    isWarn && "bg-amber-500/20 text-amber-300",
-                    !isErr && !isWarn && "bg-slate-800 text-slate-400"
+                    isErr && "bg-danger-surface text-danger-muted",
+                    isWarn && "bg-warning-surface text-warning-muted",
+                    !isErr && !isWarn && "bg-surface-raised text-muted-foreground"
                   )}
                 >
                   {log.level}

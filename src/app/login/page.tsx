@@ -69,7 +69,7 @@ export default function LoginPage() {
       <div className="w-full max-w-[400px]">
         {/* Brand Header */}
         <div className="flex items-center justify-center gap-2.5 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-[#2656c8] flex items-center justify-center text-white shrink-0 shadow-xs">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shrink-0 shadow-xs">
             <svg width="14" height="18" viewBox="0 0 9 13" fill="none">
               <path d="M5.5 0L0 7.5H4L3 13L9 5.5H4.5L5.5 0Z" fill="currentColor" />
             </svg>
@@ -101,7 +101,7 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="admin"
                 disabled={loading}
-                className="w-full bg-surface border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder:text-faint-foreground focus:outline-none focus:border-[#2656c8] focus:ring-1 focus:ring-[#2656c8] transition"
+                className="w-full bg-surface border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder:text-faint-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
               />
             </div>
 
@@ -121,7 +121,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   autoFocus
                   disabled={loading}
-                  className="w-full bg-surface border border-border rounded-md px-3 py-2 pr-10 text-sm text-foreground placeholder:text-faint-foreground focus:outline-none focus:border-[#2656c8] focus:ring-1 focus:ring-[#2656c8] transition"
+                  className="w-full bg-surface border border-border rounded-md px-3 py-2 pr-10 text-sm text-foreground placeholder:text-faint-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
                 />
                 <button
                   type="button"
@@ -152,8 +152,8 @@ export default function LoginPage() {
                   className={cn(
                     "w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors shrink-0",
                     rememberMe
-                      ? "bg-[#2656c8] border-[#2656c8] text-white"
-                      : "border-border-strong bg-surface group-hover:border-[#2656c8]"
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : "border-border-strong bg-surface group-hover:border-primary"
                   )}
                 >
                   {rememberMe && (
