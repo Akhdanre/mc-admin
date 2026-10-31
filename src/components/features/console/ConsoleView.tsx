@@ -176,7 +176,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
                 className={cn(
                   "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-normal transition-colors cursor-pointer",
                   isSelected
-                    ? "bg-[#1e293b] text-white font-medium"
+                    ? "bg-[#eff6ff] dark:bg-primary/15 text-[#2656c8] dark:text-primary-muted font-medium"
                     : "bg-[#f1f5f9] dark:bg-surface-raised text-[#475569] dark:text-muted-foreground hover:text-heading hover:bg-[#e2e8f0]"
                 )}
               >
@@ -185,7 +185,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
                   className={cn(
                     "text-overline font-mono leading-none",
                     isSelected
-                      ? "text-white/70"
+                      ? "text-[#2656c8]/80 dark:text-primary-muted/80 font-medium"
                       : "text-[#6b778a] dark:text-subtle-foreground"
                   )}
                 >
