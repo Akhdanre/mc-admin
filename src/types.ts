@@ -90,11 +90,19 @@ export interface CommandRequestBody {
   command?: string;
 }
 
+export interface TunnelInfo {
+  enabled: boolean;
+  address?: string;
+  pingMs?: number;
+  tunnelType?: string;
+}
+
 export interface ServerInfoResponse {
   host: string;
   port: number;
   mapUrl?: string;
   version?: string;
+  tunnel?: TunnelInfo;
 }
 
 export interface PlayerLocation {
@@ -161,6 +169,20 @@ export interface ChatMessage {
 
 export interface ChatResponse {
   messages: ChatMessage[];
+  error?: string;
+  updatedAt: string;
+}
+
+export interface ConsoleLogItem {
+  id: string;
+  time: string;
+  level: "INFO" | "WARN" | "ERROR";
+  message: string;
+  isCommand?: boolean;
+}
+
+export interface ConsoleLogsResponse {
+  logs: ConsoleLogItem[];
   error?: string;
   updatedAt: string;
 }

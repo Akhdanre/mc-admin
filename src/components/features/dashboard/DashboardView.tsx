@@ -438,8 +438,19 @@ export function DashboardView({
           {/* Column 3: Network / Tunnel */}
           <div className="pt-4 md:pt-0 md:pl-6">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-semibold text-heading font-mono">18.4</span>
-              <span className="text-xs text-muted-foreground">ms (Playit.gg RTT)</span>
+              <span className="text-2xl font-semibold text-heading font-mono">
+                {serverInfo?.tunnel?.pingMs ?? 32}
+              </span>
+              <span
+                className="text-xs text-muted-foreground truncate"
+                title={serverInfo?.tunnel?.address || "Playit.gg RTT"}
+              >
+                ms (
+                {serverInfo?.tunnel?.address
+                  ? serverInfo.tunnel.address.split(".")[0] + ".ply.gg"
+                  : "Playit.gg RTT"}
+                )
+              </span>
             </div>
 
             <div className="mt-3 relative h-11 flex items-end gap-[3px] border-b border-border/80 pb-1">
@@ -455,8 +466,19 @@ export function DashboardView({
 
             <div className="flex items-center justify-between text-overline mt-1.5 text-muted-foreground font-mono">
               <span>-60m</span>
-              <span className="text-subtle-foreground font-sans">Tunnel Route Ingress</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</span>
+              <span className="text-subtle-foreground font-sans truncate">
+                {serverInfo?.tunnel?.address || "Tunnel Ingress"}
+              </span>
+              <span
+                className={cn(
+                  "font-semibold",
+                  serverInfo?.tunnel?.enabled !== false
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-amber-600 dark:text-amber-400"
+                )}
+              >
+                {serverInfo?.tunnel?.enabled !== false ? "Live" : "Standby"}
+              </span>
             </div>
           </div>
         </div>
