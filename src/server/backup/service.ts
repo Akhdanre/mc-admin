@@ -14,6 +14,7 @@ import {
   formatSize,
   isBackupArchive,
   isSafeFilename,
+  parseDateFromFilename,
 } from "./time";
 import type {
   BackupStatusResponse,
@@ -157,6 +158,8 @@ export async function deleteBackup(filename: string): Promise<BackupDeleteRespon
 export async function setRetention(days: number): Promise<BackupRetentionResponse> {
   try {
     const retentionDays = await saveRetentionConfig(days);
+    // Prune immediately so stale archives are removed as soon as the rule changes
+    await pruneBackups();
     return { success: true, retentionDays };
   } catch (err: unknown) {
     return { success: false, error: err instanceof Error ? err.message : String(err) };
@@ -289,19 +292,37 @@ async function pruneBackups(): Promise<void> {
   const files = await fs.readdir(backupDir);
   const nowMs = Date.now();
   const maxAgeMs = retentionDays * 24 * 60 * 60 * 1000;
+  const deleted: string[] = [];
 
   for (const file of files) {
     if (!isBackupArchive(file)) continue;
 
-    const filePath = path.join(backupDir, file);
-    try {
-      const stat = await fs.stat(filePath);
-      if (nowMs - stat.mtimeMs > maxAgeMs) {
-        await fs.unlink(filePath);
+    // Prefer filename-encoded date (reliable across SSHFS mounts and system time zones)
+    const fileDate = parseDateFromFilename(file);
+    const ageMs = fileDate
+      ? nowMs - fileDate.getTime()
+      : await fs
+          .stat(path.join(backupDir, file))
+          .then((s) => nowMs - s.mtimeMs)
+          .catch(() => 0);
+
+    if (ageMs > maxAgeMs) {
+      try {
+        await fs.unlink(path.join(backupDir, file));
+        deleted.push(file);
+        console.log(
+          `[BackupScheduler] Pruned expired backup: ${file} (${Math.round(ageMs / 86400000)}d old, limit: ${retentionDays}d)`
+        );
+      } catch (err) {
+        console.warn(`[BackupScheduler] Could not delete ${file}:`, err);
       }
-    } catch {
-      // ignore
     }
+  }
+
+  if (deleted.length === 0) {
+    console.log(
+      `[BackupScheduler] Retention check: no expired backups found (policy: ${retentionDays}d)`
+    );
   }
 }
 

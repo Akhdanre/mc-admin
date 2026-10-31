@@ -6,6 +6,7 @@ import {
   buildArchiveName,
   isBackupArchive,
   isSafeFilename,
+  parseDateFromFilename,
   DEFAULT_RETENTION_DAYS,
 } from "@/server/backup";
 
@@ -60,5 +61,48 @@ describe("backup scheduler", () => {
     expect(nowMs - expiredBackupMtime > retentionMs).toBe(true);
     expect(freshBackupMtime > cutoff).toBe(true);
     expect(expiredBackupMtime < cutoff).toBe(true);
+  });
+});
+
+describe("parseDateFromFilename", () => {
+  it("parses date from standard backup filename", () => {
+    const date = parseDateFromFilename("world-backup-20261021-050001.tar.gz");
+    expect(date).not.toBeNull();
+    expect(date?.getUTCFullYear()).toBe(2026);
+    expect(date?.getUTCMonth()).toBe(9); // Oct = 9 (0-indexed)
+    expect(date?.getUTCDate()).toBe(21);
+    expect(date?.getUTCHours()).toBe(5);
+    expect(date?.getUTCMinutes()).toBe(0);
+    expect(date?.getUTCSeconds()).toBe(1);
+  });
+
+  it("returns null for non-matching filenames", () => {
+    expect(parseDateFromFilename("latest.tar.gz")).toBeNull();
+    expect(parseDateFromFilename("backup.zip")).toBeNull();
+    expect(parseDateFromFilename("notes.txt")).toBeNull();
+    expect(parseDateFromFilename("world-backup-baddate.tar.gz")).toBeNull();
+  });
+
+  it("correctly identifies which archives are expired given 7-day retention", () => {
+    // Today: 2026-11-01. 7-day cutoff: 2026-10-25.
+    const now = new Date("2026-11-01T12:00:00Z").getTime();
+    const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
+
+    const cases: [string, boolean][] = [
+      ["world-backup-20261021-050001.tar.gz", true], // Oct 21 → 11d old → expired
+      ["world-backup-20261022-050001.tar.gz", true], // Oct 22 → 10d old → expired
+      ["world-backup-20261023-050001.tar.gz", true], // Oct 23 → 9d old → expired
+      ["world-backup-20261024-050001.tar.gz", true], // Oct 24 → 8d old → expired
+      ["world-backup-20261025-050001.tar.gz", true], // Oct 25 → 7.29d old → expired (> 7d exactly)
+      ["world-backup-20261026-050001.tar.gz", false], // Oct 26 → 6d old → keep
+      ["world-backup-20261031-050001.tar.gz", false], // Oct 31 → 1d old → keep
+    ];
+
+    for (const [filename, shouldExpire] of cases) {
+      const fileDate = parseDateFromFilename(filename);
+      expect(fileDate).not.toBeNull();
+      const ageMs = now - fileDate!.getTime();
+      expect(ageMs > maxAgeMs).toBe(shouldExpire);
+    }
   });
 });

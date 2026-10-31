@@ -39,3 +39,15 @@ export function isBackupArchive(fileName: string): boolean {
 export function isSafeFilename(fileName: string): boolean {
   return Boolean(fileName) && !fileName.includes("/") && !fileName.includes("\\");
 }
+/**
+ * Parses the UTC date encoded in a backup filename.
+ * e.g. "world-backup-20261021-050001.tar.gz" → Date(2026-10-21T05:00:01Z)
+ * Returns null if filename does not match expected pattern.
+ */
+export function parseDateFromFilename(fileName: string): Date | null {
+  const match = fileName.match(
+    /world-backup-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})\.tar\.gz$/
+  );
+  if (!match) return null;
+  return new Date(`${match[1]}-${match[2]}-${match[3]}T${match[4]}:${match[5]}:${match[6]}Z`);
+}

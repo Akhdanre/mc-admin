@@ -13,6 +13,7 @@ export {
   buildArchiveName,
   isBackupArchive,
   isSafeFilename,
+  parseDateFromFilename,
   DEFAULT_RETENTION_DAYS,
   LATEST_LINK,
   BACKUP_CONFIG_FILE,
