@@ -69,17 +69,23 @@ export function parseServerEvent(line: string): ParsedServerEvent | null {
   return null;
 }
 
+const IGNORED_SENDERS = new Set(["init", "clinit", "null"]);
+
 export function parseChatLine(line: string, index: number): ChatMessage | null {
+  if (line.includes("com.mojang.authlib")) return null;
+
   const tsMatch = line.match(TIMESTAMP_REGEX);
   const timestamp = tsMatch?.[1] ? tsMatch[1] : "";
 
   const playerMatch = line.match(PLAYER_CHAT_REGEX);
   if (playerMatch && playerMatch[1] && playerMatch[2]) {
+    const sender = playerMatch[1];
+    if (IGNORED_SENDERS.has(sender)) return null;
+
     const message = playerMatch[2].trim();
     if (message.toLowerCase().includes("dashboard connected")) {
       return null;
     }
-    const sender = playerMatch[1];
     return {
       id: `chat-${index}-${timestamp}-${sender}`,
       sender,

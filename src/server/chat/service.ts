@@ -2,12 +2,43 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import readline from "readline";
+import zlib from "zlib";
 import { config } from "@/server/core";
 import { parseChatLine, parseConsoleLogLine } from "./parse";
 import { executeRconCommand } from "@/server/rcon";
 import type { ChatMessage, ChatResponse, ConsoleLogItem, ConsoleLogsResponse } from "@/types";
 
 const MAX_CHAT_MESSAGES = 150;
+
+async function readArchiveChatMessages(maxCount: number): Promise<ChatMessage[]> {
+  const logsDir = path.join(config.paths.data, "logs");
+  try {
+    const entries = await fs.promises.readdir(logsDir);
+    const gzFiles = entries
+      .filter((f) => f.endsWith(".log.gz") && !f.startsWith("debug-"))
+      .sort()
+      .slice(-6);
+
+    const archiveMsgs: ChatMessage[] = [];
+    let idx = 0;
+
+    for (const file of gzFiles) {
+      const filePath = path.join(logsDir, file);
+      const stream = fs.createReadStream(filePath).pipe(zlib.createGunzip());
+      const rl = readline.createInterface({ input: stream });
+
+      for await (const line of rl) {
+        const chat = parseChatLine(line, idx++);
+        if (chat) {
+          archiveMsgs.push(chat);
+        }
+      }
+    }
+    return archiveMsgs.slice(-maxCount);
+  } catch {
+    return [];
+  }
+}
 
 export async function getRecentChatMessages(): Promise<ChatResponse> {
   const updatedAt = new Date().toLocaleTimeString();
@@ -51,6 +82,15 @@ export async function getRecentChatMessages(): Promise<ChatResponse> {
     fileStream.on("error", (err) => reject(err));
 
     const result = await promise;
+    if (result.length < 50) {
+      const needed = MAX_CHAT_MESSAGES - result.length;
+      const history = await readArchiveChatMessages(needed);
+      const merged = [...history, ...result];
+      return {
+        messages: merged.slice(-MAX_CHAT_MESSAGES),
+        updatedAt,
+      };
+    }
     return { messages: result, updatedAt };
   } catch (err: unknown) {
     return {
