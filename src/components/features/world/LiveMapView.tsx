@@ -1,30 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Toggle } from "@/components/ui/Toggle";
+
 export interface LiveMapViewProps {
   mapUrl?: string;
   players?: string[];
 }
-
 export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: LiveMapViewProps) {
-  const [currentUrl, setCurrentUrl] = useState(mapUrl);
+  const [customUrl, setCustomUrl] = useState<string | null>(null);
   const [dimension, setDimension] = useState<string>("surface");
+  const [followedPlayer, setFollowedPlayer] = useState<string | null>(null);
   const [trackPlayers, setTrackPlayers] = useState(true);
   const [isEditingUrl, setIsEditingUrl] = useState(false);
-  const [urlInput, setUrlInput] = useState(mapUrl);
+  const [urlInput, setUrlInput] = useState("");
   const [loadError, setLoadError] = useState(false);
+
+  const baseUrl = customUrl || mapUrl;
 
   const handleSaveUrl = (e: React.FormEvent) => {
     e.preventDefault();
-    if (urlInput.trim()) {
-      setCurrentUrl(urlInput.trim());
+    const clean = urlInput.trim();
+    if (clean) {
+      setCustomUrl(clean);
       setIsEditingUrl(false);
       setLoadError(false);
     }
   };
+
+  const iframeSrc = useMemo(() => {
+    try {
+      const parsed = new URL(baseUrl);
+      switch (dimension) {
+        case "surface":
+          parsed.searchParams.set("worldname", "world");
+          parsed.searchParams.set("mapname", "surface");
+          break;
+        case "caves":
+          parsed.searchParams.set("worldname", "world");
+          parsed.searchParams.set("mapname", "cave");
+          break;
+        case "nether":
+          parsed.searchParams.set("worldname", "DIM-1");
+          parsed.searchParams.set("mapname", "nether");
+          break;
+        case "end":
+          parsed.searchParams.set("worldname", "DIM1");
+          parsed.searchParams.set("mapname", "the_end");
+          break;
+      }
+      if (followedPlayer) {
+        parsed.searchParams.set("playername", followedPlayer);
+      } else {
+        parsed.searchParams.delete("playername");
+      }
+      return parsed.toString();
+    } catch {
+      const sep = baseUrl.includes("?") ? "&" : "?";
+      let params = "worldname=world&mapname=surface";
+      if (dimension === "caves") params = "worldname=world&mapname=cave";
+      else if (dimension === "nether") params = "worldname=DIM-1&mapname=nether";
+      else if (dimension === "end") params = "worldname=DIM1&mapname=the_end";
+      return `${baseUrl}${sep}${params}${followedPlayer ? `&playername=${encodeURIComponent(followedPlayer)}` : ""}`;
+    }
+  }, [baseUrl, dimension, followedPlayer]);
+
+  const dimensionInfo = useMemo(() => {
+    switch (dimension) {
+      case "surface":
+        return "Spawn: 0, 64, 0 · Overworld";
+      case "caves":
+        return "Cave Subterranean · Depth Y -64 to 64";
+      case "nether":
+        return "Nether Dimension · DIM-1";
+      case "end":
+        return "The End Dimension · DIM1";
+      default:
+        return "Spawn: 0, 64, 0";
+    }
+  }, [dimension]);
 
   return (
     <div className="space-y-4 flex flex-col h-[calc(100vh-8.5rem)]">
@@ -35,7 +91,8 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
             Live World Map
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-            <span className="text-success font-bold">●</span> ONLINE · Dynmap 3.7-beta-6 · 169,708 Tiles Rendered · Port 8123
+            <span className="text-success font-bold">●</span> ONLINE · Dynmap 3.7 · Port 8123 ·{" "}
+            {dimension.toUpperCase()}
           </p>
         </div>
 
@@ -64,20 +121,19 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
             </form>
           ) : (
             <>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Engine Idle
-              </span>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => {}}
+                onClick={() => {
+                  setUrlInput(baseUrl);
+                  setIsEditingUrl(true);
+                }}
                 className="text-xs h-7 px-2.5"
               >
-                ⏸ Pause
+                Configure URL
               </Button>
               <a
-                href={currentUrl}
+                href={iframeSrc}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-xs"
@@ -94,7 +150,10 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
         <SegmentedControl
           size="sm"
           value={dimension}
-          onChange={(val) => setDimension(val)}
+          onChange={(val) => {
+            setDimension(val);
+            setLoadError(false);
+          }}
           options={[
             { value: "surface", label: "Surface (Overworld)" },
             { value: "caves", label: "Caves" },
@@ -105,7 +164,7 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
 
         <div className="flex items-center gap-4">
           <div className="text-xs font-mono text-muted-foreground hidden sm:block">
-            Spawn: <span className="text-heading font-medium">0, 64, 0</span>
+            {dimensionInfo}
           </div>
           <Toggle
             checked={trackPlayers}
@@ -119,7 +178,8 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
       <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden flex-1 relative flex flex-col">
         {!loadError ? (
           <iframe
-            src={currentUrl}
+            key={iframeSrc}
+            src={iframeSrc}
             title="Minecraft Live World Map"
             onError={() => setLoadError(true)}
             className="w-full h-full border-0 bg-slate-950"
@@ -132,7 +192,8 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
             </div>
             <h3 className="text-base font-semibold text-heading">Map Server Not Reachable</h3>
             <p className="text-xs text-muted-foreground max-w-md mt-1 mb-4 leading-relaxed">
-              Dynmap or BlueMap web server at <code className="font-mono text-primary">{currentUrl}</code> did not respond. Check port forwarding or update the Map URL above.
+              Dynmap web server at <code className="font-mono text-primary">{iframeSrc}</code> did
+              not respond. Check port forwarding or update the Map URL above.
             </p>
             <Button
               size="sm"
@@ -145,7 +206,7 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
           </div>
         )}
 
-        {/* Floating Player Markers HUD (Penpot Overlay Pattern) */}
+        {/* Floating Player Markers HUD */}
         {trackPlayers && (
           <div className="absolute bottom-4 left-4 z-10 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-3 shadow-lg max-w-xs space-y-2 select-none">
             <div className="flex items-center justify-between text-overline text-muted-foreground uppercase">
@@ -156,23 +217,36 @@ export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: 
               {players.length === 0 ? (
                 <div className="text-xs text-muted-foreground py-1">No players online</div>
               ) : (
-                players.map((name) => (
-                  <div key={name} className="flex items-center justify-between text-xs gap-3">
-                    <div className="flex items-center gap-1.5 truncate">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`https://mc-heads.net/avatar/${name}/18`}
-                        alt={name}
-                        className="w-4 h-4 rounded bg-surface-raised"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src =
-                            "https://mc-heads.net/avatar/Steve/18";
-                        }}
-                      />
-                      <span className="font-medium text-heading truncate">{name}</span>
-                    </div>
-                  </div>
-                ))
+                players.map((name) => {
+                  const isFollowed = followedPlayer === name;
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => setFollowedPlayer(isFollowed ? null : name)}
+                      className="w-full flex items-center justify-between text-xs gap-3 p-1 rounded hover:bg-surface-raised transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-1.5 truncate">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`https://mc-heads.net/avatar/${name}/18`}
+                          alt={name}
+                          className="w-4 h-4 rounded bg-surface-raised shrink-0"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              "https://mc-heads.net/avatar/Steve/18";
+                          }}
+                        />
+                        <span className="font-medium text-heading truncate">{name}</span>
+                      </div>
+                      {isFollowed && (
+                        <span className="text-overline uppercase text-primary font-bold px-1 rounded bg-primary/10">
+                          Focus
+                        </span>
+                      )}
+                    </button>
+                  );
+                })
               )}
             </div>
           </div>
