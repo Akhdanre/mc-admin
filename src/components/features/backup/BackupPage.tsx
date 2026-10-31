@@ -354,22 +354,19 @@ export function BackupPage({
               filteredArchives.map((archive) => (
                 <TableRow key={archive.filename}>
                   <TableCell>
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-lg shrink-0">📦</span>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-semibold text-heading truncate">
-                            {archive.filename}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-semibold text-heading truncate">
+                          {archive.filename}
+                        </span>
+                        {archive.isLatest && (
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            Latest
                           </span>
-                          {archive.isLatest && (
-                            <span className="px-1.5 py-0.2 rounded text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                              Latest
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {archive.timestamp}
-                        </div>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {archive.timestamp}
                       </div>
                     </div>
                   </TableCell>
