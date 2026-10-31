@@ -5,6 +5,7 @@ export interface PlayerStatus {
   difficulty?: string;
   tps?: number;
   mspt?: number;
+  pingMs?: number;
   raw: string;
   error?: string;
   updatedAt: string;
