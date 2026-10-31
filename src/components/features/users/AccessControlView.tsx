@@ -5,14 +5,8 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Button } from "@/components/ui/Button";
 import { Toggle } from "@/components/ui/Toggle";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
-import {
-  MOCK_ACCESS_CONTROL,
-  type MockWhitelistEntry,
-  type MockBanEntry,
-  type MockIpBanEntry,
-} from "@/lib/mockData";
 import { cn } from "@/lib/cn";
-import type { WhitelistAction } from "@/types";
+import type { WhitelistAction, WhitelistEntry, BanEntry, IpBanEntry } from "@/types";
 
 export interface AccessControlViewProps {
   onWhitelistAction?: (action: WhitelistAction, username?: string) => Promise<unknown>;
@@ -20,10 +14,10 @@ export interface AccessControlViewProps {
 
 export function AccessControlView({ onWhitelistAction }: AccessControlViewProps) {
   const [activeTab, setActiveTab] = useState<"whitelist" | "bans" | "ip">("whitelist");
-  const [whitelistEnforced, setWhitelistEnforced] = useState(MOCK_ACCESS_CONTROL.whitelistEnforced);
-  const [whitelist, setWhitelist] = useState<MockWhitelistEntry[]>(MOCK_ACCESS_CONTROL.whitelist);
-  const [bans, setBans] = useState<MockBanEntry[]>(MOCK_ACCESS_CONTROL.bans);
-  const [ipBans, setIpBans] = useState<MockIpBanEntry[]>(MOCK_ACCESS_CONTROL.ipBans);
+  const [whitelistEnforced, setWhitelistEnforced] = useState(true);
+  const [whitelist, setWhitelist] = useState<WhitelistEntry[]>([]);
+  const [bans, setBans] = useState<BanEntry[]>([]);
+  const [ipBans, setIpBans] = useState<IpBanEntry[]>([]);
 
   // Form states
   const [newPlayerName, setNewPlayerName] = useState("");
@@ -36,9 +30,9 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
     e.preventDefault();
     const clean = newPlayerName.trim();
     if (!clean) return;
-    const entry: MockWhitelistEntry = {
+    const entry: WhitelistEntry = {
       username: clean,
-      uuid: `mock-uuid-${Date.now()}`,
+      uuid: `${Date.now()}`,
       addedAt: new Date().toISOString().slice(0, 10),
       addedBy: "Console",
       isOp: false,
@@ -64,7 +58,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
   const handleAddBan = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBanName.trim()) return;
-    const entry: MockBanEntry = {
+    const entry: BanEntry = {
       username: newBanName.trim(),
       uuid: `ban-uuid-${Date.now()}`,
       reason: newBanReason.trim() || "Violation of server rules",
@@ -84,7 +78,7 @@ export function AccessControlView({ onWhitelistAction }: AccessControlViewProps)
   const handleAddIpBan = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newIp.trim()) return;
-    const entry: MockIpBanEntry = {
+    const entry: IpBanEntry = {
       ip: newIp.trim(),
       reason: newIpReason.trim() || "Suspicious network traffic",
       bannedBy: "Console",

@@ -219,3 +219,83 @@ export interface ModrinthSearchResponse {
   total_hits: number;
   error?: string;
 }
+
+export interface InventoryItem {
+  slot: number;
+  id: string;
+  name: string;
+  count: number;
+  durability?: { current: number; max: number };
+  maxDurability?: number;
+  enchantments?: string[];
+  lore?: string[];
+}
+
+export interface PlayerDetail {
+  uuid: string;
+  username: string;
+  dimension: "Overworld" | "Nether" | "The End";
+  coords: { x: number; y: number; z: number };
+  pingMs: number;
+  role: "Admin" | "Moderator" | "VIP+" | "Member" | "Spectator";
+  health: number;
+  food: number;
+  gamemode: "survival" | "creative" | "adventure" | "spectator";
+  xpLevel: number;
+  inventory: (InventoryItem | null)[];
+  armor: {
+    helmet?: InventoryItem;
+    chestplate?: InventoryItem;
+    leggings?: InventoryItem;
+    boots?: InventoryItem;
+  };
+  offhand?: InventoryItem;
+}
+
+export interface WhitelistEntry {
+  uuid: string;
+  username: string;
+  addedAt: string;
+  addedBy: string;
+  isOp?: boolean;
+}
+
+export interface BanEntry {
+  uuid: string;
+  username: string;
+  reason: string;
+  bannedBy: string;
+  bannedAt: string;
+  expires: string;
+}
+
+export interface IpBanEntry {
+  ip: string;
+  reason: string;
+  bannedBy: string;
+  bannedAt: string;
+  expires?: string;
+  country?: string;
+}
+
+export interface GameruleItem {
+  id: string;
+  name: string;
+  description: string;
+  category: "gameplay" | "combat" | "physics" | "admin";
+  type: "boolean" | "number";
+  value: boolean | number;
+  unit?: string;
+}
+
+export interface ModItem {
+  id: string;
+  name: string;
+  fileName: string;
+  version: string;
+  sizeFormatted: string;
+  type: string;
+  enabled: boolean;
+  author: string;
+  description: string;
+}

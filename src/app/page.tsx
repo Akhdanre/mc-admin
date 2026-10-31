@@ -2,31 +2,31 @@
 
 import { useState } from "react";
 import { Sidebar, type AdminTab } from "@/components/layout/Sidebar";
-import { DashboardOverview } from "@/components/features/dashboard/DashboardOverview";
+import { DashboardView } from "@/components/features/dashboard/DashboardView";
 import { OnlinePlayersView } from "@/components/features/users/OnlinePlayersView";
 import { AccessControlView } from "@/components/features/users/AccessControlView";
 import { TelemetryView } from "@/components/features/telemetry/TelemetryView";
-import { WorldControls } from "@/components/features/world/WorldControls";
-import { LiveMap } from "@/components/features/world/LiveMap";
+import { WorldView } from "@/components/features/world/WorldView";
+import { LiveMapView } from "@/components/features/world/LiveMapView";
 import { ConsoleView } from "@/components/features/console/ConsoleView";
-import { BackupPage } from "@/components/features/backup/BackupPage";
-import { SettingsPage } from "@/components/features/settings/SettingsPage";
-import { ChatPage } from "@/components/features/chat/ChatPage";
-import { ModManager } from "@/components/features/mods/ModManager";
+import { BackupView } from "@/components/features/backup/BackupView";
+import { SettingsView } from "@/components/features/settings/SettingsView";
+import { ChatView } from "@/components/features/chat/ChatView";
+import { ModsView } from "@/components/features/mods/ModsView";
 import { useServerStatus } from "@/hooks/useServerStatus";
 import { useServerActions } from "@/hooks/useServerActions";
 import { useFeedback } from "@/hooks/useFeedback";
 
 const TAB_LABELS: Record<AdminTab, string> = {
   dashboard: "Dashboard",
-  commands: "Console & Logs",
+  console: "Console & Logs",
   chat: "Live Chat",
   users: "Online Players",
   whitelist: "Access Control",
   map: "Live World Map",
   world: "World & Environment",
   mods: "Mods & Addons",
-  backups: "Backups & Restore",
+  backup: "Backups & Restore",
   telemetry: "Host Telemetry",
   settings: "Settings & Configuration",
 };
@@ -144,7 +144,7 @@ export default function Home() {
 
           {/* Tab Views */}
           {currentTab === "dashboard" && (
-            <DashboardOverview
+            <DashboardView
               playerStatus={playerStatus}
               whitelistStatus={whitelistStatus}
               serverInfo={serverInfo}
@@ -174,7 +174,7 @@ export default function Home() {
           )}
 
           {currentTab === "world" && (
-            <WorldControls
+            <WorldView
               onExecuteCommand={handleExecuteCommand}
               isBusy={isBusy}
               currentDifficulty={playerStatus.difficulty}
@@ -183,17 +183,15 @@ export default function Home() {
             />
           )}
           {currentTab === "mods" && (
-            <ModManager onShowFeedback={showFeedback} />
+            <ModsView onShowFeedback={showFeedback} />
           )}
 
-
-          {currentTab === "backups" && (
-            <BackupPage
+          {currentTab === "backup" && (
+            <BackupView
               backupStatus={backupStatus}
               onRefresh={refresh}
               onTriggerBackup={handleTriggerBackup}
               onDeleteBackup={handleDeleteBackup}
-              onSetRetention={handleSetRetention}
               onRestoreBackup={handleRestoreBackup}
               isBackingUp={isBackingUp}
               isBusy={isBusy}
@@ -201,17 +199,20 @@ export default function Home() {
           )}
 
           {currentTab === "map" && (
-            <LiveMap mapUrl={serverInfo.mapUrl || "http://localhost:8123"} />
+            <LiveMapView
+              mapUrl={serverInfo.mapUrl || "http://localhost:8123"}
+              players={playerStatus.players}
+            />
           )}
 
-          {currentTab === "commands" && (
+          {currentTab === "console" && (
             <ConsoleView onExecuteCommand={handleExecuteCommand} isBusy={isBusy} />
           )}
 
-          {currentTab === "chat" && <ChatPage />}
+          {currentTab === "chat" && <ChatView />}
 
           {currentTab === "settings" && (
-            <SettingsPage
+            <SettingsView
               backupStatus={backupStatus}
               onUpdateRetention={handleSetRetention}
               isBusy={isBusy}

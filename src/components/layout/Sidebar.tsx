@@ -5,14 +5,14 @@ import { cn } from "@/lib/cn";
 
 export type AdminTab =
   | "dashboard"
-  | "commands"
+  | "console"
   | "chat"
   | "users"
   | "whitelist"
   | "map"
   | "world"
   | "mods"
-  | "backups"
+  | "backup"
   | "telemetry"
   | "settings";
 
@@ -189,7 +189,7 @@ export function Sidebar({
           icon: () => <DashboardIcon />,
         },
         {
-          id: "commands",
+          id: "console",
           label: "Console & Logs",
           icon: () => <ConsoleIcon />,
         },
@@ -241,7 +241,7 @@ export function Sidebar({
       title: "SYSTEM & MAINTENANCE",
       items: [
         {
-          id: "backups",
+          id: "backup",
           label: "Backups & Restore",
           icon: () => <BackupsIcon />,
           badge: backupCount > 0 ? backupCount : null,

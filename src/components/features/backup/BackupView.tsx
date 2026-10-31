@@ -29,91 +29,8 @@ interface BackupArchiveItem {
   isLatest?: boolean;
 }
 
-const PENPOT_ARCHIVES: BackupArchiveItem[] = [
-  {
-    filename: "world-backup-20261030-050001.tar.gz",
-    timestamp: "Today at 05:03 UTC · Latest",
-    trigger: "Automated (Cron)",
-    size: "3.9 GB",
-    format: "tar.gz (gzip)",
-    status: "Verified",
-    isLatest: true,
-  },
-  {
-    filename: "world-backup-20261029-050001.tar.gz",
-    timestamp: "Yesterday at 05:03 UTC",
-    trigger: "Automated (Cron)",
-    size: "3.6 GB",
-    format: "tar.gz (gzip)",
-    status: "Verified",
-  },
-  {
-    filename: "world-backup-20261028-164000.tar.gz",
-    timestamp: "28 Oct 2026, 16:40 UTC · Pre-Cataclysm",
-    trigger: "Manual (Pre-mod)",
-    size: "3.0 GB",
-    format: "tar.gz (gzip)",
-    status: "Pinned (Manual)",
-  },
-  {
-    filename: "world-backup-20261028-050001.tar.gz",
-    timestamp: "28 Oct 2026, 05:02 UTC",
-    trigger: "Automated (Cron)",
-    size: "3.0 GB",
-    format: "tar.gz (gzip)",
-    status: "Verified",
-  },
-  {
-    filename: "world-backup-20261027-050001.tar.gz",
-    timestamp: "27 Oct 2026, 05:02 UTC",
-    trigger: "Automated (Cron)",
-    size: "2.9 GB",
-    format: "tar.gz (gzip)",
-    status: "Verified",
-  },
-  {
-    filename: "world-backup-20261026-050001.tar.gz",
-    timestamp: "26 Oct 2026, 05:02 UTC",
-    trigger: "Automated (Cron)",
-    size: "2.9 GB",
-    format: "tar.gz (gzip)",
-    status: "Verified",
-  },
-  {
-    filename: "world-backup-20261025-050001.tar.gz",
-    timestamp: "25 Oct 2026, 05:02 UTC",
-    trigger: "Automated (Cron)",
-    size: "2.9 GB",
-    format: "tar.gz (gzip)",
-    status: "Verified",
-  },
-  {
-    filename: "world-backup-20261024-050001.tar.gz",
-    timestamp: "24 Oct 2026, 05:02 UTC",
-    trigger: "Automated (Cron)",
-    size: "2.8 GB",
-    format: "tar.gz (gzip)",
-    status: "Verified",
-  },
-  {
-    filename: "world-backup-20261023-050001.tar.gz",
-    timestamp: "23 Oct 2026, 05:02 UTC",
-    trigger: "Automated (Cron)",
-    size: "2.8 GB",
-    format: "tar.gz (gzip)",
-    status: "Verified",
-  },
-  {
-    filename: "world-backup-20261022-050001.tar.gz",
-    timestamp: "22 Oct 2026, 05:02 UTC",
-    trigger: "Automated (Cron)",
-    size: "2.8 GB",
-    format: "tar.gz (gzip)",
-    status: "Verified",
-  },
-];
 
-export function BackupPage({
+export function BackupView({
   onRefresh,
   onTriggerBackup,
   onDeleteBackup,
@@ -121,7 +38,7 @@ export function BackupPage({
   isBackingUp = false,
   isBusy = false,
 }: BackupPageProps) {
-  const [archives, setArchives] = useState<BackupArchiveItem[]>(PENPOT_ARCHIVES);
+  const [archives, setArchives] = useState<BackupArchiveItem[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [actionNotice, setActionNotice] = useState<string | null>(null);

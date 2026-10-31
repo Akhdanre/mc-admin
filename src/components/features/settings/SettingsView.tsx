@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
-import type { BackupStatusResponse, DiscordConfig, AppSettings } from "@/types";
+import type { BackupStatusResponse, AppSettings } from "@/types";
 import { cn } from "@/lib/cn";
 
-export interface SettingsPageProps {
+export interface SettingsViewProps {
   backupStatus?: BackupStatusResponse | null;
   onUpdateRetention?: (days: number) => Promise<void>;
   isBusy?: boolean;
 }
 
-export function SettingsPage({ onUpdateRetention, isBusy }: SettingsPageProps) {
+export function SettingsView({ onUpdateRetention, isBusy }: SettingsViewProps) {
   // App & RCON state
   const [appSettings, setAppSettings] = useState<AppSettings>({
     rconHost: "127.0.0.1",

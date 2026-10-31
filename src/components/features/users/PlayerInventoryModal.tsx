@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import type { MockPlayerDetail, MockInventoryItem } from "@/lib/mockData";
+import type { PlayerDetail, InventoryItem } from "@/types";
 import { cn } from "@/lib/cn";
 
 export interface PlayerInventoryModalProps {
-  player: MockPlayerDetail | null;
+  player: PlayerDetail | null;
   isOpen: boolean;
   onClose: () => void;
-  onAction?: (action: string, player: MockPlayerDetail) => void;
+  onAction?: (action: string, player: PlayerDetail) => void;
 }
 
 const ITEM_ICONS: Record<string, string> = {
@@ -56,7 +56,7 @@ export function PlayerInventoryModal({
   onAction,
 }: PlayerInventoryModalProps) {
   const [activeSlotItem, setActiveSlotItem] = useState<{
-    item?: MockInventoryItem;
+    item?: InventoryItem;
     slotLabel: string;
   } | null>(null);
 
@@ -70,11 +70,11 @@ export function PlayerInventoryModal({
   ];
   const offhandSlot = { slot: 40, name: "Offhand", icon: "🛡️" };
 
-  const getItemAtSlot = (slotNum: number): MockInventoryItem | undefined => {
-    return player.inventory.find((i) => i.slot === slotNum);
+  const getItemAtSlot = (slotNum: number): InventoryItem | undefined => {
+    return player.inventory.find((i) => i !== null && i.slot === slotNum) ?? undefined;
   };
 
-  const occupiedCount = player.inventory.filter((i) => i.slot >= 0 && i.slot < 27).length;
+  const occupiedCount = player.inventory.filter((i) => i !== null && i.slot >= 0 && i.slot < 27).length;
 
   const renderSlot = (slotNum: number, label: string, silhouetteIcon?: string) => {
     const item = getItemAtSlot(slotNum);
@@ -146,7 +146,7 @@ export function PlayerInventoryModal({
       isOpen={isOpen}
       onClose={onClose}
       title={`Inventory: ${player.username}`}
-      description={`UUID: ${player.uuid} · ${player.dimension.replace("the_", "")} (${player.x.toFixed(0)}, ${player.y.toFixed(0)}, ${player.z.toFixed(0)})`}
+      description={`UUID: ${player.uuid} · ${player.dimension.replace("the_", "")} (${player.coords?.x?.toFixed(0) ?? 0}, ${player.coords?.y?.toFixed(0) ?? 0}, ${player.coords?.z?.toFixed(0) ?? 0})`}
       maxWidth="2xl"
     >
       <div className="space-y-4">
@@ -175,7 +175,7 @@ export function PlayerInventoryModal({
                 <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                   ✨ Level {player.xpLevel}
                 </span>
-                <span>📶 {player.ping}ms</span>
+                <span>📶 {player.pingMs}ms</span>
               </div>
             </div>
           </div>
@@ -268,7 +268,7 @@ export function PlayerInventoryModal({
                 </div>
                 {activeSlotItem.item.lore && (
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    {activeSlotItem.item.lore.map((lore, idx) => (
+                    {activeSlotItem.item.lore.map((lore: string, idx: number) => (
                       <span
                         key={idx}
                         className="text-overline px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"

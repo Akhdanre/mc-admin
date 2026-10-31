@@ -30,37 +30,10 @@ const PARTICIPANTS: Participant[] = [
   { name: "Discord Bot", role: "Bridge", dotColor: "bg-primary" },
 ];
 
-const PENPOT_CHAT_MESSAGES: DisplayMessage[] = [
-  { id: "m1", timestamp: "14:02", sender: "Alex_M", role: "member", channel: "in-game", text: "Hey guys, welcome back to the server!" },
-  { id: "m2", timestamp: "14:03", sender: "Steve_Builder", role: "member", channel: "in-game", text: "Anyone want to help gather quartz for spawn base?" },
-  { id: "m3", timestamp: "14:03", sender: "DiscordBot#2104", role: "bot", channel: "discord", text: "[#general] @CreeperHunter: I will hop online in 10 minutes!" },
-  { id: "m4", timestamp: "14:04", sender: "Server [Broadcast]", role: "server", channel: "all", text: "Automated daily backup completed successfully." },
-  { id: "m5", timestamp: "14:05", sender: "Herobrine_Watcher", role: "member", channel: "in-game", text: "Watch out near coordinates 420, -120, huge creeper crater." },
-  { id: "m6", timestamp: "14:06", sender: "Admin (You)", role: "admin", channel: "staff", text: "I fixed the WorldGuard flags at spawn, mining is now restricted properly." },
-  { id: "m7", timestamp: "14:07", sender: "Alex_M", role: "member", channel: "in-game", text: "Awesome, thanks admin!" },
-  { id: "m8", timestamp: "14:08", sender: "notch_fan_99", role: "member", channel: "in-game", text: "anyone have spare emeralds for mending book trade?" },
-  { id: "m9", timestamp: "14:08", sender: "DiamondPick42", role: "member", channel: "in-game", text: "check community vault chest 3, left some earlier" },
-  { id: "m10", timestamp: "14:09", sender: "DiscordBot#2104", role: "bot", channel: "discord", text: "[#announcements] Weekly build competition voting closes at 18:00 WIB!" },
-  { id: "m11", timestamp: "14:10", sender: "EndermanSlayer", role: "member", channel: "in-game", text: "ender dragon respawn ritual ready in 15 mins if anyone wants XP" },
-  { id: "m12", timestamp: "14:11", sender: "RedstoneMaster", role: "member", channel: "in-game", text: "fixed hopper clock lag at iron farm, tick rate should be 20 now" },
-  { id: "m13", timestamp: "14:12", sender: "Admin (You)", role: "admin", channel: "staff", text: "Confirmed, spark profiler shows MSPT dropped to 14.2ms. Good work!" },
-  { id: "m14", timestamp: "14:13", sender: "Steve_Builder", role: "member", channel: "in-game", text: "portal link verified, exits directly into the nether highway" },
-  { id: "m15", timestamp: "14:14", sender: "Alex_M", role: "member", channel: "in-game", text: "heading over now with fire resistance potions" },
-  { id: "m16", timestamp: "14:15", sender: "Server [Broadcast]", role: "server", channel: "all", text: "Server memory cleanup completed. 412 unused chunk references purged." },
-  { id: "m17", timestamp: "14:16", sender: "DiamondPick42", role: "member", channel: "in-game", text: "leaving 64 blaze rods in the shared vault for brewing" },
-  { id: "m18", timestamp: "14:17", sender: "notch_fan_99", role: "member", channel: "in-game", text: "thanks Diamond! grabbing 16 for ender eyes" },
-  { id: "m19", timestamp: "14:18", sender: "Alex_M", role: "member", channel: "in-game", text: "reached the fortress, 3 wither skeletons spotted" },
-  { id: "m20", timestamp: "14:19", sender: "Steve_Builder", role: "member", channel: "in-game", text: "placing extra torches along the walkway to stop spawns" },
-  { id: "m21", timestamp: "14:20", sender: "Herobrine_Watcher", role: "member", channel: "in-game", text: "filling up the creeper crater at 420, -120 with dirt now" },
-  { id: "m22", timestamp: "14:21", sender: "DiscordBot#2104", role: "bot", channel: "discord", text: "[#survival] @RedstoneMaster linked: [Dynmap Live Marker: Iron Farm Hub]" },
-  { id: "m23", timestamp: "14:22", sender: "EndermanSlayer", role: "member", channel: "in-game", text: "crystals placed on bedrock pillar, waiting for 2 more players" },
-  { id: "m24", timestamp: "14:23", sender: "notch_fan_99", role: "member", channel: "in-game", text: "on my way to the portal with slow falling potions" },
-  { id: "m25", timestamp: "14:24", sender: "Admin (You)", role: "admin", channel: "staff", text: "Warning: Automated chunk backup scheduled in 10 minutes. Zero lag expected." },
-];
 
-export function ChatPage() {
+export function ChatView() {
   const [selectedChannel, setSelectedChannel] = useState<ChatChannel>("all");
-  const [messages, setMessages] = useState<DisplayMessage[]>(PENPOT_CHAT_MESSAGES);
+  const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isLive, setIsLive] = useState(false);

@@ -2,10 +2,76 @@
 
 import { useState } from "react";
 import { Toggle } from "@/components/ui/Toggle";
-import { MOCK_WORLD, type MockGamerule } from "@/lib/mockData";
 import { cn } from "@/lib/cn";
+import type { GameruleItem } from "@/types";
 
-export interface WorldControlsProps {
+interface WorldDimension {
+  id: string;
+  name: string;
+  icon: string;
+  chunksLoaded: number;
+  diskSizeFormatted: string;
+  directory: string;
+  detail: string;
+  actionLabel: string;
+  actionVariant: "default" | "danger";
+}
+
+const DEFAULT_DIMENSIONS: WorldDimension[] = [
+  {
+    id: "overworld",
+    name: "Overworld",
+    icon: "🌍",
+    chunksLoaded: 256,
+    diskSizeFormatted: "1.2 GB",
+    directory: "world/",
+    detail: "Main player spawn & terrain",
+    actionLabel: "Optimize Chunks",
+    actionVariant: "default",
+  },
+  {
+    id: "nether",
+    name: "The Nether",
+    icon: "🔥",
+    chunksLoaded: 64,
+    diskSizeFormatted: "450 MB",
+    directory: "world_nether/",
+    detail: "Fortresses & Bastions loaded",
+    actionLabel: "Purge Inactive",
+    actionVariant: "default",
+  },
+  {
+    id: "end",
+    name: "The End",
+    icon: "🌌",
+    chunksLoaded: 48,
+    diskSizeFormatted: "340 MB",
+    directory: "world_the_end/",
+    detail: "Outer End Islands",
+    actionLabel: "Reset The End",
+    actionVariant: "danger",
+  },
+];
+
+const DEFAULT_GAMERULES: GameruleItem[] = [
+  { id: "keepInventory", name: "keepInventory", description: "Preserve inventory items and XP upon player death", category: "gameplay", type: "boolean", value: false },
+  { id: "naturalRegeneration", name: "naturalRegeneration", description: "Allow natural health regen when saturation is full", category: "gameplay", type: "boolean", value: true },
+  { id: "playersSleepingPercentage", name: "playersSleepingPercentage", description: "Percentage of players needed to skip night", category: "gameplay", type: "number", value: 100, unit: "%" },
+  { id: "fallDamage", name: "fallDamage", description: "Take kinetic impact damage from high falls", category: "gameplay", type: "boolean", value: true },
+  { id: "doMobSpawning", name: "doMobSpawning", description: "Natural spawning of hostile monsters and passive animals", category: "combat", type: "boolean", value: true },
+  { id: "mobGriefing", name: "mobGriefing", description: "Creeper explosions and Endermen block manipulation", category: "combat", type: "boolean", value: true },
+  { id: "maxEntityCramming", name: "maxEntityCramming", description: "Entity collision threshold before suffocation damage", category: "combat", type: "number", value: 24, unit: "mobs" },
+  { id: "disableRaids", name: "disableRaids", description: "Completely disable Bad Omen village raids", category: "combat", type: "boolean", value: false },
+  { id: "randomTickSpeed", name: "randomTickSpeed", description: "Crop growth, leaf decay, and block update rate", category: "physics", type: "number", value: 3, unit: "ticks" },
+  { id: "doDaylightCycle", name: "doDaylightCycle", description: "Dynamic solar and lunar diurnal cycle progression", category: "physics", type: "boolean", value: true },
+  { id: "doWeatherCycle", name: "doWeatherCycle", description: "Dynamic rain, thunder, and snowfall transitions", category: "physics", type: "boolean", value: true },
+  { id: "doFireTick", name: "doFireTick", description: "Fire spreading and combustible block destruction", category: "physics", type: "boolean", value: false },
+  { id: "showDeathMessages", name: "showDeathMessages", description: "Broadcast global death notification messages to chat", category: "admin", type: "boolean", value: true },
+  { id: "sendCommandFeedback", name: "sendCommandFeedback", description: "Display command execution feedback messages in chat", category: "admin", type: "boolean", value: true },
+  { id: "commandBlockOutput", name: "commandBlockOutput", description: "Broadcast command block execution messages to OPs", category: "admin", type: "boolean", value: true },
+];
+
+export interface WorldViewProps {
   onExecuteCommand: (command: string) => Promise<string>;
   isBusy: boolean;
   currentDifficulty?: string;
@@ -13,18 +79,18 @@ export interface WorldControlsProps {
   onShowFeedback?: (message: string, isError?: boolean) => void;
 }
 
-export function WorldControls({
+export function WorldView({
   onExecuteCommand,
   isBusy,
   currentDifficulty,
   onRefreshStatus,
   onShowFeedback,
-}: WorldControlsProps) {
-  const [activeGamemode, setActiveGamemode] = useState(MOCK_WORLD.gamemode || "survival");
-  const [activeDifficulty, setActiveDifficulty] = useState(currentDifficulty || MOCK_WORLD.difficulty || "hard");
+}: WorldViewProps) {
+  const [activeGamemode, setActiveGamemode] = useState("survival");
+  const [activeDifficulty, setActiveDifficulty] = useState(currentDifficulty || "normal");
   const [activeTime, setActiveTime] = useState<string>("day");
   const [activeWeather, setActiveWeather] = useState<string>("clear");
-  const [gamerules, setGamerules] = useState<MockGamerule[]>(MOCK_WORLD.gamerules);
+  const [gamerules, setGamerules] = useState<GameruleItem[]>(DEFAULT_GAMERULES);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveAll = async () => {
@@ -81,7 +147,7 @@ export function WorldControls({
     }
   };
 
-  const handleToggleGamerule = async (rule: MockGamerule, nextVal: boolean) => {
+  const handleToggleGamerule = async (rule: GameruleItem, nextVal: boolean) => {
     setGamerules((prev) =>
       prev.map((r) => (r.id === rule.id ? { ...r, value: nextVal } : r))
     );
@@ -93,7 +159,7 @@ export function WorldControls({
     }
   };
 
-  const handleUpdateNumberRule = async (rule: MockGamerule, nextVal: number) => {
+  const handleUpdateNumberRule = async (rule: GameruleItem, nextVal: number) => {
     setGamerules((prev) =>
       prev.map((r) => (r.id === rule.id ? { ...r, value: nextVal } : r))
     );
@@ -138,9 +204,9 @@ export function WorldControls({
             <span>·</span>
             <span>3 Dimensions</span>
             <span>·</span>
-            <span className="font-mono">Seed {MOCK_WORLD.seed}</span>
+            <span className="font-mono">Seed: Active</span>
             <span>·</span>
-            <span>Autosave {MOCK_WORLD.autosave}</span>
+            <span>Autosave: On</span>
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -157,7 +223,7 @@ export function WorldControls({
 
       {/* Row 1: Dimensions & Storage Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {MOCK_WORLD.dimensions.map((dim) => {
+        {DEFAULT_DIMENSIONS.map((dim) => {
           const isDanger = dim.actionVariant === "danger";
           return (
             <div
@@ -216,7 +282,7 @@ export function WorldControls({
               </span>
             </div>
             <span className="text-xs font-mono text-muted-foreground bg-surface-raised px-2 py-0.5 rounded border border-border">
-              {MOCK_WORLD.time} · Tick {MOCK_WORLD.tick.toLocaleString()}
+              Day · Tick 12,450
             </span>
           </div>
 
@@ -264,7 +330,7 @@ export function WorldControls({
               <span className="w-1.5 h-1.5 rounded-full bg-success" />
               <span className="text-muted-foreground">Weather Cycle:</span>
               <span className="text-subtle-foreground font-mono text-xs">
-                ({MOCK_WORLD.weatherCycle})
+                (Cycle Active)
               </span>
             </div>
 
@@ -489,7 +555,7 @@ function GameruleRow({
   onToggle,
   onUpdateNumber,
 }: {
-  rule: MockGamerule;
+  rule: GameruleItem;
   isBusy: boolean;
   onToggle: (val: boolean) => void;
   onUpdateNumber: (val: number) => void;

@@ -4,14 +4,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Toggle } from "@/components/ui/Toggle";
-import { MOCK_PLAYERS } from "@/lib/mockData";
-import { cn } from "@/lib/cn";
-
-export interface LiveMapProps {
+export interface LiveMapViewProps {
   mapUrl?: string;
+  players?: string[];
 }
 
-export function LiveMap({ mapUrl = "http://localhost:8123" }: LiveMapProps) {
+export function LiveMapView({ mapUrl = "http://localhost:8123", players = [] }: LiveMapViewProps) {
   const [currentUrl, setCurrentUrl] = useState(mapUrl);
   const [dimension, setDimension] = useState<string>("surface");
   const [trackPlayers, setTrackPlayers] = useState(true);
@@ -152,29 +150,30 @@ export function LiveMap({ mapUrl = "http://localhost:8123" }: LiveMapProps) {
           <div className="absolute bottom-4 left-4 z-10 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-3 shadow-lg max-w-xs space-y-2 select-none">
             <div className="flex items-center justify-between text-overline text-muted-foreground uppercase">
               <span>Tracked Players</span>
-              <span className="text-success font-mono font-bold">{MOCK_PLAYERS.length} Online</span>
+              <span className="text-success font-mono font-bold">{players.length} Online</span>
             </div>
             <div className="space-y-1.5 max-h-36 overflow-y-auto">
-              {MOCK_PLAYERS.map((p) => (
-                <div key={p.uuid} className="flex items-center justify-between text-xs gap-3">
-                  <div className="flex items-center gap-1.5 truncate">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`https://mc-heads.net/avatar/${p.username}/18`}
-                      alt={p.username}
-                      className="w-4 h-4 rounded bg-surface-raised"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src =
-                          "https://mc-heads.net/avatar/Steve/18";
-                      }}
-                    />
-                    <span className="font-medium text-heading truncate">{p.username}</span>
+              {players.length === 0 ? (
+                <div className="text-xs text-muted-foreground py-1">No players online</div>
+              ) : (
+                players.map((name) => (
+                  <div key={name} className="flex items-center justify-between text-xs gap-3">
+                    <div className="flex items-center gap-1.5 truncate">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://mc-heads.net/avatar/${name}/18`}
+                        alt={name}
+                        className="w-4 h-4 rounded bg-surface-raised"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src =
+                            "https://mc-heads.net/avatar/Steve/18";
+                        }}
+                      />
+                      <span className="font-medium text-heading truncate">{name}</span>
+                    </div>
                   </div>
-                  <span className="font-mono text-xs text-muted-foreground shrink-0">
-                    {p.x.toFixed(0)}, {p.z.toFixed(0)}
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}

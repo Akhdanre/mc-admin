@@ -97,7 +97,7 @@ function WarningAlertIcon() {
     </svg>
   );
 }
-export function DashboardOverview({
+export function DashboardView({
   playerStatus,
   whitelistStatus,
   serverInfo,
@@ -238,7 +238,7 @@ export function DashboardOverview({
 
           <button
             type="button"
-            onClick={() => onNavigateTab("commands")}
+            onClick={() => onNavigateTab("console")}
             className="h-9 sm:h-8 px-3 rounded-md text-xs font-semibold bg-surface hover:bg-surface-raised text-heading border border-border-strong transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs w-full sm:w-auto active:scale-[0.98]"
           >
             <TerminalIcon />
@@ -525,7 +525,7 @@ export function DashboardOverview({
               <h3 className="text-sm font-semibold text-heading">Admin & Audit Events</h3>
               <button
                 type="button"
-                onClick={() => onNavigateTab("commands")}
+                onClick={() => onNavigateTab("console")}
                 className="text-xs font-semibold text-primary hover:text-primary-hover hover:underline cursor-pointer"
               >
                 Open Live Console →

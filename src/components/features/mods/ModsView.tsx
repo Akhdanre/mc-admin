@@ -6,16 +6,16 @@ import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Toggle } from "@/components/ui/Toggle";
 import { Dropzone } from "@/components/ui/Dropzone";
-import { MOCK_MODS, type MockModItem } from "@/lib/mockData";
 import { cn } from "@/lib/cn";
-import type { ModInfo } from "@/types";
+import type { ModInfo, ModItem } from "@/types";
 
-export interface ModManagerProps {
+export interface ModsViewProps {
   onShowFeedback?: (message: string, isError?: boolean) => void;
 }
 
-export function ModManager({ onShowFeedback }: ModManagerProps) {
-  const [mods, setMods] = useState<MockModItem[]>(MOCK_MODS);
+export function ModsView({ onShowFeedback }: ModsViewProps) {
+  const [mods, setMods] = useState<ModItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [isUploading, setIsUploading] = useState(false);
@@ -26,8 +26,7 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.mods && data.mods.length > 0) {
-          const mapped: MockModItem[] = data.mods.map((m: ModInfo, idx: number) => ({
-            id: `mod-${idx}`,
+          const mapped: ModItem[] = data.mods.map((m: ModInfo, idx: number) => ({
             name: m.name,
             fileName: m.fileName,
             version: m.version || "1.0.0",
@@ -40,10 +39,11 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
           setMods(mapped);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
   }, []);
 
-  const handleToggle = async (mod: MockModItem) => {
+  const handleToggle = async (mod: ModItem) => {
     const nextState = !mod.enabled;
     setMods((prev) =>
       prev.map((m) => (m.id === mod.id ? { ...m, enabled: nextState } : m))
@@ -60,7 +60,7 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
     }
   };
 
-  const handleDelete = async (mod: MockModItem) => {
+  const handleDelete = async (mod: ModItem) => {
     if (!window.confirm(`Delete "${mod.fileName}"? This cannot be undone.`)) return;
     setMods((prev) => prev.filter((m) => m.id !== mod.id));
     try {
@@ -83,7 +83,7 @@ export function ModManager({ onShowFeedback }: ModManagerProps) {
           method: "POST",
           body: formData,
         });
-        const newMod: MockModItem = {
+        const newMod: ModItem = {
           id: `mod-upload-${Date.now()}`,
           name: file.name.replace(/\.jar$/i, ""),
           fileName: file.name,

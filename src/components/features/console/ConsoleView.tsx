@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type SubmitEvent } from "react";
-import { Button, SegmentedControl } from "@/components/ui";
-import { MOCK_CONSOLE_LOGS } from "@/lib/mockData";
+import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
 export interface ConsoleViewProps {
@@ -22,23 +21,7 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
   const [command, setCommand] = useState("");
   const [levelFilter, setLevelFilter] = useState<"ALL" | "INFO" | "WARN" | "ERROR">("ALL");
   const [isPaused, setIsPaused] = useState(false);
-  const [logs, setLogs] = useState<LogItem[]>(() => {
-    return MOCK_CONSOLE_LOGS.map((raw, idx) => {
-      let level: "INFO" | "WARN" | "ERROR" = "INFO";
-      if (raw.includes("WARN")) level = "WARN";
-      if (raw.includes("ERROR")) level = "ERROR";
-      const timeMatch = raw.match(/\[(\d\d:\d\d:\d\d)/);
-      const time = timeMatch ? timeMatch[1] : "00:00:00";
-      // Strip leading timestamp and log level prefix to render clean message
-      const message = raw.replace(/^\[\d\d:\d\d:\d\d\s+(INFO|WARN|ERROR)\]:\s*/, "");
-      return {
-        id: `mock-${idx}`,
-        time,
-        level,
-        message,
-      };
-    });
-  });
+  const [logs, setLogs] = useState<LogItem[]>([]);
 
   const terminalRef = useRef<HTMLDivElement>(null);
 
@@ -230,38 +213,45 @@ export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
           ref={terminalRef}
           className="flex-1 min-h-[360px] p-4 bg-[#0b0f19] font-mono text-xs leading-relaxed overflow-y-auto select-text space-y-1"
         >
-          {filteredLogs.map((log) => {
-            const isWarn = log.level === "WARN";
-            const isErr = log.level === "ERROR";
-            return (
-              <div
-                key={log.id}
-                className="flex items-baseline gap-2.5 hover:bg-white/5 px-1 py-0.5 rounded transition-colors"
-              >
-                <span className="text-[#4f5b6e] text-xs font-mono shrink-0 select-none">
-                  [{log.time}]
-                </span>
-                <span
-                  className={cn(
-                    "text-xs font-mono font-medium shrink-0 select-none",
-                    isErr && "text-[#f87171]",
-                    isWarn && "text-[#fbbf24]",
-                    !isErr && !isWarn && "text-[#38bdf8]"
-                  )}
+          {filteredLogs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-20 text-[#6b778a]">
+              <span className="font-mono text-sm font-semibold text-[#94a3b8]">Terminal Ready</span>
+              <span className="font-mono text-xs mt-1 text-[#64748b]">Awaiting server console output or command execution.</span>
+            </div>
+          ) : (
+            filteredLogs.map((log) => {
+              const isWarn = log.level === "WARN";
+              const isErr = log.level === "ERROR";
+              return (
+                <div
+                  key={log.id}
+                  className="flex items-baseline gap-2.5 hover:bg-white/5 px-1 py-0.5 rounded transition-colors"
                 >
-                  [{log.level}]
-                </span>
-                <span
-                  className={cn(
-                    "text-xs font-mono text-[#e6eaf0] break-all leading-relaxed",
-                    log.isCommand && "text-[#60a5fa] font-semibold"
-                  )}
-                >
-                  {log.message}
-                </span>
-              </div>
-            );
-          })}
+                  <span className="text-[#4f5b6e] text-xs font-mono shrink-0 select-none">
+                    [{log.time}]
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-mono font-medium shrink-0 select-none",
+                      isErr && "text-[#f87171]",
+                      isWarn && "text-[#fbbf24]",
+                      !isErr && !isWarn && "text-[#38bdf8]"
+                    )}
+                  >
+                    [{log.level}]
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-mono text-[#e6eaf0] break-all leading-relaxed",
+                      log.isCommand && "text-[#60a5fa] font-semibold"
+                    )}
+                  >
+                    {log.message}
+                  </span>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Bottom Command Prompt Bar */}

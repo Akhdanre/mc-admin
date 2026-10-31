@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { PlayerInventoryModal } from "./PlayerInventoryModal";
-import { MOCK_PLAYERS, type MockPlayerDetail } from "@/lib/mockData";
+import type { PlayerDetail } from "@/types";
 import { cn } from "@/lib/cn";
 
 export interface OnlinePlayersViewProps {
@@ -28,124 +28,10 @@ interface PlayerRowItem {
   pingColor: string;
   session: string;
   isAfk?: string;
-  mockDetail: MockPlayerDetail;
+  detail: PlayerDetail;
 }
 
-const PENPOT_PLAYERS: PlayerRowItem[] = [
-  {
-    id: "p1",
-    initials: "XK",
-    avatarColor: "bg-info text-info-foreground",
-    username: "_xKaelin",
-    role: "Admin",
-    roleColor: "bg-info",
-    health: "❤ 20/20 HP",
-    food: "🍗 20/20",
-    dimension: "Overworld",
-    coords: "X: 124, Y: 68, Z: -321",
-    ping: "18ms",
-    pingColor: "bg-success",
-    session: "4h 12m",
-    mockDetail: MOCK_PLAYERS[0],
-  },
-  {
-    id: "p2",
-    initials: "NF",
-    avatarColor: "bg-success text-success-foreground",
-    username: "notch_fan_99",
-    role: "Member",
-    roleColor: "bg-muted-foreground",
-    health: "❤ 20/20 HP",
-    food: "🍗 19/20",
-    dimension: "Overworld",
-    coords: "X: -810, Y: 63, Z: 412",
-    ping: "31ms",
-    pingColor: "bg-success",
-    session: "1h 45m",
-    mockDetail: MOCK_PLAYERS[1],
-  },
-  {
-    id: "p3",
-    initials: "DP",
-    avatarColor: "bg-primary text-primary-foreground",
-    username: "DiamondPick42",
-    role: "Moderator",
-    roleColor: "bg-primary",
-    health: "❤ 18/20 HP",
-    food: "🍗 16/20",
-    dimension: "Nether",
-    coords: "X: -42, Y: 72, Z: 104",
-    ping: "42ms",
-    pingColor: "bg-success",
-    session: "58m",
-    mockDetail: MOCK_PLAYERS[2],
-  },
-  {
-    id: "p4",
-    initials: "ES",
-    avatarColor: "bg-primary text-primary-foreground",
-    username: "EndermanSlayer",
-    role: "VIP+",
-    roleColor: "bg-warning",
-    health: "❤ 20/20 HP",
-    food: "🍗 20/20",
-    dimension: "The End",
-    coords: "X: 0, Y: 64, Z: 0",
-    ping: "28ms",
-    pingColor: "bg-success",
-    session: "2h 15m",
-    mockDetail: MOCK_PLAYERS[3],
-  },
-  {
-    id: "p5",
-    initials: "RM",
-    avatarColor: "bg-danger text-danger-foreground",
-    username: "RedstoneMaster",
-    role: "Member",
-    roleColor: "bg-muted-foreground",
-    health: "❤ 14/20 HP",
-    food: "🍗 18/20",
-    dimension: "Overworld",
-    coords: "X: 210, Y: 71, Z: -88",
-    ping: "88ms",
-    pingColor: "bg-warning",
-    session: "3h 30m",
-    mockDetail: MOCK_PLAYERS[4],
-  },
-  {
-    id: "p6",
-    initials: "SB",
-    avatarColor: "bg-warning text-warning-foreground",
-    username: "Steve_Builder",
-    role: "Member",
-    roleColor: "bg-muted-foreground",
-    health: "❤ 20/20 HP",
-    food: "🍗 15/20",
-    dimension: "Nether",
-    coords: "X: -65, Y: 58, Z: 180",
-    ping: "115ms",
-    pingColor: "bg-danger",
-    session: "38m",
-    isAfk: "• AFK (14m)",
-    mockDetail: MOCK_PLAYERS[5] || MOCK_PLAYERS[0],
-  },
-  {
-    id: "p7",
-    initials: "HW",
-    avatarColor: "bg-surface-raised text-heading",
-    username: "Herobrine_Watcher",
-    role: "Spectator",
-    roleColor: "bg-primary",
-    health: "❤ 20/20 HP",
-    food: "🍗 20/20",
-    dimension: "Overworld",
-    coords: "X: 420, Y: 64, Z: -120",
-    ping: "24ms",
-    pingColor: "bg-success",
-    session: "1h 10m",
-    mockDetail: MOCK_PLAYERS[6] || MOCK_PLAYERS[0],
-  },
-];
+
 
 export function OnlinePlayersView({
   livePlayers = [],
@@ -154,12 +40,42 @@ export function OnlinePlayersView({
 }: OnlinePlayersViewProps) {
   const [search, setSearch] = useState("");
   const [dimensionFilter, setDimensionFilter] = useState<string>("all");
-  const [selectedPlayer, setSelectedPlayer] = useState<MockPlayerDetail | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerDetail | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
 
-  const handleInspect = (p: MockPlayerDetail) => {
+  const playerItems: PlayerRowItem[] = livePlayers.map((name, idx) => ({
+    id: `live-${idx}`,
+    initials: name.slice(0, 2).toUpperCase(),
+    avatarColor: "bg-primary text-primary-foreground",
+    username: name,
+    role: "Member",
+    roleColor: "bg-primary/20 text-primary",
+    health: "20/20 HP",
+    food: "20/20",
+    dimension: "Overworld",
+    coords: "X: 0, Y: 64, Z: 0",
+    ping: "24ms",
+    pingColor: "bg-success",
+    session: "Active",
+    detail: {
+      uuid: `uuid-${name}`,
+      username: name,
+      dimension: "Overworld",
+      coords: { x: 0, y: 64, z: 0 },
+      pingMs: 24,
+      role: "Member",
+      health: 20,
+      food: 20,
+      gamemode: "survival",
+      xpLevel: 30,
+      inventory: [],
+      armor: {},
+    },
+  }));
+
+  const handleInspect = (p: PlayerDetail) => {
     setSelectedPlayer(p);
     setIsModalOpen(true);
   };
@@ -182,7 +98,7 @@ export function OnlinePlayersView({
     setTimeout(() => setActionNotice(null), 3000);
   };
 
-  const filteredPlayers = PENPOT_PLAYERS.filter((p) => {
+  const filteredPlayers = playerItems.filter((p) => {
     const matchesSearch =
       p.username.toLowerCase().includes(search.toLowerCase()) ||
       p.role.toLowerCase().includes(search.toLowerCase()) ||
@@ -197,9 +113,9 @@ export function OnlinePlayersView({
     return matchesSearch && matchesDim;
   });
 
-  const overworldCount = PENPOT_PLAYERS.filter((p) => p.dimension === "Overworld").length;
-  const netherCount = PENPOT_PLAYERS.filter((p) => p.dimension === "Nether").length;
-  const endCount = PENPOT_PLAYERS.filter((p) => p.dimension === "The End").length;
+  const overworldCount = playerItems.filter((p) => p.dimension === "Overworld").length;
+  const netherCount = playerItems.filter((p) => p.dimension === "Nether").length;
+  const endCount = playerItems.filter((p) => p.dimension === "The End").length;
 
   return (
     <div className="space-y-4">
@@ -401,7 +317,7 @@ export function OnlinePlayersView({
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleInspect(player.mockDetail)}
+                        onClick={() => handleInspect(player.detail)}
                         className="text-xs h-6.5 px-2.5 bg-info-surface text-info-foreground border-info-border hover:bg-info/20"
                       >
                         Inspect
