@@ -316,15 +316,14 @@ export function Sidebar({
                   className={cn(
                     "w-full h-10 sm:h-9 flex items-center justify-between px-2.5 rounded-md text-sm font-normal transition-colors cursor-pointer text-left active:scale-[0.99]",
                     isActive
-                      ? "bg-primary/10 dark:bg-primary/15 text-primary-muted font-medium"
+                      ? "bg-[#eff6ff] dark:bg-primary/15 text-[#2656c8] dark:text-primary-muted font-medium"
                       : "text-foreground hover:bg-surface-raised hover:text-heading"
                   )}
                 >
                   <span className="flex items-center gap-2.5 min-w-0">
                     <span
                       className={cn(
-                        "shrink-0",
-                        isActive ? "text-primary-muted" : "text-subtle-foreground"
+                        isActive ? "text-[#2656c8] dark:text-primary-muted" : "text-subtle-foreground"
                       )}
                     >
                       {item.icon(isActive)}
@@ -337,7 +336,7 @@ export function Sidebar({
                       className={cn(
                         "shrink-0 px-1.5 py-0.5 rounded text-xs font-mono leading-none",
                         isActive
-                          ? "bg-primary/15 text-primary-muted font-medium"
+                          ? "bg-[#2656c8]/10 text-[#2656c8] dark:text-primary-muted font-medium"
                           : "bg-surface-raised text-muted-foreground border border-border/40"
                       )}
                     >
