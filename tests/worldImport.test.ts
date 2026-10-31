@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { getActiveLevelName } from "@/server/services/worldImport";
+import { getActiveLevelName } from "@/server/data/world";
 
 describe("world import service", () => {
   it("resolves default level name", async () => {

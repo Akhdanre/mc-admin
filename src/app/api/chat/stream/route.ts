@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { subscribeToChatStream } from "@/server/services/chat";
+import { subscribeToChatStream } from "@/server/data/logs/tailer";
 import type { ChatMessage } from "@/types";
 
 export const dynamic = "force-dynamic";

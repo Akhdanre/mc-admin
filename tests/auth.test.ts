@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { createSessionToken, verifySessionToken } from "@/server/services/auth";
+import { createSessionToken, verifySessionToken } from "@/server/data/auth";
 
 describe("Auth Session Service", () => {
   it("creates and verifies valid session tokens", () => {

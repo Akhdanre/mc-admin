@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { getDiscordConfig, saveDiscordConfig } from "@/server/services/discord";
+import { getDiscordConfig, saveDiscordConfig } from "@/server/data/discord";
 
 describe("Discord Webhook Service", () => {
   it("loads default config safely", async () => {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Rcon } from "rcon-client";
-import { getAppSettings } from "@/server/services/appSettings";
+import { getAppSettings } from "@/server/data/settings";
 import type { TestRconResponse, AppSettings } from "@/types";
 
 export async function POST(req: NextRequest) {

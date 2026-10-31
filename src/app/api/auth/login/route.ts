@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyPassword, createSessionToken, SESSION_COOKIE_NAME } from "@/server/services/auth";
+import { verifyPassword, createSessionToken, SESSION_COOKIE_NAME } from "@/server/data/auth";
 import type { LoginRequestBody, AuthResponse } from "@/types";
 
 export async function POST(req: NextRequest) {

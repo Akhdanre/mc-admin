@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionToken, SESSION_COOKIE_NAME } from "@/server/services/auth";
+import { verifySessionToken, SESSION_COOKIE_NAME } from "@/server/data/auth";
 import type { AuthSessionResponse } from "@/types";
 
 export async function GET(req: NextRequest) {

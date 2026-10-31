@@ -9,15 +9,6 @@ import type { ChatMessage, ChatResponse } from "@/types";
 
 const MAX_CHAT_MESSAGES = 150;
 
-export {
-  JOIN_REGEX,
-  LEAVE_REGEX,
-  ADVANCEMENT_REGEX,
-  DEATH_REGEX,
-  parseChatLine,
-  parseServerEvent,
-} from "@/server/domain/parse/chat";
-
 export async function getRecentChatMessages(): Promise<ChatResponse> {
   const updatedAt = new Date().toLocaleTimeString();
   const logPath = path.join(config.paths.data, "logs", "latest.log");
@@ -89,5 +80,3 @@ export async function sendChatMessage(message: string): Promise<{ success: boole
     };
   }
 }
-
-export { startChatTailer, subscribeToChatStream } from "@/server/data/logs/tailer";

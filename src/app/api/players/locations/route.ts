@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getPlayerStatus } from "@/server/services/rcon";
-import { getPlayerLocation } from "@/server/services/location";
+import { getPlayerStatus } from "@/server/integrations/rcon";
+import { getPlayerLocation } from "@/server/data/location";
 
 export async function GET() {
   try {

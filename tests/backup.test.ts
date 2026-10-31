@@ -1,9 +1,7 @@
 import { describe, expect, it } from "bun:test";
+import { startBackupScheduler } from "@/server/data/backups";
 import {
-  startBackupScheduler,
   getMsUntilTargetHour,
-} from "@/server/services/backup";
-import {
   formatSize,
   buildArchiveName,
   isBackupArchive,

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPlayerStatus } from "@/server/services/rcon";
+import { getPlayerStatus } from "@/server/integrations/rcon";
 
 export async function GET() {
   const status = await getPlayerStatus();
