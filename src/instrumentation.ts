@@ -1,5 +1,14 @@
+declare global {
+  var __mcInstrumentationStarted: boolean | undefined;
+}
+
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
+    if (globalThis.__mcInstrumentationStarted) {
+      return;
+    }
+    globalThis.__mcInstrumentationStarted = true;
+
     // Dynamic import required by Next.js instrumentation to isolate Node.js runtime APIs
     const { startChatTailer, subscribeToChatStream, subscribeToServerEvents } = await import("@/server/chat");
     const { startDiscordBot, sendDiscordChatMessage, sendDiscordEvent } = await import("@/server/discord");

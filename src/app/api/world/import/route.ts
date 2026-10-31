@@ -1,29 +1,43 @@
-import { NextResponse } from "next/server";
+import path from "path";
+import { NextRequest, NextResponse } from "next/server";
 import { importWorldArchive } from "@/server/world";
+import { withAuth, BadRequestError } from "@/server/core";
 
-export async function POST(request: Request) {
-  try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
+const MAX_WORLD_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB
 
-    if (!file) {
-      return NextResponse.json({ success: false, error: "No world archive uploaded" }, { status: 400 });
-    }
+export const POST = withAuth(async (request: NextRequest) => {
+  const formData = await request.formData();
+  const file = formData.get("file") as File | null;
 
-    const name = file.name.toLowerCase();
-    if (!name.endsWith(".zip") && !name.endsWith(".tar.gz") && !name.endsWith(".tgz")) {
-      return NextResponse.json(
-        { success: false, error: "Only .zip and .tar.gz files are allowed" },
-        { status: 400 }
-      );
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const result = await importWorldArchive(file.name, buffer);
-
-    return NextResponse.json(result, { status: result.success ? 200 : 400 });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "World import failed";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  if (!file) {
+    throw new BadRequestError("No world archive uploaded");
   }
-}
+
+  if (file.size > MAX_WORLD_SIZE_BYTES) {
+    throw new BadRequestError("Uploaded archive exceeds 500 MB limit");
+  }
+
+  const safeFileName = path.basename(file.name);
+  if (
+    !safeFileName ||
+    file.name.includes("..") ||
+    file.name.includes("/") ||
+    file.name.includes("\\")
+  ) {
+    throw new BadRequestError("Path traversal in uploaded filename is prohibited");
+  }
+
+  const lowerName = safeFileName.toLowerCase();
+  if (!lowerName.endsWith(".zip") && !lowerName.endsWith(".tar.gz") && !lowerName.endsWith(".tgz")) {
+    throw new BadRequestError("Only .zip and .tar.gz world archive files are supported");
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const result = await importWorldArchive(safeFileName, buffer);
+
+  if (!result.success) {
+    throw new BadRequestError(result.error || "World import failed");
+  }
+
+  return NextResponse.json(result);
+});

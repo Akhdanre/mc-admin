@@ -1,32 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionToken, changePassword, SESSION_COOKIE_NAME } from "@/server/auth";
-import type { ChangePasswordRequestBody, AuthResponse } from "@/types";
+import { changePassword } from "@/server/auth";
+import { withAuth, BadRequestError } from "@/server/core";
+import { changePasswordSchema } from "@/schemas";
+import type { AuthResponse } from "@/types";
 
-export async function POST(req: NextRequest) {
-  const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
-  if (!verifySessionToken(token)) {
-    return NextResponse.json<AuthResponse>({ success: false, error: "Unauthorized" }, { status: 401 });
+export const POST = withAuth(async (req: NextRequest) => {
+  const body = changePasswordSchema.parse(await req.json());
+  const result = await changePassword(body.currentPassword, body.newPassword);
+
+  if (!result.success) {
+    throw new BadRequestError(result.error || "Failed to change password");
   }
 
-  try {
-    const body = (await req.json()) as ChangePasswordRequestBody;
-    if (!body?.currentPassword || !body?.newPassword) {
-      return NextResponse.json<AuthResponse>(
-        { success: false, error: "Current and new password are required" },
-        { status: 400 }
-      );
-    }
-
-    const result = await changePassword(body.currentPassword, body.newPassword);
-    if (!result.success) {
-      return NextResponse.json<AuthResponse>({ success: false, error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json<AuthResponse>({ success: true });
-  } catch (err: unknown) {
-    return NextResponse.json<AuthResponse>(
-      { success: false, error: err instanceof Error ? err.message : "Internal error" },
-      { status: 500 }
-    );
-  }
-}
+  return NextResponse.json<AuthResponse>({ success: true });
+});

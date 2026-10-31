@@ -1,90 +1,86 @@
-import { NextResponse } from "next/server";
+import path from "node:path";
+import { NextRequest, NextResponse } from "next/server";
 import { listInstalledMods, toggleMod, deleteMod, saveModFile } from "@/server/mods";
+import { withAuth, BadRequestError } from "@/server/core";
 
-export async function GET() {
+function assertSafeModFileName(fileName: string): string {
+  const clean = path.basename(fileName);
+  if (!clean || fileName.includes("..") || fileName.includes("/") || fileName.includes("\\")) {
+    throw new BadRequestError("Path traversal in mod filename is prohibited");
+  }
+  return clean;
+}
+
+export const GET = withAuth(async () => {
   const mods = await listInstalledMods();
   return NextResponse.json({ mods });
-}
+});
 
-export async function PATCH(request: Request) {
-  try {
-    const body = (await request.json()) as { fileName?: string; enabled?: boolean };
-    if (!body.fileName || typeof body.enabled !== "boolean") {
-      return NextResponse.json({ success: false, error: "fileName and enabled (boolean) required" }, { status: 400 });
-    }
-
-    const result = await toggleMod(body.fileName, body.enabled);
-    return NextResponse.json(result);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to toggle mod";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+export const PATCH = withAuth(async (req: NextRequest) => {
+  const body = (await req.json()) as { fileName?: string; enabled?: boolean };
+  if (!body.fileName || typeof body.enabled !== "boolean") {
+    throw new BadRequestError("fileName and enabled (boolean) required");
   }
-}
 
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const fileName = searchParams.get("fileName");
-    if (!fileName) {
-      return NextResponse.json({ success: false, error: "fileName query parameter required" }, { status: 400 });
-    }
+  const safeFileName = assertSafeModFileName(body.fileName);
+  const result = await toggleMod(safeFileName, body.enabled);
+  return NextResponse.json(result);
+});
 
-    await deleteMod(fileName);
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to delete mod";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+export const DELETE = withAuth(async (req: NextRequest) => {
+  const { searchParams } = new URL(req.url);
+  const fileName = searchParams.get("fileName");
+  if (!fileName) {
+    throw new BadRequestError("fileName query parameter required");
   }
-}
 
-export async function POST(request: Request) {
-  try {
-    const contentType = request.headers.get("content-type") || "";
+  const safeFileName = assertSafeModFileName(fileName);
+  await deleteMod(safeFileName);
+  return NextResponse.json({ success: true });
+});
 
-    // Multipart upload handler
-    if (contentType.includes("multipart/form-data")) {
-      const formData = await request.formData();
-      const file = formData.get("file") as File | null;
+export const POST = withAuth(async (req: NextRequest) => {
+  const contentType = req.headers.get("content-type") || "";
 
-      if (!file) {
-        return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 });
-      }
+  // Multipart upload handler
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
 
-      if (!file.name.endsWith(".jar")) {
-        return NextResponse.json({ success: false, error: "Only .jar files allowed" }, { status: 400 });
-      }
-
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const savedName = await saveModFile(file.name, buffer);
-
-      return NextResponse.json({ success: true, fileName: savedName });
+    if (!file) {
+      throw new BadRequestError("No file provided");
     }
 
-    // Direct install by URL (e.g. from Modrinth)
-    const body = (await request.json()) as { downloadUrl?: string; fileName?: string };
-    if (!body.downloadUrl || !body.fileName) {
-      return NextResponse.json({ success: false, error: "downloadUrl and fileName required" }, { status: 400 });
+    const safeName = assertSafeModFileName(file.name);
+    if (!safeName.endsWith(".jar")) {
+      throw new BadRequestError("Only .jar files allowed");
     }
 
-    if (!body.fileName.endsWith(".jar")) {
-      return NextResponse.json({ success: false, error: "Target fileName must end with .jar" }, { status: 400 });
-    }
-
-    const response = await fetch(body.downloadUrl);
-    if (!response.ok) {
-      return NextResponse.json(
-        { success: false, error: `Failed to download mod: ${response.statusText}` },
-        { status: 502 }
-      );
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const savedName = await saveModFile(body.fileName, buffer);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const savedName = await saveModFile(safeName, buffer);
 
     return NextResponse.json({ success: true, fileName: savedName });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to process mod upload/install";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
-}
+
+  // Direct install by URL (e.g. from Modrinth)
+  const body = (await req.json()) as { downloadUrl?: string; fileName?: string };
+  if (!body.downloadUrl || !body.fileName) {
+    throw new BadRequestError("downloadUrl and fileName required");
+  }
+
+  const safeName = assertSafeModFileName(body.fileName);
+  if (!safeName.endsWith(".jar")) {
+    throw new BadRequestError("Target fileName must end with .jar");
+  }
+
+  const response = await fetch(body.downloadUrl);
+  if (!response.ok) {
+    throw new BadRequestError(`Failed to download mod: ${response.statusText}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const savedName = await saveModFile(safeName, buffer);
+
+  return NextResponse.json({ success: true, fileName: savedName });
+});

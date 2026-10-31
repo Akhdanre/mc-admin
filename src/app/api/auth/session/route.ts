@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken, SESSION_COOKIE_NAME } from "@/server/auth";
+import { handleRoute } from "@/server/core";
 import type { AuthSessionResponse } from "@/types";
 
-export async function GET(req: NextRequest) {
+export const GET = handleRoute(async (req: NextRequest) => {
   const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
   const authenticated = verifySessionToken(token);
 
@@ -10,4 +11,4 @@ export async function GET(req: NextRequest) {
     authenticated,
     username: authenticated ? "admin" : undefined,
   });
-}
+});

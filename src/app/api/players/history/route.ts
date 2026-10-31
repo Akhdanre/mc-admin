@@ -1,22 +1,10 @@
 import { NextResponse } from "next/server";
 import { getPlayerHistory } from "@/server/players";
 import { getPlayerStatus } from "@/server/rcon";
+import { withAuth } from "@/server/core";
 
-export async function GET() {
-  try {
-    const status = await getPlayerStatus();
-    const history = await getPlayerHistory(status.players);
-    return NextResponse.json(history);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json(
-      {
-        players: [],
-        lastLoginPlayer: null,
-        error: message,
-        updatedAt: new Date().toLocaleTimeString(),
-      },
-      { status: 500 }
-    );
-  }
-}
+export const GET = withAuth(async () => {
+  const status = await getPlayerStatus();
+  const history = await getPlayerHistory(status.players);
+  return NextResponse.json(history);
+});

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getPlayerStatus } from "@/server/rcon";
+import { withAuth } from "@/server/core";
 
-export async function GET() {
+export const GET = withAuth(async () => {
   const status = await getPlayerStatus();
   return NextResponse.json(status);
-}
+});
