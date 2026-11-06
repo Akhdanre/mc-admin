@@ -1,12 +1,8 @@
 import "server-only";
 import fs from "fs/promises";
 import path from "path";
-import { exec } from "child_process";
-import { promisify } from "util";
-import { config } from "@/server/core";
+import { config, runCommand } from "@/server/core";
 import { triggerBackup } from "@/server/backup";
-
-const execAsync = promisify(exec);
 
 export interface ImportWorldResult {
   success: boolean;
@@ -15,16 +11,18 @@ export interface ImportWorldResult {
   error?: string;
 }
 
+const SAFE_LEVEL_NAME = /^[A-Za-z0-9_-]{1,64}$/;
+
 /**
  * Reads server.properties to determine the active level-name (world folder).
- * Defaults to "world".
+ * Returns the active level-name when it matches `[A-Za-z0-9_-]{1,64}`; otherwise `world`.
  */
 export async function getActiveLevelName(): Promise<string> {
   try {
     const propsPath = path.join(config.paths.data, "server.properties");
     const content = await fs.readFile(propsPath, "utf-8");
     const match = content.match(/^level-name\s*=\s*(.+)$/m);
-    if (match?.[1]?.trim()) {
+    if (match?.[1]?.trim() && SAFE_LEVEL_NAME.test(match[1].trim())) {
       return match[1].trim();
     }
   } catch {
@@ -71,10 +69,10 @@ export async function importWorldArchive(
 
     // 2. Extract into tempDir
     if (isZip) {
-      await execAsync(`unzip -q -o "${archivePath}" -d "${tempDir}/extracted"`, { timeout: 300000 });
+      await runCommand("unzip", ["-q", "-o", archivePath, "-d", path.join(tempDir, "extracted")]);
     } else {
       await fs.mkdir(path.join(tempDir, "extracted"), { recursive: true });
-      await execAsync(`tar -xzf "${archivePath}" -C "${tempDir}/extracted"`, { timeout: 300000 });
+      await runCommand("tar", ["-xzf", archivePath, "-C", path.join(tempDir, "extracted")]);
     }
 
     const extractedDir = path.join(tempDir, "extracted");
@@ -107,6 +105,10 @@ export async function importWorldArchive(
     // 4. Overwrite active world directory
     const levelName = await getActiveLevelName();
     const targetWorldDir = path.join(config.paths.data, levelName);
+    const resolvedData = path.resolve(config.paths.data);
+    if (path.dirname(path.resolve(targetWorldDir)) !== resolvedData) {
+      return { success: false, error: "Invalid level-name in server.properties" };
+    }
 
     // Remove old world directory if exists
     try {
@@ -117,7 +119,7 @@ export async function importWorldArchive(
 
     // Copy new world contents
     await fs.mkdir(targetWorldDir, { recursive: true });
-    await execAsync(`cp -r "${worldSourceDir}/." "${targetWorldDir}/"`);
+    await runCommand("cp", ["-r", `${worldSourceDir}/.`, targetWorldDir]);
 
     return {
       success: true,

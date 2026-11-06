@@ -1,9 +1,7 @@
 import "server-only";
 import fs from "fs/promises";
 import path from "path";
-import { exec } from "child_process";
-import { promisify } from "util";
-import { config } from "@/server/core";
+import { config, runCommand } from "@/server/core";
 import { executeRconCommand } from "@/server/rcon";
 import {
   BACKUP_CONFIG_FILE,
@@ -24,8 +22,6 @@ import type {
   BackupRestoreResponse,
   BackupItem,
 } from "@/types";
-
-const execAsync = promisify(exec);
 
 async function loadRetentionConfig(): Promise<number> {
   try {
@@ -196,7 +192,7 @@ export async function triggerBackup(): Promise<BackupTriggerResponse> {
 
     try {
       // Archive /data into archivePath
-      await execAsync(`tar -czf "${archivePath}" -C "${dataDir}" .`, { timeout: 300000 });
+      await runCommand("tar", ["-czf", archivePath, "-C", dataDir, "."]);
     } finally {
       // Always re-enable server saving
       try {
@@ -272,7 +268,7 @@ export async function restoreBackup(filename: string): Promise<BackupRestoreResp
     }
 
     // Extract archive over target data directory
-    await execAsync(`tar -xzf "${archivePath}" -C "${dataDir}"`, { timeout: 300000 });
+    await runCommand("tar", ["-xzf", archivePath, "-C", dataDir]);
 
     return {
       success: true,

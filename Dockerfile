@@ -2,7 +2,7 @@
 # Base layer with Bun and Python3 (for helper scripts if needed)
 # -------------------------------------------------------------
 FROM oven/bun:1.4-alpine AS base
-RUN apk add --no-cache libc6-compat tar gzip
+RUN apk add --no-cache libc6-compat tar gzip unzip
 
 # -------------------------------------------------------------
 # Dependencies installation layer
