@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 
 function EyeIcon({ className }: { className?: string }) {
@@ -47,7 +46,6 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const canSubmit = Boolean(username.trim() && password.trim() && !loading);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,7 +59,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password, rememberMe }),
       });
 
       const data = await res.json();
@@ -76,8 +74,8 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/");
-      router.refresh();
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.href = "/";
     } catch {
       setError("Network error. Please try again.");
       setLoading(false);

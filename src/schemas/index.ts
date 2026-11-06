@@ -9,7 +9,9 @@ export const commandSchema = z.object({
 });
 
 export const loginSchema = z.object({
+  username: z.string().trim().min(1, "Username is required").optional(),
   password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean().optional(),
 });
 
 export const changePasswordSchema = z.object({

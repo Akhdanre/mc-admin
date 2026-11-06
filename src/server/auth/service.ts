@@ -3,6 +3,7 @@ import crypto from "crypto";
 import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
+import os from "os";
 import { config } from "@/server/core";
 import {
   SESSION_COOKIE_NAME,
@@ -24,6 +25,17 @@ interface AuthStore {
 
 let sessionSecretCache: string | null = null;
 
+function getSecretFilePath(): string {
+  const primary = path.join(config.paths.data, SESSION_SECRET_FILE);
+  try {
+    if (fsSync.existsSync(primary)) return primary;
+    fsSync.mkdirSync(path.dirname(primary), { recursive: true });
+    return primary;
+  } catch {
+    return path.join(os.tmpdir(), "mc_dashboard_session_secret");
+  }
+}
+
 function getSessionSecret(): string {
   if (sessionSecretCache) {
     return sessionSecretCache;
@@ -33,44 +45,60 @@ function getSessionSecret(): string {
     return sessionSecretCache;
   }
 
-  const secretPath = path.join(config.paths.data, SESSION_SECRET_FILE);
+  const filePath = getSecretFilePath();
   try {
-    if (fsSync.existsSync(secretPath)) {
-      sessionSecretCache = fsSync.readFileSync(secretPath, "utf-8").trim();
+    if (fsSync.existsSync(filePath)) {
+      sessionSecretCache = fsSync.readFileSync(filePath, "utf-8").trim();
       if (sessionSecretCache) return sessionSecretCache;
     }
     sessionSecretCache = crypto.randomBytes(32).toString("hex");
-    fsSync.writeFileSync(secretPath, sessionSecretCache, "utf-8");
+    fsSync.writeFileSync(filePath, sessionSecretCache, "utf-8");
   } catch {
     sessionSecretCache = crypto.randomBytes(32).toString("hex");
   }
   return sessionSecretCache;
 }
 
-async function getAuthStorePath(): Promise<string> {
-  return path.join(config.paths.data, AUTH_FILE);
+function rotateSessionSecret(): void {
+  sessionSecretCache = crypto.randomBytes(32).toString("hex");
+  const filePath = getSecretFilePath();
+  try {
+    fsSync.writeFileSync(filePath, sessionSecretCache, "utf-8");
+  } catch {
+    // Keep in-memory cache
+  }
 }
 
+let inMemoryCredentials: AuthStore | null = null;
+
 async function getStoredCredentials(): Promise<AuthStore | null> {
+  if (inMemoryCredentials) {
+    return inMemoryCredentials;
+  }
   try {
-    const authPath = await getAuthStorePath();
+    const authPath = path.join(config.paths.data, AUTH_FILE);
     const raw = await fs.readFile(authPath, "utf-8");
     const parsed = JSON.parse(raw);
     if (parsed.hash && parsed.salt) {
-      return parsed as AuthStore;
+      inMemoryCredentials = parsed as AuthStore;
+      return inMemoryCredentials;
     }
     return null;
   } catch {
-    return null;
+    return inMemoryCredentials;
   }
 }
 
 async function saveCredentials(hash: string, salt: string): Promise<void> {
-  const authPath = await getAuthStorePath();
-  const data: AuthStore = { hash, salt };
-  await fs.writeFile(authPath, JSON.stringify(data, null, 2), "utf-8");
+  inMemoryCredentials = { hash, salt };
+  try {
+    const authPath = path.join(config.paths.data, AUTH_FILE);
+    await fs.mkdir(path.dirname(authPath), { recursive: true });
+    await fs.writeFile(authPath, JSON.stringify(inMemoryCredentials, null, 2), "utf-8");
+  } catch {
+    // Keep in-memory if disk is not writable
+  }
 }
-
 async function getOrInitCredentials(): Promise<AuthStore> {
   const existing = await getStoredCredentials();
   if (existing) {
@@ -115,6 +143,7 @@ export async function changePassword(
   const hash = await hashPassword(newPassword, salt);
   try {
     await saveCredentials(hash, salt);
+    rotateSessionSecret();
     return { success: true };
   } catch (err: unknown) {
     return {
