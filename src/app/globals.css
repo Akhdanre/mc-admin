@@ -14,6 +14,15 @@
  *
  * The RCON console/terminal intentionally stays dark in both themes — it uses
  * the fixed `--color-terminal-*` tokens, which do not flip.
+ *
+ * Typography, spacing and radius follow the Penpot `mc-admin` file
+ * (`Pulse MC Design Tokens` set). The type scale is remapped in @theme:
+ *
+ *   text-overline 11/16 · text-xs 12/16 (small) · text-sm 14/20 (body)
+ *   text-base 15/22 (h3) · text-lg 18/26 (h2) · text-xl 22/30 (h1)
+ *   text-2xl 22/30 · text-3xl 28/36 (display) · text-4xl 28/36
+ *
+ * Spacing is a 4px grid via --spacing (space.2…space.64 = p-0.5…p-16).
  */
 
 :root {
@@ -34,28 +43,36 @@
   --subtle-foreground: var(--color-slate-500);
   --faint-foreground: var(--color-slate-400);
 
-  /* ---------- Brand / primary (indigo) ---------- */
-  --primary: var(--color-indigo-600);
-  --primary-hover: var(--color-indigo-500);
-  --primary-foreground: var(--color-white);
-  --primary-muted: var(--color-indigo-600);
+  /* ---------- Brand / primary (Penpot Blue #2656c8) ---------- */
+  --primary: #2656C8;
+  --primary-hover: #1E46A6;
+  --primary-foreground: #FFFFFF;
+  --primary-muted: #2656C8;
+  /* ---------- Statuses (light — from Penpot `Theme/Light` tokens) ---------- */
+  /* muted = solid, foreground = *.text, surface = *.bg, border = *.border */
+  --success: #1A7F4B; /* status.success.solid */
+  --success-muted: #1A7F4B; /* status.success.solid */
+  --success-foreground: #14633B; /* status.success.text */
+  --success-surface: #E8F5EE; /* status.success.bg */
+  --success-border: #B7E0C8; /* status.success.border */
 
-  /* ---------- Statuses (light — darker for contrast) ---------- */
-  --success: var(--color-emerald-600);
-  --success-muted: var(--color-emerald-700);
-  --success-foreground: var(--color-emerald-700);
+  --danger: #C62F2F; /* status.danger.solid */
+  --danger-muted: #C62F2F; /* status.danger.solid */
+  --danger-foreground: #A12323; /* status.danger.text */
+  --danger-surface: #FDECEC; /* status.danger.bg */
+  --danger-border: #F3B8B8; /* status.danger.border */
 
-  --danger: var(--color-rose-600);
-  --danger-muted: var(--color-rose-700);
-  --danger-foreground: var(--color-rose-700);
+  --warning: #B76E00; /* status.warning.solid */
+  --warning-muted: #B76E00; /* status.warning.solid */
+  --warning-foreground: #8A5300; /* status.warning.text */
+  --warning-surface: #FFF5E0; /* status.warning.bg */
+  --warning-border: #F5D58F; /* status.warning.border */
 
-  --warning: var(--color-amber-600);
-  --warning-muted: var(--color-amber-700);
-  --warning-foreground: var(--color-amber-700);
-
-  --info: var(--color-sky-600);
-  --info-muted: var(--color-sky-700);
-  --info-foreground: var(--color-sky-700);
+  --info: #0B7285; /* Color / Semantic → Info-Solid (no light info tokens) */
+  --info-muted: #0B7285; /* Info-Solid */
+  --info-foreground: #0B5A69; /* Info-Text */
+  --info-surface: #E6F4F7; /* Info-Bg */
+  --info-border: #A9D8E2; /* Info-Border */
 
   /* ---------- Focus ring ---------- */
   --ring: var(--color-indigo-500);
@@ -79,31 +96,40 @@
   --subtle-foreground: var(--color-slate-500);
   --faint-foreground: var(--color-slate-600);
 
-  /* ---------- Brand / primary (indigo) ---------- */
-  --primary: var(--color-indigo-600);
-  --primary-hover: var(--color-indigo-500);
-  --primary-foreground: var(--color-white);
-  --primary-muted: var(--color-indigo-400);
+  /* ---------- Brand / primary (Penpot Blue #2656c8) ---------- */
+  --primary: #3B72F2;
+  --primary-hover: #2656C8;
+  --primary-foreground: #FFFFFF;
+  --primary-muted: #60A5FA;
+  /* ---------- Statuses (dark — from Penpot `Theme/Dark` tokens) ---------- */
+  --success: #4CC38A; /* status.success.solid */
+  --success-muted: #4CC38A; /* status.success.solid */
+  --success-foreground: #4CC38A; /* status.success.text */
+  --success-surface: #14281E; /* status.success.bg */
+  --success-border: #1E4631; /* status.success.border */
 
-  /* ---------- Statuses (dark — lighter for contrast) ---------- */
-  --success: var(--color-emerald-500);
-  --success-muted: var(--color-emerald-400);
-  --success-foreground: var(--color-emerald-300);
+  --danger: #F07878; /* status.danger.solid */
+  --danger-muted: #F07878; /* status.danger.solid */
+  --danger-foreground: #F07878; /* status.danger.text */
+  --danger-surface: #2E1515; /* status.danger.bg */
+  --danger-border: #522323; /* status.danger.border */
 
-  --danger: var(--color-rose-500);
-  --danger-muted: var(--color-rose-400);
-  --danger-foreground: var(--color-rose-300);
+  --warning: #E5A63A; /* status.warning.solid */
+  --warning-muted: #E5A63A; /* status.warning.solid */
+  --warning-foreground: #E5A63A; /* status.warning.text */
+  --warning-surface: #2B2111; /* status.warning.bg */
+  --warning-border: #4D3918; /* status.warning.border */
 
-  --warning: var(--color-amber-500);
-  --warning-muted: var(--color-amber-400);
-  --warning-foreground: var(--color-amber-300);
-
-  --info: var(--color-sky-500);
-  --info-muted: var(--color-sky-400);
-  --info-foreground: var(--color-sky-300);
+  /* NOTE: Penpot's dark Info-Solid #0B7285 is too dark for text (2.7–3.3:1).
+   * Use Neon Info #5EEAD4 for text/solid and deepen the surface for contrast. */
+  --info: #5EEAD4; /* Neon Info */
+  --info-muted: #5EEAD4; /* Neon Info */
+  --info-foreground: #5EEAD4; /* Neon Info */
+  --info-surface: #0B2B33; /* derived from #0B7285 (darkened) */
+  --info-border: #11525E; /* derived from #0B7285 (darkened) */
 
   /* ---------- Focus ring ---------- */
-  --ring: var(--color-indigo-500);
+  --ring: #2656C8;
 }
 
 @theme inline {
@@ -130,18 +156,26 @@
   --color-success: var(--success);
   --color-success-muted: var(--success-muted);
   --color-success-foreground: var(--success-foreground);
+  --color-success-surface: var(--success-surface);
+  --color-success-border: var(--success-border);
 
   --color-danger: var(--danger);
   --color-danger-muted: var(--danger-muted);
   --color-danger-foreground: var(--danger-foreground);
+  --color-danger-surface: var(--danger-surface);
+  --color-danger-border: var(--danger-border);
 
   --color-warning: var(--warning);
   --color-warning-muted: var(--warning-muted);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-surface: var(--warning-surface);
+  --color-warning-border: var(--warning-border);
 
   --color-info: var(--info);
   --color-info-muted: var(--info-muted);
   --color-info-foreground: var(--info-foreground);
+  --color-info-surface: var(--info-surface);
+  --color-info-border: var(--info-border);
 
   --color-ring: var(--ring);
 
@@ -150,11 +184,74 @@
   --color-terminal-foreground: var(--color-slate-200);
   --color-terminal-border: var(--color-slate-800);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+}
+
+/*
+ * Plain (non-inline) theme values: fonts, type scale, spacing, radius.
+ * These are static, so they belong here — `@theme inline` only suits vars that
+ * must resolve at runtime (the flipping color tokens above).
+ */
+@theme {
+  /* ---------- Typography (Penpot `typography.*` tokens, IBM Plex) ---------- */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Overline — ink-caption / eyebrow labels (was text-[9–11px] uppercase) */
+  --text-overline: 11px;
+  --text-overline--line-height: 16px;
+  --text-overline--letter-spacing: 0.04em;
+  --text-overline--font-weight: 600;
+
+  /* ---------- Spacing (Penpot `space.*`, 4px grid) ---------- */
+  --spacing: 4px;
+
+  /* ---------- Radius (Penpot `radius.*`) ---------- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+
+  /* ---------- Type scale remap (existing utility names, Penpot sizes) ---------- */
+  /* text-overline 11/16 · text-xs 12/16 · text-sm 14/20 · text-base 15/22   */
+  /* text-lg 18/26 · text-xl 22/30 · text-2xl 22/30 · text-3xl 28/36         */
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+
+  --text-base: 15px;
+  --text-base--line-height: 22px;
+
+  --text-lg: 18px;
+  --text-lg--line-height: 26px;
+
+  --text-xl: 22px;
+  --text-xl--line-height: 30px;
+  --text-xl--letter-spacing: -0.01em;
+
+  --text-2xl: 22px;
+  --text-2xl--line-height: 30px;
+  --text-2xl--letter-spacing: -0.01em;
+
+  --text-3xl: 28px;
+  --text-3xl--line-height: 36px;
+  --text-3xl--letter-spacing: -0.02em;
+
+  --text-4xl: 28px;
+  --text-4xl--line-height: 36px;
+  --text-4xl--letter-spacing: -0.02em;
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
+}
+
+/* Prevent browser native password reveal icons from clashing with custom toggle */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
 }

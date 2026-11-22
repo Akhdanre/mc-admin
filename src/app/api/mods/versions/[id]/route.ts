@@ -1,11 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
+export const GET = withAuth(
+  async (
+    _request: NextRequest,
+    context?: { params: Promise<{ id: string }> }
+  ) => {
+    if (!context?.params) {
+      throw new BadRequestError("Project ID parameter required");
+    }
+    const { id } = await context.params;
     const response = await fetch(`https://api.modrinth.com/v2/project/${id}/version`, {
       headers: {
         "User-Agent": "mc-dashboard/0.1.5 (github.com/akhdanre/mc-dashboard)",
@@ -14,16 +19,10 @@ export async function GET(
     });
 
     if (!response.ok) {
-      return NextResponse.json(
-        { versions: [], error: `Modrinth API returned ${response.status}` },
-        { status: 502 }
-      );
+      throw new BadRequestError(`Modrinth API returned status ${response.status}`);
     }
 
     const versions = await response.json();
     return NextResponse.json({ versions });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch project versions";
-    return NextResponse.json({ versions: [], error: message }, { status: 500 });
   }
-}
+);

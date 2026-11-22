@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { SESSION_COOKIE_NAME } from "@/server/services/auth";
+import { SESSION_COOKIE_NAME } from "@/server/auth";
+import { handleRoute } from "@/server/core";
 
-export async function POST() {
+export const POST = handleRoute(async () => {
   const res = NextResponse.json({ success: true });
   res.cookies.set({
     name: SESSION_COOKIE_NAME,
@@ -12,4 +13,4 @@ export async function POST() {
     maxAge: 0,
   });
   return res;
-}
+});

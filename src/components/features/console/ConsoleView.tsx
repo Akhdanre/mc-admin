@@ -1,192 +1,406 @@
 "use client";
 
-import { useState, useRef, useEffect, type SubmitEvent } from "react";
-import { Badge, Button, Input } from "@/components/ui";
-
-interface ConsoleViewProps {
+import { useState, useRef, useEffect, useCallback, type SubmitEvent } from "react";
+import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/cn";
+import { apiGet } from "@/lib/api";
+import { usePolling } from "@/hooks/usePolling";
+import { MOCK_CONSOLE_LOGS } from "@/lib/mockData";
+import type { ConsoleLogsResponse, ConsoleLogItem } from "@/types";
+export interface ConsoleViewProps {
   onExecuteCommand: (command: string) => Promise<string>;
   isBusy: boolean;
 }
 
-interface CommandLogEntry {
-  id: string;
-  command: string;
-  response: string;
-  time: string;
-  isError?: boolean;
-}
+type LogItem = ConsoleLogItem;
 
 export function ConsoleView({ onExecuteCommand, isBusy }: ConsoleViewProps) {
   const [command, setCommand] = useState("");
-  const [logs, setLogs] = useState<CommandLogEntry[]>([
-    {
-      id: "initial",
-      command: "System initialized",
-      response: "RCON Terminal session ready. Enter Minecraft console commands below.",
-      time: new Date().toLocaleTimeString(),
-    },
-  ]);
-  const logContainerRef = useRef<HTMLDivElement>(null);
+  const [levelFilter, setLevelFilter] = useState<"ALL" | "INFO" | "WARN" | "ERROR">("ALL");
+  const [isPaused, setIsPaused] = useState(false);
+  const [logs, setLogs] = useState<LogItem[]>([]);
+  const [isConnected, setIsConnected] = useState(true);
 
-  const presets = [
-    { label: "list", desc: "List players" },
-    { label: "whitelist list", desc: "List whitelisted" },
-    { label: "time query daytime", desc: "Current time" },
-    { label: "seed", desc: "World seed" },
-    { label: "save-all", desc: "Save world" },
-    { label: "tps", desc: "Server TPS" },
-    { label: "gamerule keepInventory", desc: "Check keepInventory" },
-    { label: "weather clear", desc: "Clear skies" },
-  ];
+  const terminalRef = useRef<HTMLDivElement>(null);
+  const fetchLogs = useCallback(async () => {
+    try {
+      const data = await apiGet<ConsoleLogsResponse>("/api/logs");
+      if (Array.isArray(data?.logs) && data.logs.length > 0) {
+        setLogs(data.logs);
+        setIsConnected(true);
+      }
+    } catch {
+      // Fallback to mock logs if offline
+      setLogs((prev) => {
+        if (prev.length > 0) return prev;
+        return MOCK_CONSOLE_LOGS.map((raw, idx) => {
+          const match = raw.match(/\[(\d{2}:\d{2}:\d{2})\s+([A-Z]+)\]:\s+(.*)/);
+          return {
+            id: `mock-log-${idx}`,
+            time: match?.[1] || "00:00:00",
+            level: (match?.[2] as LogItem["level"]) || "INFO",
+            message: match?.[3] || raw,
+          };
+        });
+      });
+      setIsConnected(false);
+    }
+  }, []);
+
+  // Poll logs periodically as fallback when SSE is idle
+  usePolling(fetchLogs, isConnected ? 10000 : 4000);
+
+  // Fetch initial logs and stream live log events via SSE
+  useEffect(() => {
+    let active = true;
+
+    apiGet<ConsoleLogsResponse>("/api/logs")
+      .then((data) => {
+        if (!active) return;
+        if (Array.isArray(data?.logs) && data.logs.length > 0) {
+          setLogs(data.logs);
+          setIsConnected(true);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setLogs((prev) => {
+          if (prev.length > 0) return prev;
+          return MOCK_CONSOLE_LOGS.map((raw, idx) => {
+            const match = raw.match(/\[(\d{2}:\d{2}:\d{2})\s+([A-Z]+)\]:\s+(.*)/);
+            return {
+              id: `mock-log-${idx}`,
+              time: match?.[1] || "00:00:00",
+              level: (match?.[2] as LogItem["level"]) || "INFO",
+              message: match?.[3] || raw,
+            };
+          });
+        });
+        setIsConnected(false);
+      });
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource("/api/logs/stream");
+
+      eventSource.onopen = () => {
+        if (active) setIsConnected(true);
+      };
+
+      eventSource.onmessage = (event) => {
+        if (!active) return;
+        try {
+          const item = JSON.parse(event.data) as LogItem;
+          if (item && item.message) {
+            setLogs((prev) => {
+              const next = [...prev, item];
+              return next.length > 3000 ? next.slice(-2000) : next;
+            });
+            setIsConnected(true);
+          }
+        } catch {
+          // Keep-alive or unparseable event
+        }
+      };
+
+      eventSource.onerror = () => {
+        if (active) setIsConnected(false);
+      };
+    } catch {
+      // EventSource construction error
+    }
+
+    return () => {
+      active = false;
+      if (eventSource) eventSource.close();
+    };
+  }, [fetchLogs]);
 
   useEffect(() => {
-    if (logContainerRef.current) {
-      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+    if (!isPaused && terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
-  }, [logs]);
-
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const clean = command.trim();
+  }, [logs, isPaused]);
+  const quickPresets = [
+    { label: "/forge tps", cmd: "forge tps" },
+    { label: "/list", cmd: "list" },
+    { label: "/seed", cmd: "seed" },
+    { label: "/save-all", cmd: "save-all" },
+    { label: "/whitelist list", cmd: "whitelist list" },
+    { label: "/weather clear", cmd: "weather clear" },
+    { label: "/time set day", cmd: "time set day" },
+  ];
+  const handleRun = async (cmdToRun: string) => {
+    const clean = cmdToRun.trim().replace(/^\//, "");
     if (!clean) return;
 
-    setCommand("");
-    await runCommand(clean);
-  };
+    const time = new Date().toTimeString().split(" ")[0] || "00:00:00";
+    const userLog: LogItem = {
+      id: `cmd-${Date.now()}`,
+      time,
+      level: "INFO",
+      message: `[RCON Command] /> ${clean}`,
+      isCommand: true,
+    };
 
-  const runCommand = async (cmdToRun: string) => {
-    const time = new Date().toLocaleTimeString();
+    setLogs((prev) => [...prev, userLog]);
+
     try {
-      const result = await onExecuteCommand(cmdToRun);
-      setLogs((prev) => [
-        ...prev,
-        {
-          id: Math.random().toString(36).substring(7),
-          command: cmdToRun,
-          response: result,
-          time,
-        },
-      ]);
+      const response = await onExecuteCommand(clean);
+      const lines = response.split("\n").filter(Boolean);
+      const responseLogs: LogItem[] = lines.map((line, i) => ({
+        id: `resp-${Date.now()}-${i}`,
+        time: new Date().toTimeString().split(" ")[0] || "00:00:00",
+        level: line.toLowerCase().includes("error") ? "ERROR" : "INFO",
+        message: line,
+      }));
+      setLogs((prev) => [...prev, ...responseLogs]);
     } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Failed to execute command";
       setLogs((prev) => [
         ...prev,
         {
-          id: Math.random().toString(36).substring(7),
-          command: cmdToRun,
-          response: err instanceof Error ? err.message : String(err),
-          time,
-          isError: true,
+          id: `err-${Date.now()}`,
+          time: new Date().toTimeString().split(" ")[0] || "00:00:00",
+          level: "ERROR",
+          message: `[RCON ERROR]: ${errMsg}`,
         },
       ]);
     }
   };
 
-  const clearLogs = () => {
-    setLogs([
-      {
-        id: "cleared",
-        command: "clear",
-        response: "Console log history cleared.",
-        time: new Date().toLocaleTimeString(),
-      },
-    ]);
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!command.trim() || isBusy) return;
+    const toSend = command;
+    setCommand("");
+    handleRun(toSend);
+  };
+
+  const filteredLogs = logs.filter((log) => {
+    if (levelFilter === "ALL") return true;
+    return log.level === levelFilter;
+  });
+
+  const handleDownload = () => {
+    const text = logs.map((l) => l.message).join("\n");
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `server-console-${new Date().toISOString().slice(0, 10)}.log`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-surface/60 border border-border/80 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 flex flex-col h-[calc(100vh-6.5rem)]">
+      {/* Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <Badge tone="success" className="mb-2">
-            <span>Direct Console Terminal</span>
-          </Badge>
-          <h2 className="text-xl font-bold text-heading tracking-tight">RCON Command Center</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Execute raw server commands with instant operator privileges.
+          <h1 className="text-xl sm:text-2xl font-semibold text-heading tracking-tight">
+            Console & Logs
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5 font-mono">
+            <span className="text-success font-bold">●</span> ONLINE · Interactive RCON Terminal ·
+            Buffer 5,000 Lines
           </p>
         </div>
-
-        <Button
-          variant="secondary"
-          onClick={clearLogs}
-          className="self-start sm:self-auto text-muted-foreground hover:text-foreground"
-        >
-          Clear Screen
-        </Button>
-      </div>
-
-      {/* Preset Command Shortcuts */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        <span className="text-[11px] text-subtle-foreground font-medium shrink-0 uppercase tracking-wider">
-          Presets:
-        </span>
-        {presets.map((p) => (
-          <Button
-            key={p.label}
-            variant="secondary"
-            onClick={() => runCommand(p.label)}
-            disabled={isBusy}
-            title={p.desc}
-            className="font-mono shrink-0 bg-surface/80 hover:bg-surface-raised"
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
+              isConnected
+                ? "bg-success-surface text-success border-success-border"
+                : "bg-warning-surface text-warning border-warning-border"
+            )}
           >
-            {p.label}
+            <span
+              className={cn(
+                "w-1.5 h-1.5 rounded-full",
+                isConnected ? "bg-success animate-pulse" : "bg-warning"
+              )}
+            />
+            {isConnected ? "RCON Socket Connected" : "Stream Connecting..."}
+          </span>
+        </div>
+      </div>
+      {/* Console Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 bg-surface border border-border p-2 rounded-xl">
+        <div className="inline-flex items-center gap-1.5 select-none">
+          {(
+            [
+              {
+                id: "ALL",
+                label: "All Logs",
+                count: logs.length,
+              },
+              {
+                id: "INFO",
+                label: "Info",
+                count: logs.filter((l) => l.level === "INFO").length,
+              },
+              {
+                id: "WARN",
+                label: "Warnings",
+                count: logs.filter((l) => l.level === "WARN").length,
+              },
+              {
+                id: "ERROR",
+                label: "Errors",
+                count: logs.filter((l) => l.level === "ERROR").length,
+              },
+            ] as const
+          ).map((tab) => {
+            const isSelected = levelFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setLevelFilter(tab.id)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-normal transition-colors cursor-pointer",
+                  isSelected
+                    ? "bg-[#eff6ff] dark:bg-primary/15 text-[#2656c8] dark:text-primary-muted font-medium"
+                    : "bg-[#f1f5f9] dark:bg-surface-raised text-[#475569] dark:text-muted-foreground hover:text-heading hover:bg-[#e2e8f0]"
+                )}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={cn(
+                    "text-overline font-mono leading-none",
+                    isSelected
+                      ? "text-[#2656c8]/80 dark:text-primary-muted/80 font-medium"
+                      : "text-[#6b778a] dark:text-subtle-foreground"
+                  )}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2 ml-auto">
+          <Button
+            size="sm"
+            variant={isPaused ? "primary" : "secondary"}
+            onClick={() => setIsPaused(!isPaused)}
+            className="text-xs h-7 px-2.5"
+          >
+            {isPaused ? "Resume Stream" : "Pause Stream"}
           </Button>
-        ))}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setLogs([])}
+            className="text-xs h-7 px-2.5 text-muted-foreground hover:text-heading"
+          >
+            Clear Buffer
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDownload}
+            className="text-xs h-7 px-2.5 text-muted-foreground hover:text-heading"
+          >
+            Download Log
+          </Button>
+        </div>
       </div>
 
-      {/* Terminal Output Window */}
-      <div className="bg-overlay rounded-2xl border border-border/90 overflow-hidden shadow-2xl flex flex-col h-[480px]">
-        {/* Terminal Titlebar */}
-        <div className="bg-surface/80 px-4 py-2.5 border-b border-border/80 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-            <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-            <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-            <span className="text-xs font-mono text-muted-foreground ml-2">minecraft-server: rcon-cli</span>
-          </div>
-          <span className="text-[11px] text-subtle-foreground font-mono">session: active</span>
-        </div>
-
-        {/* Terminal Logs Content */}
+      {/* Console Execution Card */}
+      <div className="bg-surface border border-border rounded-xl shadow-xs overflow-hidden flex flex-col flex-1 min-h-0">
+        {/* Terminal output */}
         <div
-          ref={logContainerRef}
-          className="flex-1 p-4 font-mono text-xs text-slate-300 overflow-y-auto space-y-3 scroll-smooth"
+          ref={terminalRef}
+          className="flex-1 min-h-[360px] p-4 bg-[#0b0f19] font-mono text-xs leading-relaxed overflow-y-auto select-text space-y-1"
         >
-          {logs.map((entry) => (
-            <div key={entry.id} className="space-y-1">
-              <div className="flex items-center gap-2 text-subtle-foreground text-[11px]">
-                <span>[{entry.time}]</span>
-                <span className="text-primary-muted font-bold">&gt;</span>
-                <span className="text-slate-200 font-semibold">{entry.command}</span>
-              </div>
-              <div
-                className={`pl-4 whitespace-pre-wrap leading-relaxed ${
-                  entry.isError ? "text-danger-foreground" : "text-success-foreground/90"
-                }`}
-              >
-                {entry.response}
-              </div>
+          {filteredLogs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-20 text-[#6b778a]">
+              <span className="font-mono text-sm font-semibold text-[#94a3b8]">Terminal Ready</span>
+              <span className="font-mono text-xs mt-1 text-[#64748b]">
+                Awaiting server console output or command execution.
+              </span>
             </div>
-          ))}
+          ) : (
+            filteredLogs.map((log) => {
+              const isWarn = log.level === "WARN";
+              const isErr = log.level === "ERROR";
+              return (
+                <div
+                  key={log.id}
+                  className="flex items-baseline gap-2.5 hover:bg-white/5 px-1 py-0.5 rounded transition-colors"
+                >
+                  <span className="text-[#4f5b6e] text-xs font-mono shrink-0 select-none">
+                    [{log.time}]
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-mono font-medium shrink-0 select-none",
+                      isErr && "text-[#f87171]",
+                      isWarn && "text-[#fbbf24]",
+                      !isErr && !isWarn && "text-[#38bdf8]"
+                    )}
+                  >
+                    [{log.level}]
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-mono text-[#e6eaf0] break-all leading-relaxed",
+                      log.isCommand && "text-[#60a5fa] font-semibold"
+                    )}
+                  >
+                    {log.message}
+                  </span>
+                </div>
+              );
+            })
+          )}
         </div>
 
-        {/* Terminal Input Bar */}
-        <form onSubmit={handleSubmit} className="p-3 bg-surface/60 border-t border-border flex gap-2">
-          <span className="text-primary-muted font-mono text-sm self-center font-bold pl-2">&gt;</span>
-          <Input
-            mono
-            type="text"
-            value={command}
-            onChange={(e) => setCommand(e.target.value)}
-            placeholder="Type a Minecraft command (e.g. say hello, time set day, gamemode creative)..."
-            disabled={isBusy}
-            className="flex-1 border-0 bg-transparent px-0 py-0 text-xs text-heading placeholder:text-faint-foreground"
-            autoFocus
-          />
-          <Button type="submit" variant="primary" disabled={isBusy || !command.trim()}>
-            {isBusy ? "Running..." : "Execute"}
-          </Button>
-        </form>
+        {/* Bottom Command Prompt Bar */}
+        <div className="p-3 bg-surface border-t border-border space-y-2">
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <div className="relative flex-1 flex items-center">
+              <span className="absolute left-3 font-mono text-sm text-primary-muted font-bold select-none">
+                /&gt;
+              </span>
+              <input
+                type="text"
+                value={command}
+                onChange={(e) => setCommand(e.target.value)}
+                placeholder="Enter server command (e.g. op username, time set day, tps)..."
+                disabled={isBusy}
+                className="w-full bg-surface-raised border border-border rounded-lg pl-8 pr-3 py-2 text-xs font-mono text-heading placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary disabled:opacity-50"
+              />
+            </div>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isBusy || !command.trim()}
+              className="h-9 px-4 text-xs font-medium"
+            >
+              {isBusy ? "Sending..." : "Execute"}
+            </Button>
+          </form>
+
+          {/* Preset Chips */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <span className="text-overline text-muted-foreground uppercase pr-1">
+              Quick presets:
+            </span>
+            {quickPresets.map((preset) => (
+              <button
+                key={preset.cmd}
+                type="button"
+                disabled={isBusy}
+                onClick={() => handleRun(preset.cmd)}
+                className="px-2 py-0.5 bg-surface-raised hover:bg-primary/10 hover:text-primary-muted hover:border-primary/30 border border-border rounded text-xs font-mono text-muted-foreground transition-colors"
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

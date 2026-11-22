@@ -1,29 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRecentChatMessages, sendChatMessage } from "@/server/services/chat";
-import type { SendChatRequestBody, ChatResponse } from "@/types";
+import { getRecentChatMessages, sendChatMessage } from "@/server/chat";
+import { withAuth } from "@/server/auth";
+import { BadRequestError } from "@/server/core";
+import { sendChatSchema } from "@/schemas";
+import type { ChatResponse } from "@/types";
 
-export async function GET() {
+export const GET = withAuth(async () => {
   const data = await getRecentChatMessages();
   return NextResponse.json<ChatResponse>(data);
-}
+});
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = (await req.json()) as SendChatRequestBody;
-    if (!body?.message) {
-      return NextResponse.json({ success: false, error: "Message is required" }, { status: 400 });
-    }
+export const POST = withAuth(async (req: NextRequest) => {
+  const body = sendChatSchema.parse(await req.json());
+  const result = await sendChatMessage(body.message);
 
-    const result = await sendChatMessage(body.message);
-    if (!result.success) {
-      return NextResponse.json({ success: false, error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (err: unknown) {
-    return NextResponse.json(
-      { success: false, error: err instanceof Error ? err.message : "Internal error" },
-      { status: 500 }
-    );
+  if (!result.success) {
+    throw new BadRequestError(result.error || "Failed to broadcast chat message");
   }
-}
+
+  return NextResponse.json({ success: true });
+});

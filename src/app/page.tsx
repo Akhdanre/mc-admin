@@ -2,31 +2,20 @@
 
 import { useState } from "react";
 import { Sidebar, type AdminTab } from "@/components/layout/Sidebar";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
-import { DashboardOverview } from "@/components/features/dashboard/DashboardOverview";
-import { UserManagement } from "@/components/features/users/UserManagement";
-import { WorldControls } from "@/components/features/world/WorldControls";
-import { LiveMap } from "@/components/features/world/LiveMap";
+import { DashboardView } from "@/components/features/dashboard/DashboardView";
+import { OnlinePlayersView } from "@/components/features/users/OnlinePlayersView";
+import { AccessControlView } from "@/components/features/users/AccessControlView";
+import { TelemetryView } from "@/components/features/telemetry/TelemetryView";
+import { WorldView } from "@/components/features/world/WorldView";
+import { LiveMapView } from "@/components/features/world/LiveMapView";
 import { ConsoleView } from "@/components/features/console/ConsoleView";
-import { BackupPage } from "@/components/features/backup/BackupPage";
-import { SettingsPage } from "@/components/features/settings/SettingsPage";
-import { ChatPage } from "@/components/features/chat/ChatPage";
-import { ModManager } from "@/components/features/mods/ModManager";
+import { BackupView } from "@/components/features/backup/BackupView";
+import { SettingsView } from "@/components/features/settings/SettingsView";
+import { ChatView } from "@/components/features/chat/ChatView";
+import { ModsView } from "@/components/features/mods/ModsView";
 import { useServerStatus } from "@/hooks/useServerStatus";
 import { useServerActions } from "@/hooks/useServerActions";
 import { useFeedback } from "@/hooks/useFeedback";
-
-const TAB_LABELS: Record<AdminTab, string> = {
-  dashboard: "dashboard",
-  users: "users",
-  world: "World Controls",
-  mods: "Mods & Packages",
-  backups: "Backup Management",
-  map: "Live Web Map",
-  commands: "RCON Console",
-  chat: "In-Game Chat",
-  settings: "Settings",
-};
 
 export default function Home() {
   const [currentTab, setCurrentTab] = useState<AdminTab>("dashboard");
@@ -48,7 +37,6 @@ export default function Home() {
     isBusy,
     isBackingUp,
     handleWhitelistAction,
-    handleTeleport,
     handleExecuteCommand,
     handleTriggerBackup,
     handleDeleteBackup,
@@ -64,82 +52,80 @@ export default function Home() {
       <Sidebar
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
-        onlineCount={playerStatus.onlineCount}
-        whitelistCount={whitelistStatus.players.length}
+        onlineCount={playerStatus?.onlineCount ?? 0}
+        whitelistCount={whitelistStatus?.players?.length ?? 0}
         backupCount={backupStatus?.totalCount ?? 0}
         isConnected={isConnected}
         isOpenMobile={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
+        serverVersion={serverInfo?.version || "Forge 1.20.1"}
       />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navbar */}
-        <header className="h-16 px-6 border-b border-border bg-surface/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-3">
+        {/* Mobile Header Bar */}
+        <div className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 h-14 border-b border-border bg-surface/95 backdrop-blur-md">
+          <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-surface-raised cursor-pointer"
+              className="w-11 h-11 -ml-2 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-raised cursor-pointer transition-colors"
+              aria-label="Open navigation menu"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div className="flex items-center gap-2">
-              <span className="text-xs uppercase font-mono font-semibold tracking-wider text-muted-foreground">
-                Active View:
-              </span>
-              <span className="text-sm font-bold text-heading capitalize">{TAB_LABELS[currentTab]}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-xs font-mono px-3 py-1 bg-overlay/80 border border-border rounded-lg text-foreground">
-              <span className="text-muted-foreground">Host:</span>
-              <span>{serverInfo.host || "Connecting..."}</span>
-              <span className="text-slate-600">:</span>
-              <span>{serverInfo.port || 25575}</span>
-            </div>
-
-            <button
-              onClick={refresh}
-              disabled={isRefreshing}
-              className="p-2 text-muted-foreground hover:text-foreground bg-overlay/80 border border-border rounded-lg hover:border-border-strong transition cursor-pointer"
-              title="Refresh status"
-            >
-              <svg
-                className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
             </button>
-
-            <ThemeToggle />
+            <span className="text-sm font-semibold text-heading">Pulse MC</span>
           </div>
-        </header>
+
+          <button
+            type="button"
+            onClick={refresh}
+            disabled={isRefreshing}
+            className="w-11 h-11 -mr-2 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-raised transition cursor-pointer"
+            title="Refresh status"
+            aria-label="Refresh status"
+          >
+            <svg
+              className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
+        </div>
 
         {/* Dynamic Main Body Content */}
-        <main className="flex-1 p-6 lg:p-8 max-w-6xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0">
           {/* Notification Feedback Toast */}
           {feedback && (
             <div
               className={`mb-6 p-3.5 rounded-xl text-xs font-mono border shadow-lg flex items-center justify-between ${
                 feedback.isError
-                  ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
-                  : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                  ? "bg-danger-surface border-danger-border text-danger-muted"
+                  : "bg-success-surface border-success-border text-success-muted"
               }`}
             >
               <div className="flex items-center gap-2">
                 <span>{feedback.isError ? "⚠️" : "✓"}</span>
-                <span>{feedback.message}</span>
+                <span>
+                  {typeof feedback.message === "string"
+                    ? feedback.message
+                    : (feedback.message as { message?: string })?.message || "Operation completed"}
+                </span>
               </div>
               <button
                 onClick={clearFeedback}
@@ -152,33 +138,37 @@ export default function Home() {
 
           {/* Tab Views */}
           {currentTab === "dashboard" && (
-            <DashboardOverview
+            <DashboardView
               playerStatus={playerStatus}
               whitelistStatus={whitelistStatus}
               serverInfo={serverInfo}
+              backupStatus={backupStatus}
+              playerLocations={playerLocations}
               playerHistory={playerHistory}
               onRefresh={refresh}
               isRefreshing={isRefreshing}
               onNavigateTab={(tab) => setCurrentTab(tab)}
+              onExecuteCommand={handleExecuteCommand}
+            />
+          )}
+          {currentTab === "users" && (
+            <OnlinePlayersView
+              livePlayers={playerStatus.players}
+              onRefresh={refresh}
+              isRefreshing={isRefreshing}
             />
           )}
 
-          {currentTab === "users" && (
-            <UserManagement
-              onlinePlayers={playerStatus.players}
-              playerLocations={playerLocations}
-              whitelistedPlayers={whitelistStatus.players}
-              whitelistError={whitelistStatus.error}
-              playerHistory={playerHistory}
-              onWhitelistAction={handleWhitelistAction}
-              onExecuteCommand={handleExecuteCommand}
-              onTeleport={handleTeleport}
-              isBusy={isBusy}
-            />
+          {currentTab === "whitelist" && (
+            <AccessControlView onWhitelistAction={handleWhitelistAction} />
+          )}
+
+          {currentTab === "telemetry" && (
+            <TelemetryView onRefresh={refresh} isRefreshing={isRefreshing} />
           )}
 
           {currentTab === "world" && (
-            <WorldControls
+            <WorldView
               onExecuteCommand={handleExecuteCommand}
               isBusy={isBusy}
               currentDifficulty={playerStatus.difficulty}
@@ -186,18 +176,14 @@ export default function Home() {
               onShowFeedback={showFeedback}
             />
           )}
-          {currentTab === "mods" && (
-            <ModManager onShowFeedback={showFeedback} />
-          )}
+          {currentTab === "mods" && <ModsView onShowFeedback={showFeedback} />}
 
-
-          {currentTab === "backups" && (
-            <BackupPage
+          {currentTab === "backup" && (
+            <BackupView
               backupStatus={backupStatus}
               onRefresh={refresh}
               onTriggerBackup={handleTriggerBackup}
               onDeleteBackup={handleDeleteBackup}
-              onSetRetention={handleSetRetention}
               onRestoreBackup={handleRestoreBackup}
               isBackingUp={isBackingUp}
               isBusy={isBusy}
@@ -205,17 +191,27 @@ export default function Home() {
           )}
 
           {currentTab === "map" && (
-            <LiveMap mapUrl={serverInfo.mapUrl || "http://localhost:8123"} />
+            <LiveMapView
+              mapUrl={serverInfo.mapUrl || "http://localhost:8123"}
+              players={playerStatus.players}
+              playerLocations={playerLocations}
+              onExecuteCommand={handleExecuteCommand}
+            />
           )}
 
-          {currentTab === "commands" && (
+          {currentTab === "console" && (
             <ConsoleView onExecuteCommand={handleExecuteCommand} isBusy={isBusy} />
           )}
 
-          {currentTab === "chat" && <ChatPage />}
+          {currentTab === "chat" && (
+            <ChatView
+              livePlayers={playerStatus?.players ?? []}
+              onExecuteCommand={handleExecuteCommand}
+            />
+          )}
 
           {currentTab === "settings" && (
-            <SettingsPage
+            <SettingsView
               backupStatus={backupStatus}
               onUpdateRetention={handleSetRetention}
               isBusy={isBusy}

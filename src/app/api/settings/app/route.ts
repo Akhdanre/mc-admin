@@ -1,24 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAppSettings, saveAppSettings } from "@/server/services/appSettings";
-import type { AppSettingsResponse, AppSettings } from "@/types";
+import { getAppSettings, saveAppSettings } from "@/server/settings";
+import { withAuth } from "@/server/auth";
+import { appSettingsPatchSchema } from "@/schemas";
+import type { AppSettingsResponse } from "@/types";
 
-export async function GET() {
+export const GET = withAuth(async () => {
   const settings = await getAppSettings();
   return NextResponse.json<AppSettingsResponse>({ settings });
-}
+});
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = (await req.json()) as Partial<AppSettings>;
-    const updated = await saveAppSettings(body);
-    return NextResponse.json<AppSettingsResponse>({ settings: updated });
-  } catch (err: unknown) {
-    return NextResponse.json<AppSettingsResponse>(
-      {
-        settings: await getAppSettings(),
-        error: err instanceof Error ? err.message : "Failed to save settings",
-      },
-      { status: 500 }
-    );
-  }
-}
+export const POST = withAuth(async (req: NextRequest) => {
+  const body = appSettingsPatchSchema.parse(await req.json());
+  const updated = await saveAppSettings(body);
+  return NextResponse.json<AppSettingsResponse>({ settings: updated });
+});

@@ -1,10 +1,12 @@
 import { NextRequest } from "next/server";
-import { subscribeToChatStream } from "@/server/services/chat";
+import { subscribeToChatStream } from "@/server/chat";
+import { withAuth } from "@/server/auth";
 import type { ChatMessage } from "@/types";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest) => {
   const encoder = new TextEncoder();
 
   let unsubscribe: (() => void) | null = null;
@@ -30,22 +32,21 @@ export async function GET(req: NextRequest) {
         try {
           controller.enqueue(encoder.encode(`: ping\n\n`));
         } catch {
-          clearInterval(keepAliveTimer!);
+          clearInterval(keepAliveTimer ?? undefined);
         }
       }, 15000);
     },
     cancel() {
       if (unsubscribe) unsubscribe();
-      clearInterval(keepAliveTimer!);
+      clearInterval(keepAliveTimer ?? undefined);
     },
   });
 
   // Handle client abort / disconnect
   req.signal.addEventListener("abort", () => {
     if (unsubscribe) unsubscribe();
-    clearInterval(keepAliveTimer!);
+    clearInterval(keepAliveTimer ?? undefined);
   });
-
 
   return new Response(stream, {
     headers: {
@@ -55,4 +56,4 @@ export async function GET(req: NextRequest) {
       "X-Accel-Buffering": "no",
     },
   });
-}
+});

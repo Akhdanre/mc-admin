@@ -1,0 +1,1 @@
+export { getTelemetryData } from "./service";

@@ -1,9 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Badge, Button, Caption, Muted, PageTitle } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
-export type AdminTab = "dashboard" | "users" | "world" | "mods" | "backups" | "map" | "commands" | "chat" | "settings";
+export type AdminTab =
+  | "dashboard"
+  | "console"
+  | "chat"
+  | "users"
+  | "whitelist"
+  | "map"
+  | "world"
+  | "mods"
+  | "backup"
+  | "telemetry"
+  | "settings";
 
 interface SidebarProps {
   currentTab: AdminTab;
@@ -14,6 +25,134 @@ interface SidebarProps {
   isConnected: boolean;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
+  serverVersion?: string;
+  adminName?: string;
+  adminRole?: string;
+}
+
+interface NavItem {
+  id: AdminTab;
+  label: string;
+  icon: (active: boolean) => React.ReactNode;
+  badge?: string | number | null;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+function BrandLogo({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold font-mono text-sm shadow-xs select-none shrink-0",
+        className
+      )}
+    >
+      <svg width="14" height="18" viewBox="0 0 9 13" fill="none">
+        <path d="M5.5 0L0 7.5H4L3 13L9 5.5H4.5L5.5 0Z" fill="currentColor" />
+      </svg>
+    </div>
+  );
+}
+
+function DashboardIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z" />
+    </svg>
+  );
+}
+
+function ConsoleIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M2.5 4.5L6 8L2.5 11.5L3.5 12.5L8 8L3.5 3.5L2.5 4.5zm5.5 7h5.5v1.5H8v-1.5z" />
+    </svg>
+  );
+}
+
+function ChatIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M2.5 3h11c.55 0 1 .45 1 1v7c0 .55-.45 1-1 1H5.5L2.5 15V4c0-.55.45-1 1-1z" />
+    </svg>
+  );
+}
+
+function PlayersIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M7 6c1.38 0 2.5-1.12 2.5-2.5S8.38 1 7 1 4.5 2.12 4.5 3.5 5.62 6 7 6zm5 1c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM7 8.5C4.67 8.5 0 9.67 0 12v2h14v-2c0-2.33-4.67-3.5-7-3.5zm5 .5c-.32 0-.7.04-1.11.11 1.05.77 1.61 1.74 1.61 2.89v2H16v-1.5c0-1.83-3.67-2.75-5.5-2.75z" />
+    </svg>
+  );
+}
+
+function WhitelistIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 1.5l5.5 2.2v4.8c0 3.3-2.3 6.4-5.5 7.2-3.2-.8-5.5-3.9-5.5-7.2V3.7L8 1.5z" />
+    </svg>
+  );
+}
+
+function MapIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M10 2.5L6 4.2 2.3 2.7c-.3-.1-.6.1-.6.4v9.6c0 .3.2.5.5.6L6 14.8l4-1.7 3.7 1.5c.3.1.6-.1.6-.4V4.6c0-.3-.2-.5-.5-.6L10 2.5zm-.5 1.8v8.6L6.5 14.2V5.6l3-1.3z" />
+    </svg>
+  );
+}
+
+function WorldIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 1.5C4.41 1.5 1.5 4.41 1.5 8s2.91 6.5 6.5 6.5 6.5-2.91 6.5-6.5S11.59 1.5 8 1.5zM2.8 8c0-.4.05-.8.14-1.2h2.2c-.06.4-.1.8-.1 1.2s.04.8.1 1.2H2.94c-.09-.4-.14-.8-.14-1.2zm3.5 0c0-.4.05-.8.14-1.2h3.12c.09.4.14.8.14 1.2s-.05.8-.14 1.2H6.44c-.09-.4-.14-.8-.14-1.2zm.34-2.4c.3-1 .73-1.9 1.36-2.5.63.6 1.06 1.5 1.36 2.5H6.64zm0 4.8h3.36c-.3 1-.73 1.9-1.36 2.5-.63-.6-1.06-1.5-1.36-2.5z" />
+    </svg>
+  );
+}
+
+function ModsIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 1.5L2 4.7v6.6L8 14.5l6-3.2V4.7L8 1.5zm0 1.6l4.4 2.3L8 7.7 3.6 5.4 8 3.1zM3.2 6.5l4.2 2.2v4.8L3.2 11.3V6.5zm9.6 4.8l-4.2 2.2V8.7l4.2-2.2v4.8z" />
+    </svg>
+  );
+}
+
+function BackupsIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M2 2h12v3H2V2zm1 4h10v7.5c0 .5-.5 1-1 1H4c-.5 0-1-.5-1-1V6zm3 2v1.5h4V8H6z" />
+    </svg>
+  );
+}
+
+function TelemetryIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M2 13h12v1.5H2V13zm1.5-1.5l3-4 2.5 3 4-6 1.5 1.5-5.5 8-2.5-3-3 4-1.5-1.5z" />
+    </svg>
+  );
+}
+
+function SettingsIcon() {
+  return (
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm6 2.1l-1.2-.4a4.4 4.4 0 0 0-.4-.9l.7-1.1c.2-.3.1-.7-.1-.9l-1.1-1.1c-.2-.2-.6-.3-.9-.1l-1.1.7a4.4 4.4 0 0 0-.9-.4L8.6 2c-.1-.3-.4-.5-.7-.5H6.3c-.3 0-.6.2-.7.5l-.4 1.2a4.4 4.4 0 0 0-.9.4L3.2 2.9c-.3-.2-.7-.1-.9.1L1.2 4.1c-.2.2-.3.6-.1.9l.7 1.1a4.4 4.4 0 0 0-.4.9L.2 7.6c-.3.1-.5.4-.5.7v1.6c0 .3.2.6.5.7l1.2.4c.1.3.2.6.4.9l-.7 1.1c-.2.3-.1.7.1.9l1.1 1.1c.2.2.6.3.9.1l1.1-.7c.3.2.6.3.9.4l.4 1.2c.1.3.4.5.7.5h1.6c.3 0 .6-.2.7-.5l.4-1.2c.3-.1.6-.2.9-.4l1.1.7c.3.2.7.1.9-.1l1.1-1.1c.2-.2.3-.6.1-.9l-.7-1.1c.2-.3.3-.6.4-.9l1.2-.4c.3-.1.5-.4.5-.7V8.3c0-.3-.2-.6-.5-.7z" />
+    </svg>
+  );
+}
+
+function SignOutIcon() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" />
+      <path d="M10.5 11.5L14 8l-3.5-3.5" />
+      <path d="M14 8H6" />
+    </svg>
+  );
 }
 
 export function Sidebar({
@@ -25,261 +164,219 @@ export function Sidebar({
   isConnected,
   isOpenMobile,
   onCloseMobile,
+  serverVersion = "Paper 1.21.4",
+  adminName = "Admin",
+  adminRole = "Administrator",
 }: SidebarProps) {
   const router = useRouter();
-  const navItems = [
+
+  const handleSignOut = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      router.push("/login");
+      router.refresh();
+    }
+  };
+
+  const navSections: NavSection[] = [
     {
-      id: "dashboard" as AdminTab,
-      label: "Dashboard",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-          />
-        </svg>
-      ),
-      badge: null,
+      title: "OVERVIEW",
+      items: [
+        {
+          id: "dashboard",
+          label: "Dashboard",
+          icon: () => <DashboardIcon />,
+        },
+        {
+          id: "console",
+          label: "Console & Logs",
+          icon: () => <ConsoleIcon />,
+        },
+        {
+          id: "chat",
+          label: "Live Chat",
+          icon: () => <ChatIcon />,
+        },
+      ],
     },
     {
-      id: "users" as AdminTab,
-      label: "User Management",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-          />
-        </svg>
-      ),
-      badge: `${onlineCount} / ${whitelistCount}`,
+      title: "PLAYERS & ACCESS",
+      items: [
+        {
+          id: "users",
+          label: "Online Players",
+          icon: () => <PlayersIcon />,
+          badge: onlineCount > 0 ? onlineCount : null,
+        },
+        {
+          id: "whitelist",
+          label: "Access Control",
+          icon: () => <WhitelistIcon />,
+          badge: whitelistCount > 0 ? whitelistCount : null,
+        },
+      ],
     },
     {
-      id: "world" as AdminTab,
-      label: "World & Server",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      ),
-      badge: null,
+      title: "WORLD & SERVER",
+      items: [
+        {
+          id: "map",
+          label: "Live World Map",
+          icon: () => <MapIcon />,
+        },
+        {
+          id: "world",
+          label: "World & Environment",
+          icon: () => <WorldIcon />,
+        },
+        {
+          id: "mods",
+          label: "Mods & Addons",
+          icon: () => <ModsIcon />,
+        },
+      ],
     },
     {
-      id: "mods" as AdminTab,
-      label: "Mods & Packages",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-          />
-        </svg>
-      ),
-      badge: null,
-    },
-    {
-      id: "backups" as AdminTab,
-      label: "Backup Management",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-          />
-        </svg>
-      ),
-      badge: backupCount > 0 ? String(backupCount) : null,
-    },
-    {
-      id: "map" as AdminTab,
-      label: "Live Web Map",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-          />
-        </svg>
-      ),
-      badge: "8123",
-    },
-    {
-      id: "commands" as AdminTab,
-      label: "RCON Console",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      ),
-      badge: null,
-    },
-    {
-      id: "chat" as AdminTab,
-      label: "In-Game Chat",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
-        </svg>
-      ),
-      badge: null,
-    },
-    {
-      id: "settings" as AdminTab,
-      label: "Settings",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-      ),
-      badge: null,
+      title: "SYSTEM & MAINTENANCE",
+      items: [
+        {
+          id: "backup",
+          label: "Backups & Restore",
+          icon: () => <BackupsIcon />,
+          badge: backupCount > 0 ? backupCount : null,
+        },
+        {
+          id: "telemetry",
+          label: "Host Telemetry",
+          icon: () => <TelemetryIcon />,
+        },
+        {
+          id: "settings",
+          label: "Settings",
+          icon: () => <SettingsIcon />,
+        },
+      ],
     },
   ];
 
   const content = (
-    <aside className="w-64 bg-surface/90 border-r border-border flex flex-col h-full">
+    <aside className="w-[280px] bg-surface border-r border-border flex flex-col h-full select-none">
       {/* Brand Header */}
-      <div className="p-5 border-b border-border flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl p-2 bg-primary/10 border border-primary/20 rounded-xl">⛏️</span>
-          <div>
-            <PageTitle className="text-base leading-tight">MC Admin Panel</PageTitle>
-            <Muted>Server Management</Muted>
+      <div className="px-4 pt-5 pb-4 border-b border-border/80 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <BrandLogo />
+          <div className="min-w-0">
+            <span className="text-sm font-semibold text-heading tracking-tight block leading-tight">
+              Pulse MC
+            </span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 leading-tight">
+              <span
+                className={cn(
+                  "w-1.5 h-1.5 rounded-full shrink-0",
+                  isConnected ? "bg-success animate-pulse" : "bg-danger"
+                )}
+              />
+              <span>{isConnected ? "Online" : "Offline"}</span>
+              <span className="text-faint-foreground">·</span>
+              <span className="text-subtle-foreground truncate">{serverVersion}</span>
+            </div>
           </div>
         </div>
+
         {isOpenMobile && (
-          <Button
-            variant="ghost"
+          <button
+            type="button"
             onClick={onCloseMobile}
-            className="md:hidden p-1 rounded-lg hover:bg-transparent"
+            className="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-raised cursor-pointer transition-colors"
+            aria-label="Close sidebar"
           >
             ✕
-          </Button>
+          </button>
         )}
       </div>
 
-      {/* Connection Indicator */}
-      <div className="px-5 py-3 border-b border-border/60 bg-background/40">
-        <div className="flex items-center justify-between text-xs">
-          <Muted>Server Connection</Muted>
-          <Badge
-            tone={isConnected ? "success" : "danger"}
-            className="font-medium px-2 text-xs"
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                isConnected ? "bg-success-muted animate-pulse" : "bg-danger-muted"
-              }`}
-            />
-            {isConnected ? "Online" : "Offline"}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Navigation List */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        <Caption className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wider uppercase">
-          Menu
-        </Caption>
-        {navItems.map((item) => {
-          const isActive = currentTab === item.id;
-          return (
-            <Button
-              key={item.id}
-              variant="tab"
-              active={isActive}
-              size="md"
-              onClick={() => {
-                onSelectTab(item.id);
-                onCloseMobile();
-              }}
-              className={`w-full justify-between text-left px-3 py-2.5 font-medium ${
-                isActive ? "shadow-lg shadow-primary/20" : "shadow-none"
-              }`}
-            >
-              <span className="flex items-center gap-3 text-left min-w-0">
-                <span className={`shrink-0 ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
-                  {item.icon}
-                </span>
-                <span className="truncate text-left">{item.label}</span>
-              </span>
-              {item.badge && (
-                <Badge
-                  tone={isActive ? "primary" : "neutral"}
-                  className={`shrink-0 whitespace-nowrap text-[11px] py-0.5 font-mono font-medium ${
+      {/* Navigation Sections */}
+      <nav className="flex-1 px-3 py-3 space-y-3.5 overflow-y-auto">
+        {navSections.map((section) => (
+          <div key={section.title} className="space-y-0.5">
+            <div className="px-2.5 py-1 text-overline text-muted-foreground uppercase">
+              {section.title}
+            </div>
+            {section.items.map((item) => {
+              const isActive = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    onSelectTab(item.id);
+                    onCloseMobile();
+                  }}
+                  className={cn(
+                    "w-full h-10 sm:h-9 flex items-center justify-between px-2.5 rounded-md text-sm font-normal transition-colors cursor-pointer text-left active:scale-[0.99]",
                     isActive
-                      ? "bg-white/20 text-white border-transparent"
-                      : "bg-surface-raised border-transparent"
-                  }`}
+                      ? "bg-[#eff6ff] dark:bg-primary/15 text-[#2656c8] dark:text-primary-muted font-medium"
+                      : "text-foreground hover:bg-surface-raised hover:text-heading"
+                  )}
                 >
-                  {item.badge}
-                </Badge>
-              )}
-            </Button>
-          );
-        })}
+                  <span className="flex items-center gap-2.5 min-w-0">
+                    <span
+                      className={cn(
+                        isActive ? "text-[#2656c8] dark:text-primary-muted" : "text-subtle-foreground"
+                      )}
+                    >
+                      {item.icon(isActive)}
+                    </span>
+                    <span className="truncate">{item.label}</span>
+                  </span>
+
+                  {item.badge !== null && item.badge !== undefined && (
+                    <span
+                      className={cn(
+                        "shrink-0 px-1.5 py-0.5 rounded text-xs font-mono leading-none",
+                        isActive
+                          ? "bg-[#2656c8]/10 text-[#2656c8] dark:text-primary-muted font-medium"
+                          : "bg-surface-raised text-muted-foreground border border-border/40"
+                      )}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
-      {/* Bottom Footer Info */}
-      {/* Bottom Footer Info & Logout */}
-      <div className="p-4 border-t border-border bg-background/50 space-y-3">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="w-2 h-2 rounded-full bg-faint-foreground" />
-            <span>Dynmap & RCON Enabled</span>
+      {/* Footer Session Tile */}
+      <div className="p-3 border-t border-border bg-surface">
+        <div className="bg-surface-raised border border-border rounded-lg p-2.5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-primary text-white text-xs font-semibold flex items-center justify-center shrink-0">
+              {adminName.slice(0, 2).toUpperCase() || "AO"}
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-heading leading-tight truncate">
+                {adminName}
+              </div>
+              <div className="text-xs text-muted-foreground leading-tight truncate">
+                {adminRole}
+              </div>
+            </div>
           </div>
-          <Caption className="text-[11px] mt-1">Live Map on port 8123</Caption>
+
+          <button
+            type="button"
+            onClick={handleSignOut}
+            title="Sign out"
+            aria-label="Sign out"
+            className="w-9 h-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-danger-foreground hover:bg-danger-surface transition-colors cursor-pointer shrink-0 active:scale-95"
+          >
+            <SignOutIcon />
+          </button>
         </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          className="w-full justify-center text-xs text-muted-foreground hover:text-red-400 hover:border-red-500/30"
-          onClick={async () => {
-            try {
-              await fetch("/api/auth/logout", { method: "POST" });
-            } finally {
-              router.push("/login");
-              router.refresh();
-            }
-          }}
-        >
-          Sign Out
-        </Button>
       </div>
     </aside>
   );
@@ -287,18 +384,20 @@ export function Sidebar({
   return (
     <>
       {/* Desktop Persistent Sidebar */}
-      <div className="hidden md:block w-64 shrink-0">
+      <div className="hidden md:block w-[280px] shrink-0">
         <div className="sticky top-0 h-screen">{content}</div>
       </div>
 
-      {/* Mobile Backdrop & Drawer */}
+      {/* Mobile Drawer */}
       {isOpenMobile && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
             className="fixed inset-0 bg-background/80 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
           />
-          <div className="relative z-10">{content}</div>
+          <div className="relative z-10 w-[280px] max-w-[85vw] h-full shadow-2xl animate-in slide-in-from-left duration-200">
+            {content}
+          </div>
         </div>
       )}
     </>

@@ -15,7 +15,16 @@ interface ActionDeps {
 }
 
 function errMsg(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object" && err !== null) {
+    if ("message" in err && typeof (err as { message: unknown }).message === "string") {
+      return (err as { message: string }).message;
+    }
+    if ("error" in err) {
+      return errMsg((err as { error: unknown }).error);
+    }
+  }
+  return String(err);
 }
 
 /**
@@ -68,10 +77,13 @@ export function useServerActions({ showFeedback, refresh, setWhitelistStatus }: 
   ) => {
     setIsBusy(true);
     try {
-      const data = await apiPost<{ result?: string; error?: string }>(
-        "/api/players/teleport",
-        { player, target, x, y, z }
-      );
+      const data = await apiPost<{ result?: string; error?: string }>("/api/players/teleport", {
+        player,
+        target,
+        x,
+        y,
+        z,
+      });
       if (data.error) {
         showFeedback(`Teleport Error: ${data.error}`, true);
       } else {

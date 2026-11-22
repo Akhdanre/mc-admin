@@ -3,6 +3,9 @@ export interface PlayerStatus {
   maxCount: number;
   players: string[];
   difficulty?: string;
+  tps?: number;
+  mspt?: number;
+  pingMs?: number;
   raw: string;
   error?: string;
   updatedAt: string;
@@ -88,10 +91,19 @@ export interface CommandRequestBody {
   command?: string;
 }
 
+export interface TunnelInfo {
+  enabled: boolean;
+  address?: string;
+  pingMs?: number;
+  tunnelType?: string;
+}
+
 export interface ServerInfoResponse {
   host: string;
   port: number;
   mapUrl?: string;
+  version?: string;
+  tunnel?: TunnelInfo;
 }
 
 export interface PlayerLocation {
@@ -162,6 +174,20 @@ export interface ChatResponse {
   updatedAt: string;
 }
 
+export interface ConsoleLogItem {
+  id: string;
+  time: string;
+  level: "INFO" | "WARN" | "ERROR";
+  message: string;
+  isCommand?: boolean;
+}
+
+export interface ConsoleLogsResponse {
+  logs: ConsoleLogItem[];
+  error?: string;
+  updatedAt: string;
+}
+
 export interface SendChatRequestBody {
   message: string;
 }
@@ -218,4 +244,206 @@ export interface ModrinthSearchResponse {
   hits: ModrinthSearchResult[];
   total_hits: number;
   error?: string;
+}
+
+export interface InventoryItem {
+  slot: number;
+  id: string;
+  name: string;
+  count: number;
+  durability?: { current: number; max: number };
+  maxDurability?: number;
+  enchantments?: string[];
+  lore?: string[];
+}
+
+export interface PlayerDetail {
+  uuid: string;
+  username: string;
+  dimension: "Overworld" | "Nether" | "The End";
+  coords: { x: number; y: number; z: number };
+  pingMs: number;
+  role: "Admin" | "Moderator" | "VIP+" | "Member" | "Spectator";
+  health: number;
+  food: number;
+  gamemode: "survival" | "creative" | "adventure" | "spectator";
+  xpLevel: number;
+  inventory: (InventoryItem | null)[];
+  armor: {
+    helmet?: InventoryItem;
+    chestplate?: InventoryItem;
+    leggings?: InventoryItem;
+    boots?: InventoryItem;
+  };
+  offhand?: InventoryItem;
+}
+
+export interface WhitelistEntry {
+  uuid: string;
+  username: string;
+  addedAt: string;
+  addedBy: string;
+  isOp?: boolean;
+}
+
+export interface BanEntry {
+  uuid: string;
+  username: string;
+  reason: string;
+  bannedBy: string;
+  bannedAt: string;
+  expires: string;
+}
+
+export interface IpBanEntry {
+  ip: string;
+  reason: string;
+  bannedBy: string;
+  bannedAt: string;
+  expires?: string;
+  country?: string;
+}
+
+export interface AccessControlData {
+  whitelist: WhitelistEntry[];
+  whitelistEnforced: boolean;
+  bans: BanEntry[];
+  ipBans: IpBanEntry[];
+  updatedAt?: string;
+}
+
+export type AccessControlAction =
+  | "add"
+  | "remove"
+  | "reload"
+  | "on"
+  | "off"
+  | "ban"
+  | "unban"
+  | "ban-ip"
+  | "unban-ip"
+  | "op"
+  | "deop";
+
+export interface AccessControlRequestBody {
+  action: AccessControlAction;
+  username?: string;
+  reason?: string;
+  ip?: string;
+}
+
+export interface GameruleItem {
+  id: string;
+  name: string;
+  description: string;
+  category: "gameplay" | "combat" | "physics" | "admin";
+  type: "boolean" | "number";
+  value: boolean | number;
+  unit?: string;
+}
+
+export interface WorldDimensionStats {
+  id: string;
+  name: string;
+  icon: string;
+  chunksLoaded: number;
+  diskSizeFormatted: string;
+  directory: string;
+  detail: string;
+  actionLabel: string;
+  actionVariant: "default" | "danger";
+}
+
+export interface WorldStatsResponse {
+  seed: string;
+  daytime: number;
+  difficulty: string;
+  dimensions: WorldDimensionStats[];
+  gamerules: GameruleItem[];
+  updatedAt?: string;
+}
+
+export interface ModItem {
+  id: string;
+  name: string;
+  fileName: string;
+  version: string;
+  sizeFormatted: string;
+  type: string;
+  enabled: boolean;
+  author: string;
+  description: string;
+}
+export interface TelemetryData {
+  host: {
+    os: string;
+    kernel: string;
+    cpuModel: string;
+    cores: number;
+    threads: number;
+    loadAvg: [number, number, number];
+    uptimeSeconds: number;
+  };
+  metrics: {
+    tps: number;
+    mspt: number;
+    cpuUsagePct: number;
+    jvm: {
+      allocatedBytes: number;
+      maxBytes: number;
+      usedBytes: number;
+      usedPct: number;
+      collector: string;
+      eden: string;
+      survivor: string;
+      tenured: string;
+    };
+    ram: {
+      totalBytes: number;
+      freeBytes: number;
+      usedBytes: number;
+      usedPct: number;
+      cacheBytes?: number;
+    };
+    disk: {
+      totalBytes: number;
+      freeBytes: number;
+      usedBytes: number;
+      usedPct: number;
+    };
+  };
+  dimensions: {
+    overworld: { mspt: number; tps: number; loadPct: number };
+    nether: { mspt: number; tps: number; loadPct: number };
+    end: { mspt: number; tps: number; loadPct: number };
+  };
+  tickDistribution: {
+    entities: number;
+    mods: number;
+    redstone: number;
+    io: number;
+    idle: number;
+  };
+  sparkHotspots: Array<{
+    rank: string;
+    pct: string;
+    pctColor: string;
+    category: string;
+    method: string;
+    isAltBg?: boolean;
+  }>;
+  updatedAt: string;
+}
+export interface RestartConfig {
+  enabled: boolean;
+  hour: number;
+  minute: number;
+  warningSeconds: number;
+  timezone: string;
+}
+
+export interface RestartStatusResponse {
+  config: RestartConfig;
+  nextRestartIso: string | null;
+  secondsUntilNext: number | null;
 }

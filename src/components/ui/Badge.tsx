@@ -16,10 +16,10 @@ export type BadgeTone =
 
 const tones: Record<BadgeTone, string> = {
   primary: "bg-indigo-500/10 text-primary-muted border-indigo-500/20",
-  success: "bg-emerald-500/10 text-success-muted border-emerald-500/20",
-  danger: "bg-rose-500/10 text-danger-muted border-rose-500/20",
-  warning: "bg-amber-500/10 text-warning-muted border-amber-500/20",
-  info: "bg-sky-500/10 text-info-muted border-sky-500/20",
+  success: "bg-success-surface text-success-muted border-success-border",
+  danger: "bg-danger-surface text-danger-muted border-danger-border",
+  warning: "bg-warning-surface text-warning-muted border-warning-border",
+  info: "bg-info-surface text-info-muted border-info-border",
   neutral: "bg-surface-raised text-muted-foreground border-border-strong",
 };
 

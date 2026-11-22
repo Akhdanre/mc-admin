@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
  * `bg-slate-950 border-slate-800 rounded-xl focus:border-indigo-500`.
  */
 const fieldBase =
-  "w-full bg-overlay border border-border rounded-xl px-3 py-2 text-xs text-foreground " +
+  "w-full bg-overlay border border-border rounded-lg px-3 py-2 text-sm text-foreground " +
   "placeholder:text-faint-foreground focus:outline-none focus:border-ring transition";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {

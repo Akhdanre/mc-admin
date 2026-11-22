@@ -1,17 +1,14 @@
-import { NextResponse } from "next/server";
-import { executeRconCommand } from "@/server/services/rcon";
-import type { CommandRequestBody } from "@/types";
+import { NextRequest, NextResponse } from "next/server";
+import { executeRconCommand } from "@/server/rcon";
+import { withAuth } from "@/server/auth";
+import { checkRateLimit } from "@/server/core";
+import { commandSchema } from "@/schemas";
 
-export async function POST(req: Request) {
-  try {
-    const body = (await req.json()) as CommandRequestBody;
-    if (!body.command) {
-      return NextResponse.json({ error: "Command required" }, { status: 400 });
-    }
-    const result = await executeRconCommand(body.command);
-    return NextResponse.json({ result });
-  } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
-  }
-}
+export const POST = withAuth(async (req: NextRequest) => {
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  checkRateLimit(`command:${clientIp}`, 60, 60_000);
+
+  const body = commandSchema.parse(await req.json());
+  const result = await executeRconCommand(body.command);
+  return NextResponse.json({ result });
+});
