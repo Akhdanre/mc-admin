@@ -9,8 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
-    "ci": "eslint && tsc --noEmit && bun test && next build",
+    "test": "bun test --isolate",
+    "ci": "eslint && tsc --noEmit && bun run test && next build",
     "prepare": "husky",
     "version:bump": "bun scripts/release-version.ts"
   },
